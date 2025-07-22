@@ -1,0 +1,88 @@
+/* Chat flottant - Mon RPG 2D */
+
+/* Container du chat flottant */
+#floating-chat {
+    position: fixed;
+    bottom: 15px;
+    left: 15px;
+    width: 200px;
+    max-height: 150px;
+    z-index: 998;
+    pointer-events: none; /* Ne bloque pas les clics */
+}
+
+/* Messages flottants */
+.floating-message {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #4a90e2;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin-bottom: 4px;
+    color: #e0e0e0;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    font-weight: normal;
+    text-shadow: none;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Animation d'apparition */
+.floating-message.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Animation de disparition */
+.floating-message.hide {
+    opacity: 0;
+    transform: translateX(-10px);
+}
+
+/* Types de messages */
+.floating-message.gold {
+    border-color: #ffd700;
+    background: rgba(0, 0, 0, 0.7);
+    color: #ffd700;
+}
+
+.floating-message.resource {
+    border-color: #4caf50;
+    background: rgba(0, 0, 0, 0.9);
+    color: #4caf50;
+}
+
+.floating-message.item {
+    border-color: #ff9800;
+    background: rgba(0, 0, 0, 0.9);
+    color: #ff9800;
+}
+
+.floating-message.event {
+    border-color: #9c27b0;
+    background: rgba(0, 0, 0, 0.9);
+    color: #9c27b0;
+}
+
+.floating-message.level {
+    border-color: #2196f3;
+    background: rgba(0, 0, 0, 0.9);
+    color: #2196f3;
+    font-size: 16px;
+}
+
+/* Animation de brillance pour les messages importants */
+.floating-message.level {
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 5px rgba(33, 150, 243, 0.5);
+    }
+    to {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(33, 150, 243, 0.8);
+    }
+} 

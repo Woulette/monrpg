@@ -1,0 +1,157 @@
+/* ===== style.css (général & canvas) ===== */
+body {
+    margin: 0;
+    background: #2d2d2d;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+#gameCanvas {
+    border: 2px solid #fff;
+    background: #444;
+    image-rendering: pixelated;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Chat System */
+#chat-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+#chat-button {
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #666;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 20px;
+}
+
+#chat-button:hover {
+    background: rgba(0, 0, 0, 0.9);
+    border-color: #999;
+    transform: scale(1.1);
+}
+
+#chat-window {
+    position: absolute;
+    bottom: 70px;
+    left: 0;
+    width: 300px;
+    height: 200px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #666;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+#chat-window.chat-hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+}
+
+#chat-window.chat-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+#chat-header {
+    background: rgba(100, 100, 100, 0.5);
+    padding: 8px 12px;
+    border-bottom: 1px solid #666;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+}
+
+#close-chat {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#close-chat:hover {
+    color: #ff6b6b;
+}
+
+#chat-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    color: white;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.chat-message {
+    margin-bottom: 8px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    word-wrap: break-word;
+}
+
+.chat-message.system {
+    background: rgba(100, 100, 100, 0.3);
+    border-left: 3px solid #4CAF50;
+}
+
+.chat-message.combat {
+    background: rgba(255, 107, 107, 0.3);
+    border-left: 3px solid #ff6b6b;
+}
+
+.chat-message.xp {
+    background: rgba(255, 193, 7, 0.3);
+    border-left: 3px solid #ffc107;
+}
+
+.chat-message.level {
+    background: rgba(156, 39, 176, 0.3);
+    border-left: 3px solid #9c27b0;
+}
+
+/* Scrollbar pour le chat */
+#chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chat-messages::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}

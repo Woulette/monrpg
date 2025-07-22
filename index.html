@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon RPG 2D</title>
+    <!-- Ordre : style.css (général) → hud.css (icone inventaire) → inventory.css (modale + slots inventaire) → equipment.css (slots équipement) -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/hud.css">
+    <link rel="stylesheet" href="assets/css/inventory.css">
+    <link rel="stylesheet" href="assets/css/equipment.css">
+    <link rel="stylesheet" href="assets/css/tooltip.css">
+    <link rel="stylesheet" href="assets/css/equipment-detail.css">
+    <link rel="stylesheet" href="assets/css/loot.css">
+    <link rel="stylesheet" href="assets/css/etablie.css">
+    <link rel="stylesheet" href="assets/css/etablie-cordonnier.css">
+    <link rel="stylesheet" href="assets/css/etablie-bijoutier.css">
+    <link rel="stylesheet" href="assets/css/metier.css">
+    <link rel="stylesheet" href="assets/css/sort.css">
+    
+
+    <!-- Charger utils.js en tout premier pour les fonctions globales -->
+    <script src="js/utils.js"></script>
+    <!-- Charger la logique des monstres découpée -->
+    <script src="js/monsters/core.js"></script>
+    <script src="js/monsters/draw.js"></script>
+    <script src="js/monsters/ai.js"></script>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1536" height="910"></canvas>
+
+    <!-- Icône d'inventaire -->
+    <div id="inventory-icon" title="Inventaire"></div>
+    
+    <!-- Icône des statistiques -->
+    <div id="stats-icon" title="Statistiques">⭐</div>
+
+    <!-- Icône du métier -->
+    <div id="metier-icon" title="Métiers">
+      <!-- SVG marteau agrandi -->
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <rect x="18" y="5" width="5" height="22" rx="2.2" fill="#bfa14a" stroke="#684726" stroke-width="2.5"/>
+        <rect x="12" y="2" width="16" height="8" rx="2.5" fill="#8d8d8d" stroke="#684726" stroke-width="2.5"/>
+        <rect x="19.5" y="28" width="2" height="10" rx="1.2" fill="#684726"/>
+      </svg>
+    </div>
+
+    <!-- Icône de sort -->
+    <div id="sort-icon" title="Sorts">
+      <span style="font-size: 2em; line-height: 1;">✨</span>
+    </div>
+
+    <!-- Fenêtre d'inventaire -->
+    <div id="inventory-modal">
+        <div id="inventory-modal-content">
+            <span id="close-inventory">&times;</span>
+
+            
+            <!-- SECTION PECKA (positionnable) -->
+            <div id="pecka-section">
+                <div class="pecka-display">
+                    <div class="pecka-icon">P</div>
+                    <div class="pecka-info">
+                        <div class="pecka-label">Pecka</div>
+                        <div class="pecka-amount" id="pecka-amount">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="equipment-container">
+                <div class="equip-slot" data-slot="coiffe" title="Coiffe"><div class="slot-icon"></div></div>
+                <div class="equip-slot" data-slot="cape" title="Cape"><div class="slot-icon"></div></div>
+                <div class="equip-slot" data-slot="amulette" title="Amulette"><div class="slot-icon"></div></div>
+                <div class="equip-slot" data-slot="arme" title="Arme"><div class="slot-icon"></div></div>
+                <div class="equip-slot" data-slot="bouclier" title="Bouclier"><div class="slot-icon"></div></div>
+                <div class="equip-slot" data-slot="ceinture" title="Ceinture"><div class="slot-icon"></div></div>
+                <div class="equip-slot" data-slot="bottes" title="Bottes"><div class="slot-icon"></div></div>
+                <div class="equip-slot" data-slot="anneau" title="Anneau"><div class="slot-icon"></div></div>
+                <img id="player-inventory-img" src="assets/ui/playerinventaire.png" alt="Joueur">
+            </div>
+
+            <!-- SECTION STATISTIQUES -->
+            <div id="stats-container">
+                <h3>Statistiques</h3>
+                <div id="stats-grid">
+                    <div class="stat-slot" data-stat="force">
+                        <div class="stat-header">
+                            <div class="stat-icon">💪</div>
+                            <div class="stat-name">Force</div>
+                        </div>
+                        <div class="stat-value" id="stat-force">1</div>
+                        <div class="stat-xp-bar">
+                            <div class="stat-xp-fill" id="stat-force-xp"></div>
+                        </div>
+                        <div class="stat-xp-text" id="stat-force-xp-text">0/10</div>
+                    </div>
+                    
+                    <div class="stat-slot" data-stat="intelligence">
+                        <div class="stat-header">
+                            <div class="stat-icon">🧠</div>
+                            <div class="stat-name">Intelligence</div>
+                        </div>
+                        <div class="stat-value" id="stat-intelligence">1</div>
+                        <div class="stat-xp-bar">
+                            <div class="stat-xp-fill" id="stat-intelligence-xp"></div>
+                        </div>
+                        <div class="stat-xp-text" id="stat-intelligence-xp-text">0/10</div>
+                    </div>
+                    
+                    <div class="stat-slot" data-stat="agilite">
+                        <div class="stat-header">
+                            <div class="stat-icon">⚡</div>
+                            <div class="stat-name">Agilité</div>
+                        </div>
+                        <div class="stat-value" id="stat-agilite">1</div>
+                        <div class="stat-xp-bar">
+                            <div class="stat-xp-fill" id="stat-agilite-xp"></div>
+                        </div>
+                        <div class="stat-xp-text" id="stat-agilite-xp-text">0/10</div>
+                    </div>
+                    
+                    <div class="stat-slot" data-stat="defense">
+                        <div class="stat-header">
+                            <div class="stat-icon">🛡️</div>
+                            <div class="stat-name">Défense</div>
+                        </div>
+                        <div class="stat-value" id="stat-defense">1</div>
+                        <div class="stat-xp-bar">
+                            <div class="stat-xp-fill" id="stat-defense-xp"></div>
+                        </div>
+                        <div class="stat-xp-text" id="stat-defense-xp-text">0/10</div>
+                    </div>
+                    
+                    <div class="stat-slot" data-stat="chance">
+                        <div class="stat-header">
+                            <div class="stat-icon">🍀</div>
+                            <div class="stat-name">Chance</div>
+                        </div>
+                        <div class="stat-value" id="stat-chance">1</div>
+                        <div class="stat-xp-bar">
+                            <div class="stat-xp-fill" id="stat-chance-xp"></div>
+                        </div>
+                        <div class="stat-xp-text" id="stat-chance-xp-text">Équipement</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRILLE + BARRE DE CATÉGORIES (dans le même bloc) -->
+            <div id="inventory-grid-container">
+                <div id="inventory-categories">
+                    <button class="inventory-tab active" data-category="all" title="Tout">
+                        <img src="assets/ui/tout.png" alt="Tout" style="width:32px;height:32px;">
+                    </button>
+                    <button class="inventory-tab" data-category="equipement" title="Équipements">🗡️</button>
+                    <button class="inventory-tab" data-category="potions" title="Potions">🧪</button>
+                    <button class="inventory-tab" data-category="ressources" title="Ressources">🌿</button>
+                </div>
+                
+                <div id="inventory-grid">
+                  <!-- Les slots seront générés en JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fenêtre des statistiques -->
+    <div id="stats-modal">
+        <div id="stats-modal-content">
+            <span id="close-stats">&times;</span>
+            <h2>Statistiques du Personnage</h2>
+            
+            <div id="player-level-section">
+                <h3>Niveau du Joueur</h3>
+                <div class="level-display">
+                    <span class="level-label">Niveau:</span>
+                    <span class="level-value" id="player-level">1</span>
+                </div>
+                <div class="xp-display">
+                    <span class="xp-label">Expérience:</span>
+                    <div class="xp-bar">
+                        <div class="xp-fill" id="player-xp-fill"></div>
+                    </div>
+                    <span class="xp-text" id="player-xp-text">0/10</span>
+                </div>
+                <div class="stat-points-display">
+                    <span class="stat-points-label">Points à distribuer:</span>
+                    <span class="stat-points-value" id="stat-points-value">0</span>
+                </div>
+            </div>
+
+            <div id="stats-grid-modal">
+                <div class="stat-slot-modal" data-stat="vie">
+                    <div class="stat-header-modal">
+                        <div class="stat-icon-modal">❤️</div>
+                        <div class="stat-name-modal">Vie</div>
+                    </div>
+                    <div class="stat-controls">
+                        <button class="stat-btn stat-minus" data-stat="vie">-</button>
+                        <div class="stat-value-modal" id="stat-vie-modal">1</div>
+                        <button class="stat-btn stat-plus" data-stat="vie">+</button>
+                    </div>
+                    <div class="stat-xp-bar-modal">
+                        <div class="stat-xp-fill-modal" id="stat-vie-xp-modal"></div>
+                    </div>
+                    <div class="stat-xp-text-modal" id="stat-vie-xp-text-modal">Caractéristiques</div>
+                </div>
+                <div class="stat-slot-modal" data-stat="force">
+                    <div class="stat-header-modal">
+                        <div class="stat-icon-modal">💪</div>
+                        <div class="stat-name-modal">Force</div>
+                    </div>
+                    <div class="stat-controls">
+                        <button class="stat-btn stat-minus" data-stat="force">-</button>
+                        <div class="stat-value-modal" id="stat-force-modal">1</div>
+                        <button class="stat-btn stat-plus" data-stat="force">+</button>
+                    </div>
+                    <div class="stat-xp-bar-modal">
+                        <div class="stat-xp-fill-modal" id="stat-force-xp-modal"></div>
+                    </div>
+                    <div class="stat-xp-text-modal" id="stat-force-xp-text-modal">0/10</div>
+                </div>
+                
+                <div class="stat-slot-modal" data-stat="intelligence">
+                    <div class="stat-header-modal">
+                        <div class="stat-icon-modal">🧠</div>
+                        <div class="stat-name-modal">Intelligence</div>
+                    </div>
+                    <div class="stat-controls">
+                        <button class="stat-btn stat-minus" data-stat="intelligence">-</button>
+                        <div class="stat-value-modal" id="stat-intelligence-modal">1</div>
+                        <button class="stat-btn stat-plus" data-stat="intelligence">+</button>
+                    </div>
+                    <div class="stat-xp-bar-modal">
+                        <div class="stat-xp-fill-modal" id="stat-intelligence-xp-modal"></div>
+                    </div>
+                    <div class="stat-xp-text-modal" id="stat-intelligence-xp-text-modal">0/10</div>
+                </div>
+                
+                <div class="stat-slot-modal" data-stat="agilite">
+                    <div class="stat-header-modal">
+                        <div class="stat-icon-modal">⚡</div>
+                        <div class="stat-name-modal">Agilité</div>
+                    </div>
+                    <div class="stat-controls">
+                        <button class="stat-btn stat-minus" data-stat="agilite">-</button>
+                        <div class="stat-value-modal" id="stat-agilite-modal">1</div>
+                        <button class="stat-btn stat-plus" data-stat="agilite">+</button>
+                    </div>
+                    <div class="stat-xp-bar-modal">
+                        <div class="stat-xp-fill-modal" id="stat-agilite-xp-modal"></div>
+                    </div>
+                    <div class="stat-xp-text-modal" id="stat-agilite-xp-text-modal">0/10</div>
+                </div>
+                
+                <div class="stat-slot-modal" data-stat="defense">
+                    <div class="stat-header-modal">
+                        <div class="stat-icon-modal">🛡️</div>
+                        <div class="stat-name-modal">Défense</div>
+                    </div>
+                    <div class="stat-controls">
+                        <button class="stat-btn stat-minus" data-stat="defense">-</button>
+                        <div class="stat-value-modal" id="stat-defense-modal">1</div>
+                        <button class="stat-btn stat-plus" data-stat="defense">+</button>
+                    </div>
+                    <div class="stat-xp-bar-modal">
+                        <div class="stat-xp-fill-modal" id="stat-defense-xp-modal"></div>
+                    </div>
+                    <div class="stat-xp-text-modal" id="stat-defense-xp-text-modal">0/10</div>
+                </div>
+                
+                <div class="stat-slot-modal" data-stat="chance">
+                    <div class="stat-header-modal">
+                        <div class="stat-icon-modal">🍀</div>
+                        <div class="stat-name-modal">Chance</div>
+                    </div>
+                    <div class="stat-controls">
+                        <button class="stat-btn stat-minus" data-stat="chance">-</button>
+                        <div class="stat-value-modal" id="stat-chance-modal">1</div>
+                        <button class="stat-btn stat-plus" data-stat="chance">+</button>
+                    </div>
+                    <div class="stat-xp-bar-modal">
+                        <div class="stat-xp-fill-modal" id="stat-chance-xp-modal"></div>
+                    </div>
+                    <div class="stat-xp-text-modal" id="stat-chance-xp-text-modal">Équipement</div>
+                </div>
+                
+                <div class="stat-slot-modal" data-stat="vitesse">
+                    <div class="stat-header-modal">
+                        <div class="stat-icon-modal">🏃</div>
+                        <div class="stat-name-modal">Vitesse</div>
+                    </div>
+                    <div class="stat-controls">
+                        <button class="stat-btn stat-minus" data-stat="vitesse">-</button>
+                        <div class="stat-value-modal" id="stat-vitesse-modal">1</div>
+                        <button class="stat-btn stat-plus" data-stat="vitesse">+</button>
+                    </div>
+                    <div class="stat-xp-bar-modal">
+                        <div class="stat-xp-fill-modal" id="stat-vitesse-xp-modal"></div>
+                    </div>
+                    <div class="stat-xp-text-modal" id="stat-vitesse-xp-text-modal">Caractéristiques</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fenêtre détaillée de l'équipement -->
+    <div id="equipment-detail-modal">
+        <div id="equipment-detail-content">
+            <div id="equipment-detail-header">
+                <span id="close-equipment-detail">&times;</span>
+                <h2 id="equipment-detail-title">Détails de l'Équipement</h2>
+            </div>
+            
+            <div id="equipment-detail-info">
+                <div class="equipment-detail-section">
+                    <h3>Informations</h3>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Catégorie:</span>
+                        <span class="detail-value" id="equipment-name">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Type:</span>
+                        <span class="detail-value" id="equipment-type">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Rareté:</span>
+                        <span class="detail-value" id="equipment-rarity">-</span>
+                    </div>
+                </div>
+                
+                <div class="equipment-detail-section">
+                    <h3>Statistiques</h3>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Force:</span>
+                        <span class="detail-value" id="equipment-force">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Intelligence:</span>
+                        <span class="detail-value" id="equipment-intelligence">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Agilité:</span>
+                        <span class="detail-value" id="equipment-agilite">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Défense:</span>
+                        <span class="detail-value" id="equipment-defense">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Vie:</span>
+                        <span class="detail-value" id="equipment-vie">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Chance:</span>
+                        <span class="detail-value" id="equipment-chance">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Vitesse:</span>
+                        <span class="detail-value" id="equipment-vitesse">-</span>
+                    </div>
+                </div>
+                
+                <div class="equipment-detail-section">
+                    <h3>Description</h3>
+                    <div class="equipment-description" id="equipment-description">-</div>
+                </div>
+            </div>
+            
+            <div id="equipment-detail-actions">
+                <button id="equip-button" class="equipment-action-btn">Équiper</button>
+                <button id="unequip-button" class="equipment-action-btn">Déséquiper</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fenêtre des sorts -->
+    <div id="sort-modal">
+      <div id="sort-modal-content">
+        <span id="close-sort-modal">&times;</span>
+        <div class="sort-main">
+          <div class="sort-list">
+            <div class="sort-row selected" id="sort-punch-row">
+              <span class="sort-row-icon">👊</span>
+              <span class="sort-row-name">Coup de poing</span>
+            </div>
+            <div class="sort-row" id="sort-doublepunch-row">
+              <span class="sort-row-icon" style="margin-left: 18px;">👊<span style="margin-left:6px; margin-right:32px;">💥</span></span>
+              <span class="sort-row-name">Coup de poing explosif</span>
+            </div>
+            <!-- D'autres sorts viendront ici -->
+          </div>
+          <div class="sort-damage-panel" id="sort-damage-panel-punch">
+            <div class="sort-detail-level sort-detail-level-centered">
+              <span class="sort-detail-level-label">Niveau requis :</span> <span class="sort-detail-level-star">⭐ 1</span>
+            </div>
+            <div class="sort-detail-header sort-detail-header-left">
+              <span class="sort-detail-icon">👊</span>
+              <span class="sort-detail-name">Coup de poing</span>
+            </div>
+            <p class="sort-desc">Un coup simple mais efficace.</p>
+            <div class="sort-detail-row sort-detail-row-punch">
+              <span class="sort-detail-damage-label">Dégâts :</span>
+              <span class="sort-detail-damage-value">3-6</span>
+              <span class="sort-detail-damage-icon">💥</span>
+            </div>
+            <div class="sort-upgrade-slots sort-upgrade-slots-punch">
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+            </div>
+          </div>
+          <div class="sort-damage-panel" id="sort-damage-panel-explosive" style="display:none;">
+            <div class="sort-detail-level sort-detail-level-centered">
+              <span class="sort-detail-level-label">Niveau requis :</span> <span class="sort-detail-level-star">⭐ 3</span>
+            </div>
+            <div class="sort-detail-header sort-detail-header-left">
+              <span class="sort-detail-icon">👊<span style='margin-left:6px;'>💥</span></span>
+              <span class="sort-detail-name">Coup de poing explosif</span>
+            </div>
+            <p class="sort-desc">Un coup puissant qui explose à l'impact. Inflige de lourds dégâts.</p>
+            <div class="sort-detail-row sort-detail-row-explosive">
+              <span class="sort-detail-damage-label">Dégâts :</span>
+              <span class="sort-detail-damage-value">12-20</span>
+              <span class="sort-detail-damage-icon">💥</span>
+            </div>
+            <div class="sort-upgrade-slots sort-upgrade-slots-explosive">
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="spell-shortcut-bar">
+      <div class="spell-slot" id="spell-slot-1">
+        <span class="spell-icon">👊</span>
+        <span class="spell-cooldown" id="cooldown-1"></span>
+      </div>
+      <div class="spell-slot" id="spell-slot-2">
+        <span class="spell-icon">👊<span style='margin-left:4px;'>💥</span></span>
+        <span class="spell-cooldown" id="cooldown-2"></span>
+      </div>
+      <div class="spell-slot empty"></div>
+      <div class="spell-slot empty"></div>
+      <div class="spell-slot empty"></div>
+      <div class="spell-slot empty"></div>
+      <div class="spell-slot empty"></div>
+      <div class="spell-slot empty"></div>
+      <div class="spell-slot empty"></div>
+      <div class="spell-slot empty"></div>
+    </div>
+
+    <!-- JS à charger en dernier (sauf utils.js et monsters/ déjà chargés dans le head) -->
+<script src="js/hud.js"></script>
+<script src="js/pathfinding.js"></script>
+<script src="js/player.js"></script>
+<script src="js/collision.js"></script>
+<script src="js/tileset.js"></script>
+<script src="js/map.js"></script>
+<script src="js/main.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/floating-chat.js"></script>
+<script src="js/damage-display.js"></script>
+<script src="js/equipment-system.js"></script>
+<script src="js/loot-system.js"></script>
+<script src="js/metier/etablie.js"></script>
+<script src="js/metier/niveaudemetier.js"></script>
+
+
+</body>
+</html>

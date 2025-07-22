@@ -1,0 +1,105 @@
+/* ===== hud.css (icône inventaire & tooltip) ===== */
+#inventory-icon {
+    position: absolute;
+    top: 850px;
+    right: 200px;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #ffe17d 60%, #a0a0a0 100%);
+    border-radius: 10px;
+    border: 2px solid #684726;
+    box-shadow: 0 4px 16px #2225a8aa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: box-shadow 0.2s;
+}
+#inventory-icon:after {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 32px;
+    background: url('data:image/svg+xml;utf8,<svg fill="none" stroke="black" stroke-width="2" viewBox="0 0 24 24" width="32" height="32" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="9" width="14" height="10" rx="3" fill="%23F6E7B4"/><path d="M9 9V7a3 3 0 0 1 6 0v2" /></svg>') no-repeat center center;
+}
+#inventory-icon:hover {
+    box-shadow: 0 4px 32px #ffd95299;
+}
+
+
+/* Icône des statistiques */
+#stats-icon {
+    position: fixed;
+    top: 849px;
+    left:1595px; /* Position à gauche de l'icône d'inventaire */
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(145deg, #2a2a3a, #1a1a2a);
+    border: 2px solid #4a4a6a;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+#stats-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    border-color: #6a6a8a;
+    background: linear-gradient(145deg, #3a3a5a, #2a2a4a);
+}
+
+#stats-icon:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Icône du niveau de métier */
+#metier-icon {
+    position: fixed;
+    top: 849px;
+    left: 1530px; /* Position à gauche de #stats-icon */
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(145deg, #3a2a1a, #2a1a0a);
+    border: 2px solid #bfa14a;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: box-shadow 0.2s;
+}
+#metier-icon:hover {
+    box-shadow: 0 4px 32px #ffd95299;
+}
+
+#sort-icon {
+    position: fixed;
+    top: 849px;
+    left: 1465px; /* À gauche de #metier-icon */
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(145deg, #f8f8f8, #7cff11);
+    border: 2px solid #141414;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: box-shadow 0.2s;
+}
+#sort-icon:hover {
+    box-shadow: 0 4px 32px #ffd95299;
+}
+
+
