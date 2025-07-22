@@ -102,4 +102,34 @@
     box-shadow: 0 4px 32px #ffd95299;
 }
 
+@media (max-width: 1600px) {
+  #inventory-icon {
+    top: 780px;
+    right: 40px;
+    width: 36px;
+    height: 36px;
+  }
+  #stats-icon {
+    top: 780px;
+    left: 40px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (max-width: 1100px) {
+  #inventory-icon {
+    top: 700px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+  }
+  #stats-icon {
+    top: 700px;
+    left: 10px;
+    width: 28px;
+    height: 28px;
+  }
+}
+
 

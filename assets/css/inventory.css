@@ -613,3 +613,36 @@
 
 
 
+
+@media (max-width: 1600px) {
+  #inventory-modal-content {
+    width: 700px;
+    height: 400px;
+    padding: 20px 20px 15px 20px;
+  }
+  #inventory-grid-container {
+    left: 400px;
+    top: 60px;
+    width: 220px;
+    height: 250px;
+  }
+}
+
+@media (max-width: 1100px) {
+  #inventory-modal-content {
+    width: 98vw;
+    height: 98vh;
+    padding: 5vw 2vw 2vw 2vw;
+    font-size: 12px;
+  }
+  #inventory-grid-container {
+    left: 10vw;
+    top: 10vw;
+    width: 60vw;
+    height: 40vw;
+  }
+}
+
+
+
+
