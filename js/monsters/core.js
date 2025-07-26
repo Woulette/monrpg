@@ -12,7 +12,15 @@ let crowKillCount = 0;
 function initMonsters() {
     console.log("Initialisation des monstres...");
     
-    // Vider le tableau des monstres
+    // Nettoyer complètement les anciens monstres
+    monsters.forEach(monster => {
+        // Libérer la position occupée par chaque monstre
+        if (typeof release === "function") {
+            release(monster.x, monster.y);
+        }
+    });
+    
+    // Vider complètement le tableau des monstres
     monsters.length = 0;
     
     // Créer les monstres
@@ -82,6 +90,12 @@ function initMonsters() {
             deathTime: 0,
             respawnTime: RESPAWN_DELAY
         });
+        
+        // Marquer la position comme occupée
+        if (typeof occupy === "function") {
+            occupy(sx, sy);
+        }
+        
         console.log(`Monstre ${i + 1} créé à la position (${sx}, ${sy}) - Niveau ${level}`);
     }
     
