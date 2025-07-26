@@ -82,6 +82,9 @@ const player = {
 // Initialiser les stats totales au démarrage
 recalculateTotalStats();
 
+// Rendre la fonction de réinitialisation disponible globalement
+window.resetPlayer = resetPlayer;
+
 function initPlayer() {
     
     // Initialiser la position du joueur
@@ -93,6 +96,91 @@ function initPlayer() {
         occupy(player.x, player.y);
     }
     
+}
+
+// Fonction pour réinitialiser complètement le joueur
+function resetPlayer() {
+    console.log("Réinitialisation complète du joueur...");
+    
+    // Réinitialiser les propriétés de base
+    player.x = 24;
+    player.y = 14;
+    player.direction = 0;
+    player.frame = 0;
+    player.px = 24 * TILE_SIZE;
+    player.py = 14 * TILE_SIZE;
+    player.moving = false;
+    player.moveTarget = { x: 24, y: 14 };
+    player.path = [];
+    
+    // Réinitialiser le niveau et l'XP
+    player.level = 1;
+    player.xp = 0;
+    player.xpToNextLevel = 100;
+    
+    // Réinitialiser la vie
+    player.maxLife = 50;
+    player.life = 50;
+    
+    // Réinitialiser les statistiques de base
+    player.baseForce = 1;
+    player.baseIntelligence = 1;
+    player.baseAgilite = 1;
+    player.baseDefense = 1;
+    player.baseChance = 1;
+    player.baseVitesse = 1;
+    player.baseVie = 1;
+    
+    // Réinitialiser les statistiques d'équipement
+    player.equipForce = 0;
+    player.equipIntelligence = 0;
+    player.equipAgilite = 0;
+    player.equipDefense = 0;
+    player.equipChance = 0;
+    player.equipVitesse = 0;
+    player.equipVie = 0;
+    
+    // Réinitialiser l'XP des statistiques
+    player.forceXp = 0;
+    player.intelligenceXp = 0;
+    player.agiliteXp = 0;
+    player.defenseXp = 0;
+    player.chanceXp = 0;
+    player.vitesseXp = 0;
+    
+    // Réinitialiser l'XP nécessaire pour le prochain niveau
+    player.forceXpToNext = 10;
+    player.intelligenceXpToNext = 10;
+    player.agiliteXpToNext = 10;
+    player.defenseXpToNext = 10;
+    player.chanceXpToNext = 10;
+    player.vitesseXpToNext = 50;
+    
+    // Réinitialiser les points de caractéristiques
+    player.statPoints = 10;
+    
+    // Réinitialiser la monnaie
+    player.pecka = 0;
+    
+    // Réinitialiser l'état de combat
+    player.inCombat = false;
+    player.lastCombatTime = 0;
+    player.lastRegenTime = 0;
+    
+    // Réinitialiser le suivi automatique
+    player.autoFollow = false;
+    
+    // Réinitialiser le système de mort et respawn
+    player.isDead = false;
+    player.deathTime = 0;
+    player.respawnTime = 3000;
+    player.spawnX = 24;
+    player.spawnY = 14;
+    
+    // Recalculer les stats totales
+    recalculateTotalStats();
+    
+    console.log("Joueur réinitialisé avec succès");
 }
 
 // Chargement de l'image du joueur

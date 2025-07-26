@@ -16,13 +16,60 @@ window.inventoryEquipement = inventoryEquipement;
 window.inventoryPotions = inventoryPotions;
 window.inventoryRessources = inventoryRessources;
 
+// Rendre les fonctions de réinitialisation disponibles globalement
+window.resetInventory = resetInventory;
+window.resetEquipment = resetEquipment;
+
 function initInventory() {
     console.log("Initialisation de l'inventaire...");
     
-    // Ajouter la coiffe simple dans l'inventaire pour le test
-    addItemToInventory('coiffe_simple', 'equipement');
-    
+    // Inventaire vide au démarrage
     console.log("Inventaire initialisé avec succès");
+}
+
+// Fonction pour réinitialiser complètement l'inventaire
+function resetInventory() {
+    console.log("Réinitialisation complète de l'inventaire...");
+    
+    // Vider tous les inventaires
+    window.inventoryAll = [];
+    window.inventoryEquipement = [];
+    window.inventoryPotions = [];
+    window.inventoryRessources = [];
+    
+    // Mettre à jour l'affichage
+    if (typeof updateAllGrids === 'function') {
+        updateAllGrids();
+    }
+    
+    // Réinitialiser l'équipement
+    if (typeof resetEquipment === 'function') {
+        resetEquipment();
+    }
+    
+    console.log("Inventaire réinitialisé avec succès");
+}
+
+// Fonction pour réinitialiser l'équipement
+function resetEquipment() {
+    console.log("Réinitialisation de l'équipement...");
+    
+    // Réinitialiser les slots d'équipement
+    window.equippedItems = {
+        coiffe: null,
+        cape: null,
+        collier: null,
+        anneau: null,
+        ceinture: null,
+        bottes: null
+    };
+    
+    // Mettre à jour l'affichage de l'équipement
+    if (typeof updateEquipmentDisplay === 'function') {
+        updateEquipmentDisplay();
+    }
+    
+    console.log("Équipement réinitialisé avec succès");
 }
 
 function initStats() {
@@ -199,12 +246,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Premier affichage : grille "Tous"
     switchInventoryGrid("all");
     
-    // Ajouter des items de test
-    addItemToInventory('cape_corbeau', 'equipement');
-    addItemToInventory('collier_corbeau', 'equipement');
-    addItemToInventory('anneau_corbeau', 'equipement');
-    addItemToInventory('ceinture_corbeau', 'equipement');
-    addItemToInventory('bottes_corbeau', 'equipement');
+    // Inventaire vide au démarrage - pas d'items de test
 
     // Gestion de la touche Échap pour fermer la fenêtre des statistiques
     document.addEventListener('keydown', function(e) {

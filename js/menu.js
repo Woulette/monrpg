@@ -99,6 +99,17 @@ window.addEventListener('DOMContentLoaded', function() {
       nameInput.focus();
       return;
     }
+    
+    // Réinitialiser l'inventaire et le joueur pour un nouveau personnage
+    if (typeof resetInventory === 'function') {
+      resetInventory();
+      console.log('🆕 Inventaire réinitialisé pour le nouveau personnage');
+    }
+    if (typeof resetPlayer === 'function') {
+      resetPlayer();
+      console.log('🆕 Joueur réinitialisé pour le nouveau personnage');
+    }
+    
     window.playerName = name;
     // Afficher le menu de jeu/profil
     if(profileMenu && profileAvatar && profileName && profileLevel) {
@@ -161,6 +172,24 @@ window.addEventListener('DOMContentLoaded', function() {
   // Confirmation suppression : Oui
   if(deleteConfirmYes) {
     deleteConfirmYes.addEventListener('click', function() {
+      // Supprimer la sauvegarde du personnage
+      if (typeof deleteSave === 'function') {
+        deleteSave();
+        console.log('🗑️ Sauvegarde supprimée lors de la suppression du personnage');
+      }
+      
+      // Réinitialiser l'inventaire et l'équipement
+      if (typeof resetInventory === 'function') {
+        resetInventory();
+        console.log('🗑️ Inventaire réinitialisé lors de la suppression du personnage');
+      }
+      
+      // Réinitialiser le joueur
+      if (typeof resetPlayer === 'function') {
+        resetPlayer();
+        console.log('🗑️ Joueur réinitialisé lors de la suppression du personnage');
+      }
+      
       // Réinitialiser les infos du personnage
       window.playerName = undefined;
       window.playerAvatar = undefined;
