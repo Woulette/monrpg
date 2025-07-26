@@ -6,9 +6,6 @@ const RESPAWN_DELAY = 30000; // 30 secondes en millisecondes
 
 const monsters = [];
 
-// Compteur global de corbeaux tués
-let crowKillCount = 0;
-
 // Système de sauvegarde des monstres par map
 const monsterSaves = {};
 
@@ -17,17 +14,25 @@ function saveMonstersForMap(mapName) {
     
     console.log(`Sauvegarde des monstres pour la map: ${mapName}`);
     
-    // Sauvegarder l'état actuel des monstres
+    // Sauvegarder l'état actuel des monstres avec le compteur de cette map
     monsterSaves[mapName] = {
         monsters: monsters.map(monster => ({
             ...monster,
             // Ne pas sauvegarder les références d'images
             img: null
         })),
-        crowKillCount: crowKillCount
+        crowKillCount: getCurrentMapKillCount()
     };
     
-    console.log(`${monsters.length} monstres sauvegardés pour ${mapName}`);
+    console.log(`${monsters.length} monstres sauvegardés pour ${mapName} avec ${getCurrentMapKillCount()} tués`);
+}
+
+function getCurrentMapKillCount() {
+    const currentMap = window.currentMap;
+    if (!currentMap) return 0;
+    
+    // Compter les monstres morts sur la map actuelle
+    return monsters.filter(monster => monster.isDead && monster.type === "crow").length;
 }
 
 function loadMonstersForMap(mapName) {
@@ -55,14 +60,11 @@ function loadMonstersForMap(mapName) {
                 img: null
             });
             
-            // Marquer la position comme occupée
-            if (typeof occupy === "function") {
+            // Marquer la position comme occupée seulement si le monstre n'est pas mort
+            if (!monsterData.isDead && typeof occupy === "function") {
                 occupy(monsterData.x, monsterData.y);
             }
         });
-        
-        // Restaurer le compteur de corbeaux tués
-        crowKillCount = monsterSaves[mapName].crowKillCount;
         
         // Assigner les images aux monstres
         if (typeof assignMonsterImages === "function") {
@@ -175,8 +177,11 @@ function initMonsters() {
     }
 }
 
-// Fonction pour créer un Maitrecorbeau à une position aléatoire
+// Fonction pour créer un Maitrecorbeau à une position aléatoire (spécifique à la map actuelle)
 function spawnMaitreCorbeau() {
+    const currentMap = window.currentMap;
+    if (!currentMap) return;
+    
     let sx, sy;
     let attempts = 0;
     const maxAttempts = 100;
@@ -234,7 +239,7 @@ function spawnMaitreCorbeau() {
         agilite: 10,
         intelligence: 10
     });
-    console.log('Maitrecorbeau apparu à la position (' + sx + ', ' + sy + ') !');
+    console.log(`Maitrecorbeau apparu sur ${currentMap} à la position (${sx}, ${sy}) !`);
     if (typeof assignMonsterImages === "function") {
         assignMonsterImages();
     }
@@ -294,6 +299,11 @@ function updateMonsterRespawn() {
             monster.moving = false;
             monster.xpValue = Math.floor(baseXp * xpMultiplier); // Nouvel XP selon le niveau
             
+            // Marquer la nouvelle position comme occupée
+            if (typeof occupy === "function") {
+                occupy(newSpawnX, newSpawnY);
+            }
+            
             console.log(`Corbeau ${monster.id} a respawné à la position (${monster.x}, ${monster.y}) - Niveau ${newLevel}`);
         }
     });
@@ -305,14 +315,22 @@ function killMonster(monster) {
         monster.isDead = true;
         monster.deathTime = Date.now();
         monster.hp = 0;
+        
         if (monster.type === "crow") {
-            crowKillCount++;
-            console.log(`Corbeaux tués : ${crowKillCount}`);
-            if (crowKillCount % 100 === 0) {
+            // Libérer la position occupée
+            if (typeof release === "function") {
+                release(monster.x, monster.y);
+            }
+            
+            // Vérifier si on doit spawn un Maitrecorbeau sur cette map spécifique
+            const currentMapKillCount = getCurrentMapKillCount();
+            console.log(`Corbeaux tués sur ${window.currentMap}: ${currentMapKillCount}`);
+            
+            if (currentMapKillCount % 100 === 0) {
                 spawnMaitreCorbeau();
             }
         }
-        console.log(`Corbeau ${monster.id} tué, respawn dans 30 secondes`);
+        console.log(`Corbeau ${monster.id} tué sur ${window.currentMap}, respawn dans 30 secondes`);
     }
 }
 
@@ -352,7 +370,6 @@ window.updateMonsterRespawn = updateMonsterRespawn;
 window.killMonster = killMonster;
 window.alignMonsterToGrid = alignMonsterToGrid;
 window.updateMonsterAlignment = updateMonsterAlignment; 
-window.crowKillCount = crowKillCount;
 window.spawnMaitreCorbeau = spawnMaitreCorbeau;
 window.saveMonstersForMap = saveMonstersForMap;
 window.loadMonstersForMap = loadMonstersForMap; 
