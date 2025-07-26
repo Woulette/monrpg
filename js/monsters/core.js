@@ -20,10 +20,12 @@ function initMonsters() {
     }
     
     isInitializingMonsters = true;
-    console.log("Initialisation des monstres...");
+    console.log("=== DÉBUT INITIALISATION MONSTRES ===");
+    console.log("Nombre de monstres avant nettoyage:", monsters.length);
     
     // Nettoyer complètement les anciens monstres
-    monsters.forEach(monster => {
+    monsters.forEach((monster, index) => {
+        console.log(`Libération position monstre ${index}: (${monster.x}, ${monster.y})`);
         // Libérer la position occupée par chaque monstre
         if (typeof release === "function") {
             release(monster.x, monster.y);
@@ -32,6 +34,13 @@ function initMonsters() {
     
     // Vider complètement le tableau des monstres
     monsters.length = 0;
+    console.log("Tableau des monstres vidé");
+    
+    // Vérifier que les fonctions nécessaires sont disponibles
+    console.log("Vérification des fonctions:");
+    console.log("- window.isBlocked disponible:", typeof window.isBlocked !== 'undefined');
+    console.log("- TILE_SIZE disponible:", typeof TILE_SIZE !== 'undefined');
+    console.log("- occupy disponible:", typeof occupy !== 'undefined');
     
     // Créer les monstres
     for (let i = 0; i < 10; i++) {
@@ -51,6 +60,7 @@ function initMonsters() {
         
         // Si on n'a pas trouvé de position libre, prendre une position aléatoire
         if (attempts >= maxAttempts) {
+            console.log(`Monstre ${i + 1}: Impossible de trouver position libre après ${maxAttempts} tentatives`);
             sx = Math.floor(Math.random() * PATROL_ZONE.width);
             sy = Math.floor(Math.random() * PATROL_ZONE.height);
         }
@@ -64,7 +74,7 @@ function initMonsters() {
         const hpMultiplier = 1 + (level - 1) * 0.2; // +20% par niveau
         const xpMultiplier = 1 + (level - 1) * 0.3; // +30% par niveau
         
-        monsters.push({
+        const newMonster = {
             id: i + 1,
             name: "Corbeau",
             type: "crow",
@@ -99,23 +109,36 @@ function initMonsters() {
             isDead: false,
             deathTime: 0,
             respawnTime: RESPAWN_DELAY
-        });
+        };
+        
+        monsters.push(newMonster);
         
         // Marquer la position comme occupée
         if (typeof occupy === "function") {
             occupy(sx, sy);
+            console.log(`Monstre ${i + 1} créé et position (${sx}, ${sy}) marquée comme occupée`);
+        } else {
+            console.log(`Monstre ${i + 1} créé à (${sx}, ${sy}) mais fonction occupy non disponible`);
         }
-        
-        console.log(`Monstre ${i + 1} créé à la position (${sx}, ${sy}) - Niveau ${level}`);
     }
     
-    console.log(`${monsters.length} monstres initialisés avec succès`);
-    console.log("Tableau des monstres:", monsters);
+    console.log(`=== FIN INITIALISATION: ${monsters.length} monstres créés ===`);
+    console.log("Positions des monstres:", monsters.map(m => `(${m.x}, ${m.y})`));
     
     // Assigner l'image aux monstres si elle est déjà chargée
     if (typeof assignMonsterImages === "function") {
         assignMonsterImages();
     }
+    
+    // Aligner les positions pixel avec les positions de grille pour éviter les téléportations
+    monsters.forEach(monster => {
+        monster.px = monster.x * TILE_SIZE;
+        monster.py = monster.y * TILE_SIZE;
+        monster.moveTarget = { x: monster.x, y: monster.y };
+        monster.moving = false;
+        monster.movePath = [];
+        monster.state = "idle";
+    });
     
     // Libérer le verrou
     isInitializingMonsters = false;
