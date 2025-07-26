@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
             initChat(); // Système de chat séparé
             initFloatingChat(); // Système de chat flottant
             initEquipmentSystem(); // Système d'équipement
+            initEtablies(); // Système d'établies
             
             requestAnimationFrame(gameLoop);
         })
@@ -399,4 +400,29 @@ document.addEventListener('DOMContentLoaded', () => {
     resizeGameCanvas();
     positionHudIcons();
 });
+
+function initEtablies() {
+    console.log("Initialisation du système d'établies...");
+    
+    // Vérifier que les fonctions des établies sont disponibles
+    if (typeof window.openTailorWorkshopModal === 'function') {
+        console.log("✓ Fonction openTailorWorkshopModal disponible");
+    } else {
+        console.error("✗ Fonction openTailorWorkshopModal manquante");
+    }
+    
+    if (typeof window.openCordonnierWorkshopModal === 'function') {
+        console.log("✓ Fonction openCordonnierWorkshopModal disponible");
+    } else {
+        console.error("✗ Fonction openCordonnierWorkshopModal manquante");
+    }
+    
+    if (typeof window.openBijoutierWorkshopModal === 'function') {
+        console.log("✓ Fonction openBijoutierWorkshopModal disponible");
+    } else {
+        console.error("✗ Fonction openBijoutierWorkshopModal manquante");
+    }
+    
+    console.log("Système d'établies initialisé avec succès");
+}
 

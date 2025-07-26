@@ -836,6 +836,123 @@ document.addEventListener('DOMContentLoaded', () => {
             const tileId2 = layer2.data[tileIndex2];
             const tileId4 = layer4.data[tileIndex4];
             
+            // Établie du tailleur (IDs 412, 413, 612, 613)
+            if ([412, 413, 612, 613].includes(tileId2) || [412, 413, 612, 613].includes(tileId4)) {
+                // Chercher une case adjacente libre à la table
+                const adjacents = [
+                    {x: nx+1, y: ny},
+                    {x: nx-1, y: ny},
+                    {x: nx, y: ny+1},
+                    {x: nx, y: ny-1}
+                ].filter(pos =>
+                    pos.x >= 0 && pos.x < window.mapData.width &&
+                    pos.y >= 0 && pos.y < window.mapData.height &&
+                    !window.isBlocked(pos.x, pos.y)
+                );
+                
+                if (adjacents.length) {
+                    // Aller à la case adjacente la plus proche du joueur
+                    let closest = adjacents[0];
+                    let minDist = Math.abs(player.x - closest.x) + Math.abs(player.y - closest.y);
+                    for (let i = 1; i < adjacents.length; i++) {
+                        const d = Math.abs(player.x - adjacents[i].x) + Math.abs(player.y - adjacents[i].y);
+                        if (d < minDist) {
+                            minDist = d;
+                            closest = adjacents[i];
+                        }
+                    }
+                    window.pendingOpenCraftTable = {x: nx, y: ny, type: 'tailleur'};
+                    if (typeof findPath === "function" && window.mapData) {
+                        player.path = findPath(
+                            { x: player.x, y: player.y },
+                            { x: closest.x, y: closest.y },
+                            window.isBlocked,
+                            mapData.width, mapData.height
+                        ) || [];
+                        nextStepToTarget();
+                    }
+                }
+                return;
+            }
+            
+            // Établie du cordonnier (IDs 614, 615, 814, 815)
+            if ([614, 615, 814, 815].includes(tileId2) || [614, 615, 814, 815].includes(tileId4)) {
+                // Chercher une case adjacente libre à la table
+                const adjacents = [
+                    {x: nx+1, y: ny},
+                    {x: nx-1, y: ny},
+                    {x: nx, y: ny+1},
+                    {x: nx, y: ny-1}
+                ].filter(pos =>
+                    pos.x >= 0 && pos.x < window.mapData.width &&
+                    pos.y >= 0 && pos.y < window.mapData.height &&
+                    !window.isBlocked(pos.x, pos.y)
+                );
+                
+                if (adjacents.length) {
+                    // Aller à la case adjacente la plus proche du joueur
+                    let closest = adjacents[0];
+                    let minDist = Math.abs(player.x - closest.x) + Math.abs(player.y - closest.y);
+                    for (let i = 1; i < adjacents.length; i++) {
+                        const d = Math.abs(player.x - adjacents[i].x) + Math.abs(player.y - adjacents[i].y);
+                        if (d < minDist) {
+                            minDist = d;
+                            closest = adjacents[i];
+                        }
+                    }
+                    window.pendingOpenCraftTable = {x: nx, y: ny, type: 'cordonnier'};
+                    if (typeof findPath === "function" && window.mapData) {
+                        player.path = findPath(
+                            { x: player.x, y: player.y },
+                            { x: closest.x, y: closest.y },
+                            window.isBlocked,
+                            mapData.width, mapData.height
+                        ) || [];
+                        nextStepToTarget();
+                    }
+                }
+                return;
+            }
+            
+            // Établie du bijoutier (IDs 616, 617, 816, 817)
+            if ([616, 617, 816, 817].includes(tileId2) || [616, 617, 816, 817].includes(tileId4)) {
+                // Chercher une case adjacente libre à la table
+                const adjacents = [
+                    {x: nx+1, y: ny},
+                    {x: nx-1, y: ny},
+                    {x: nx, y: ny+1},
+                    {x: nx, y: ny-1}
+                ].filter(pos =>
+                    pos.x >= 0 && pos.x < window.mapData.width &&
+                    pos.y >= 0 && pos.y < window.mapData.height &&
+                    !window.isBlocked(pos.x, pos.y)
+                );
+                
+                if (adjacents.length) {
+                    // Aller à la case adjacente la plus proche du joueur
+                    let closest = adjacents[0];
+                    let minDist = Math.abs(player.x - closest.x) + Math.abs(player.y - closest.y);
+                    for (let i = 1; i < adjacents.length; i++) {
+                        const d = Math.abs(player.x - adjacents[i].x) + Math.abs(player.y - adjacents[i].y);
+                        if (d < minDist) {
+                            minDist = d;
+                            closest = adjacents[i];
+                        }
+                    }
+                    window.pendingOpenCraftTable = {x: nx, y: ny, type: 'bijoutier'};
+                    if (typeof findPath === "function" && window.mapData) {
+                        player.path = findPath(
+                            { x: player.x, y: player.y },
+                            { x: closest.x, y: closest.y },
+                            window.isBlocked,
+                            mapData.width, mapData.height
+                        ) || [];
+                        nextStepToTarget();
+                    }
+                }
+                return;
+            }
+            
             // Table du tailleur (ancienne logique + nouveaux IDs)
             if ([156, 157].includes(tileId2) || [156, 157].includes(tileId4)) {
                 // Chercher une case adjacente libre à la table
