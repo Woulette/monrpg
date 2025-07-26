@@ -9,7 +9,17 @@ const monsters = [];
 // Compteur global de corbeaux tués
 let crowKillCount = 0;
 
+// Variable pour éviter les appels multiples
+let isInitializingMonsters = false;
+
 function initMonsters() {
+    // Protection contre les appels multiples
+    if (isInitializingMonsters) {
+        console.log("initMonsters déjà en cours, ignoré");
+        return;
+    }
+    
+    isInitializingMonsters = true;
     console.log("Initialisation des monstres...");
     
     // Nettoyer complètement les anciens monstres
@@ -106,6 +116,9 @@ function initMonsters() {
     if (typeof assignMonsterImages === "function") {
         assignMonsterImages();
     }
+    
+    // Libérer le verrou
+    isInitializingMonsters = false;
 }
 
 // Fonction pour créer un Maitrecorbeau à une position aléatoire
