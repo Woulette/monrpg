@@ -248,6 +248,26 @@ function castSpell(slotId, baseMin, baseMax, cooldown, effetSpecial) {
         effetSpecial(attackTarget.px, attackTarget.py);
       }
       startSpellCooldown(slotId, cooldown);
+
+      // NOUVEAU : gestion de la mort du monstre et attribution de l'XP
+      if (attackTarget.hp <= 0) {
+        if (typeof release === "function") release(attackTarget.x, attackTarget.y);
+        if (typeof displayDamage === "function") {
+          displayDamage(player.px, player.py, `+${attackTarget.xpValue || 0} XP`, 'xp', true);
+        }
+        if (typeof gainXP === "function") gainXP(attackTarget.xpValue || 0);
+        if (typeof triggerLoot === 'function') {
+          triggerLoot(attackTarget);
+        }
+        if (typeof killMonster === "function") {
+          killMonster(attackTarget);
+        }
+        attackTarget.aggro = false;
+        attackTarget.aggroTarget = null;
+        attackTarget = null;
+        window.attackTarget = null;
+        player.inCombat = false;
+      }
     }
   }
 }
@@ -316,3 +336,67 @@ window.spawnMonster = function(type) {
   if (typeof assignMonsterImages === 'function') assignMonsterImages();
   return monstre;
 };
+
+function resizeGameCanvas() {
+    const canvas = document.getElementById('gameCanvas');
+    const ratio = 1536 / 910; // Ratio d'origine du canvas
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+    if (w / h > ratio) {
+        w = h * ratio;
+    } else {
+        h = w / ratio;
+    }
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    canvas.style.display = 'block';
+    canvas.style.margin = '0 auto';
+}
+
+function positionHudIcons() {
+    const canvas = document.getElementById('gameCanvas');
+    const rect = canvas.getBoundingClientRect();
+
+    // Inventaire (en bas à droite)
+    const inventoryIcon = document.getElementById('inventory-icon');
+    inventoryIcon.style.left = (rect.width * 0.96) + 'px';
+    inventoryIcon.style.top = (rect.height * 0.91) + 'px';
+
+    // Stats (à gauche de l'inventaire)
+    const statsIcon = document.getElementById('stats-icon');
+    statsIcon.style.left = (rect.width * 0.92) + 'px';
+    statsIcon.style.top = (rect.height * 0.91) + 'px';
+
+    // Métier (encore à gauche)
+    const metierIcon = document.getElementById('metier-icon');
+    metierIcon.style.left = (rect.width * 0.88) + 'px';
+    metierIcon.style.top = (rect.height * 0.91) + 'px';
+
+    // Sort (encore à gauche)
+    const sortIcon = document.getElementById('sort-icon');
+    sortIcon.style.left = (rect.width * 0.84) + 'px';
+    sortIcon.style.top = (rect.height * 0.91) + 'px';
+
+    const spellBar = document.getElementById('spell-shortcut-bar');
+    if (spellBar && canvas) {
+        const rect = canvas.getBoundingClientRect();
+        spellBar.style.position = 'fixed'; // Utilise fixed, pas absolute !
+        spellBar.style.left = (rect.left + rect.width * 0.01) + 'px';
+        spellBar.style.top  = (rect.top  + rect.height * 0.915) + 'px';
+        spellBar.style.zIndex = 1200;
+        spellBar.style.display = 'flex';
+        // Largeur proportionnelle au canvas, mais jamais trop petite
+        const slotCount = spellBar.querySelectorAll('.spell-slot').length;
+        const minWidth = slotCount * 36 + (slotCount - 1) * 8 + 10;
+        spellBar.style.width = Math.max(rect.width * 0.38, minWidth) + 'px';
+    }    
+}
+window.addEventListener('resize', () => {
+    resizeGameCanvas();
+    positionHudIcons();
+});
+document.addEventListener('DOMContentLoaded', () => {
+    resizeGameCanvas();
+    positionHudIcons();
+});
+

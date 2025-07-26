@@ -2,7 +2,7 @@
 const PLAYER_WIDTH = 32;
 const PLAYER_HEIGHT = 32;
 const TILE_SIZE = window.TILE_SIZE || 32;  // Utiliser la constante globale si possible
-const MOVE_SPEED = 1;
+const MOVE_SPEED = 5;
 
 // Initialisation du joueur
 const player = {
@@ -97,7 +97,13 @@ function initPlayer() {
 
 // Chargement de l'image du joueur
 window.playerImg = new Image();
-playerImg.src = 'assets/personnages/player.png';
+window.playerImg.onload = () => {
+    console.log('✓ Image du joueur chargée avec succès');
+};
+window.playerImg.onerror = () => {
+    console.error('✗ Erreur de chargement de l\'image du joueur: assets/personnages/player.png');
+};
+window.playerImg.src = 'assets/personnages/player.png';
 
 // Constantes pour combat
 const PLAYER_ATTACK_DAMAGE = 5;
@@ -202,7 +208,7 @@ const animDelay = 120;
 function drawPlayer(ctx) {
     if (!window.playerImg || player.isDead) return;
     ctx.drawImage(
-        playerImg,
+        window.playerImg,
         player.frame * PLAYER_WIDTH,
         player.direction * PLAYER_HEIGHT,
         PLAYER_WIDTH, PLAYER_HEIGHT,
@@ -525,17 +531,49 @@ function updatePlayer(ts) {
     
     // Vérification de téléportation automatique
     if (window.mapData && window.mapData.layers && window.mapData.layers.length > 0) {
-        const layer1 = window.mapData.layers[0];
-        const tileIndex = player.y * layer1.width + player.x;
-        const tileId = layer1.data[tileIndex];
+        // Chercher tous les portails (ID 1, 2, 3, 4) dans tous les calques
+        let portalFound = false;
+        let portalGid = null;
+        
+        for (let layerIndex = 0; layerIndex < window.mapData.layers.length; layerIndex++) {
+            const layer = window.mapData.layers[layerIndex];
+            const tileIndex = player.y * layer.width + player.x;
+            const tileId = layer.data[tileIndex];
+            
+            if (tileId === 1 || tileId === 2 || tileId === 3 || tileId === 4) {
+                portalFound = true;
+                portalGid = tileId;
+                break;
+            }
+        }
 
-        // Portail (ID 1)
-        if (tileId === 1) {
+        // Portail détecté
+        if (portalFound) {
+            console.log(`Portail ID ${portalGid} détecté sur ${window.currentMap}`);
+            
+            // Logique générale pour toutes les maps
             let destinationMap = null;
-            if (window.currentMap === 'map1') {
-                destinationMap = 'map2';
-            } else if (window.currentMap === 'map2') {
-                destinationMap = 'map1';
+            let targetPortalId = null;
+            
+            // Extraire le numéro de la map actuelle
+            const currentMapNumber = parseInt(window.currentMap.replace('map', ''));
+            
+            if (portalGid === 1) {
+                // Portail ID 1 → Map suivante, portail ID 2
+                destinationMap = `map${currentMapNumber + 1}`;
+                targetPortalId = 2;
+            } else if (portalGid === 2) {
+                // Portail ID 2 → Map précédente, portail ID 1
+                destinationMap = `map${currentMapNumber - 1}`;
+                targetPortalId = 1;
+            } else if (portalGid === 3) {
+                // Portail ID 3 → Map suivante, portail ID 4
+                destinationMap = `map${currentMapNumber + 1}`;
+                targetPortalId = 4;
+            } else if (portalGid === 4) {
+                // Portail ID 4 → Map précédente, portail ID 3
+                destinationMap = `map${currentMapNumber - 1}`;
+                targetPortalId = 3;
             }
             if (destinationMap) {
                 // Détecter la direction d'entrée dans le portail
@@ -560,26 +598,57 @@ function updatePlayer(ts) {
                 fetch(`assets/maps/${destinationMap}.json`)
                     .then(response => response.json())
                     .then(mapData => {
-                        // Chercher tous les portails (ID 1) sur la map de destination
-                        const layer1 = mapData.layers[0];
+                        // Chercher le portail de destination dans tous les calques
+                        let targetPortal = null;
+                        console.log(`Recherche du portail ID ${targetPortalId} sur ${destinationMap}...`);
+                        
+                        for (let layerIndex = 0; layerIndex < mapData.layers.length; layerIndex++) {
+                            const layer = mapData.layers[layerIndex];
+                            for (let y = 0; y < layer.height; y++) {
+                                for (let x = 0; x < layer.width; x++) {
+                                    const idx = y * layer.width + x;
+                                    if (layer.data[idx] === targetPortalId) {
+                                        targetPortal = {x, y};
+                                        console.log(`Portail ID ${targetPortalId} trouvé sur ${destinationMap} à la position (${x}, ${y})`);
+                                        break;
+                                    }
+                                }
+                                if (targetPortal) break;
+                            }
+                            if (targetPortal) break;
+                        }
+                        
+                        if (!targetPortal) {
+                            console.log(`Portail ID ${targetPortalId} non trouvé sur ${destinationMap}`);
+                        }
+                        
+                        // Fallback : chercher tous les portails du même ID si pas trouvé
                         let portals = [];
-                        for (let y = 0; y < layer1.height; y++) {
-                            for (let x = 0; x < layer1.width; x++) {
-                                const idx = y * layer1.width + x;
-                                if (layer1.data[idx] === 1) {
-                                    portals.push({x, y});
+                        if (!targetPortal) {
+                            for (let layerIndex = 0; layerIndex < mapData.layers.length; layerIndex++) {
+                                const layer = mapData.layers[layerIndex];
+                                for (let y = 0; y < layer.height; y++) {
+                                    for (let x = 0; x < layer.width; x++) {
+                                        const idx = y * layer.width + x;
+                                        if (layer.data[idx] === targetPortalId) {
+                                            portals.push({x, y});
+                                        }
+                                    }
                                 }
                             }
                         }
-                        if (portals.length > 0) {
-                            // Trouver le portail le plus proche de la position d'origine
-                            let closest = portals[0];
-                            let minDist = Math.abs(portals[0].x - originX) + Math.abs(portals[0].y - originY);
-                            for (let i = 1; i < portals.length; i++) {
-                                let dist = Math.abs(portals[i].x - originX) + Math.abs(portals[i].y - originY);
-                                if (dist < minDist) {
-                                    minDist = dist;
-                                    closest = portals[i];
+                        if (targetPortal || portals.length > 0) {
+                            // Utiliser le portail cible trouvé ou le plus proche en fallback
+                            let closest = targetPortal || portals[0];
+                            if (!targetPortal && portals.length > 1) {
+                                // Trouver le portail le plus proche de la position d'origine
+                                let minDist = Math.abs(portals[0].x - originX) + Math.abs(portals[0].y - originY);
+                                for (let i = 1; i < portals.length; i++) {
+                                    let dist = Math.abs(portals[i].x - originX) + Math.abs(portals[i].y - originY);
+                                    if (dist < minDist) {
+                                        minDist = dist;
+                                        closest = portals[i];
+                                    }
                                 }
                             }
                             // Calculer la case d'arrivée en fonction de la direction
@@ -588,14 +657,33 @@ function updatePlayer(ts) {
                             // Vérifier que la case d'arrivée est dans la map et pas un portail
                             if (destX < 0) destX = 0;
                             if (destY < 0) destY = 0;
-                            if (destX >= layer1.width) destX = layer1.width - 1;
-                            if (destY >= layer1.height) destY = layer1.height - 1;
-                            if (layer1.data[destY * layer1.width + destX] === 1) {
+                            if (destX >= mapData.width) destX = mapData.width - 1;
+                            if (destY >= mapData.height) destY = mapData.height - 1;
+                            
+                            // Vérifier si la case d'arrivée est un portail dans n'importe quel calque
+                            let isPortalAtDestination = false;
+                            for (let layerIndex = 0; layerIndex < mapData.layers.length; layerIndex++) {
+                                const layer = mapData.layers[layerIndex];
+                                if (layer.data[destY * layer.width + destX] === targetPortalId) {
+                                    isPortalAtDestination = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (isPortalAtDestination) {
                                 // Si la case d'arrivée est un portail, on place à côté (autre direction)
                                 if (dx !== 0) destX += dx; // Avancer encore d'une case
                                 if (dy !== 0) destY += dy;
                                 // Si toujours pas possible, fallback au centre
-                                if (destX < 0 || destY < 0 || destX >= layer1.width || destY >= layer1.height || layer1.data[destY * layer1.width + destX] === 1) {
+                                let stillPortal = false;
+                                for (let layerIndex = 0; layerIndex < mapData.layers.length; layerIndex++) {
+                                    const layer = mapData.layers[layerIndex];
+                                    if (layer.data[destY * layer.width + destX] === targetPortalId) {
+                                        stillPortal = true;
+                                        break;
+                                    }
+                                }
+                                if (destX < 0 || destY < 0 || destX >= mapData.width || destY >= mapData.height || stillPortal) {
                                     destX = 24;
                                     destY = 14;
                                 }
@@ -613,6 +701,32 @@ function updatePlayer(ts) {
                 return;
             }
         }
+        // --- PORTAIL MAP2 → MAP3 ---
+        if (window.currentMap === "map2" && window.mapData) {
+            const layer4 = window.mapData.layers.find(layer => layer.id === 4);
+            if (layer4) {
+                const idx = player.y * window.mapData.width + player.x;
+                const gid = layer4.data[idx];
+                console.log('[DEBUG portail map2]', 'x:', player.x, 'y:', player.y, 'gid:', gid);
+                if (gid === 1) {
+                    teleportPlayer('map3', Math.floor(window.mapData.width/2), Math.floor(window.mapData.height/2));
+                    return;
+                }
+            }
+        }
+        // --- PORTAIL MAP3 → MAP2 ---
+        if (window.currentMap === "map3" && window.mapData) {
+            const layer4 = window.mapData.layers.find(layer => layer.id === 4);
+            if (layer4) {
+                const idx = player.y * window.mapData.width + player.x;
+                const gid = layer4.data[idx];
+                console.log('[DEBUG portail map3]', 'x:', player.x, 'y:', player.y, 'gid:', gid);
+                if (gid === 1) {
+                    teleportPlayer('map2', Math.floor(window.mapData.width/2), Math.floor(window.mapData.height/2));
+                    return;
+                }
+            }
+        }
     }
 }
 document.addEventListener('DOMContentLoaded', () => {
@@ -621,8 +735,9 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault(); // Empêcher le comportement par défaut
         
         const rect = canvas.getBoundingClientRect();
-        const mx = e.clientX - rect.left;
-        const my = e.clientY - rect.top;
+        // Correction : prendre en compte le ratio de redimensionnement du canvas
+        const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+        const my = (e.clientY - rect.top) * (canvas.height / rect.height);
 
         const nx = Math.floor(mx / TILE_SIZE);
         const ny = Math.floor(my / TILE_SIZE);
@@ -904,27 +1019,79 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Sinon, déplacement classique vers la case cliquée
-        if (!window.isBlocked(nx, ny)) {
-            // Retirer seulement l'encadrement rouge, pas la fiche
-            if (attackTarget) {
-                attackTarget.aggro = false;
-                attackTarget.aggroTarget = null;
-                // Ne pas supprimer attackTarget pour garder la fiche ouverte
-                player.inCombat = false;
+        // Retirer seulement l'encadrement rouge, pas la fiche
+        if (attackTarget) {
+            attackTarget.aggro = false;
+            attackTarget.aggroTarget = null;
+            // Ne pas supprimer attackTarget pour garder la fiche ouverte
+            player.inCombat = false;
+        }
+        
+        // Désactiver le suivi automatique quand on clique sur une case vide
+        player.autoFollow = false;
+        
+        // Si la case cliquée est bloquée, trouver la case accessible la plus proche
+        let targetX = nx;
+        let targetY = ny;
+        
+        if (window.isBlocked(nx, ny)) {
+            // Chercher la case accessible la plus proche dans un rayon croissant
+            let found = false;
+            let radius = 1;
+            const maxRadius = 10; // Limite pour éviter une recherche infinie
+            
+            while (!found && radius <= maxRadius) {
+                for (let dx = -radius; dx <= radius; dx++) {
+                    for (let dy = -radius; dy <= radius; dy++) {
+                        // Vérifier seulement les cases sur le bord du carré actuel
+                        if (Math.abs(dx) === radius || Math.abs(dy) === radius) {
+                            const testX = nx + dx;
+                            const testY = ny + dy;
+                            
+                            // Vérifier les limites de la map
+                            if (testX >= 0 && testX < window.mapData.width && 
+                                testY >= 0 && testY < window.mapData.height) {
+                                
+                                // Vérifier si la case est accessible (pas de collision ET pas de monstre)
+                                if (!window.isBlocked(testX, testY) && !monsters.some(monster => monster.x === testX && monster.y === testY && monster.hp > 0)) {
+                                    targetX = testX;
+                                    targetY = testY;
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (found) break;
+                }
+                radius++;
             }
             
-            // Désactiver le suivi automatique quand on clique sur une case vide
-            player.autoFollow = false;
-            
-            if (typeof findPath === "function" && window.mapData) {
-                player.path = findPath(
-                    { x: player.x, y: player.y },
-                    { x: nx, y: ny },
-                    window.isBlocked,
-                    mapData.width, mapData.height
-                ) || [];
-                nextStepToTarget();
+            // Si aucune case accessible n'est trouvée, ne rien faire
+            if (!found) {
+                console.log("Aucune case accessible trouvée près de la destination");
+                return;
             }
+        }
+        
+        if (typeof findPath === "function" && window.mapData) {
+            // Créer une fonction de collision qui inclut les monstres
+            const isBlockedWithMonsters = (x, y) => {
+                // Vérifier les collisions du calque 2
+                if (window.isBlocked(x, y)) {
+                    return true;
+                }
+                // Vérifier s'il y a un monstre à cette position
+                return monsters.some(monster => monster.x === x && monster.y === y && monster.hp > 0);
+            };
+            
+            player.path = findPath(
+                { x: player.x, y: player.y },
+                { x: targetX, y: targetY },
+                isBlockedWithMonsters,
+                mapData.width, mapData.height
+            ) || [];
+            nextStepToTarget();
         }
     });
 });
@@ -954,6 +1121,16 @@ function gainXP(amount) {
         if (typeof updateStatsModalDisplay === 'function') {
             updateStatsModalDisplay();
         }
+        
+        // Sauvegarde automatique lors du level up
+        if (typeof autoSaveOnEvent === 'function') {
+            autoSaveOnEvent();
+        }
+    }
+    
+    // Sauvegarde automatique lors du gain d'XP
+    if (typeof autoSaveOnEvent === 'function') {
+        autoSaveOnEvent();
     }
 }
 

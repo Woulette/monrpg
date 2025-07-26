@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="assets/css/etablie-bijoutier.css">
     <link rel="stylesheet" href="assets/css/metier.css">
     <link rel="stylesheet" href="assets/css/sort.css">
+    <link rel="stylesheet" href="assets/css/menu.css">
     
 
     <!-- Charger utils.js en tout premier pour les fonctions globales -->
@@ -26,27 +27,71 @@
     <script src="js/monsters/ai.js"></script>
 </head>
 <body>
-    <canvas id="gameCanvas" width="1536" height="910"></canvas>
-
-    <!-- Icône d'inventaire -->
-    <div id="inventory-icon" title="Inventaire"></div>
-    
-    <!-- Icône des statistiques -->
-    <div id="stats-icon" title="Statistiques">⭐</div>
-
-    <!-- Icône du métier -->
-    <div id="metier-icon" title="Métiers">
-      <!-- SVG marteau agrandi -->
-      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-        <rect x="18" y="5" width="5" height="22" rx="2.2" fill="#bfa14a" stroke="#684726" stroke-width="2.5"/>
-        <rect x="12" y="2" width="16" height="8" rx="2.5" fill="#8d8d8d" stroke="#684726" stroke-width="2.5"/>
-        <rect x="19.5" y="28" width="2" height="10" rx="1.2" fill="#684726"/>
-      </svg>
+    <!-- Menu de création de personnage -->
+    <div id="game-menu" style="display:none;">
+      <div class="menu-box">
+        <button id="to-profile-btn" title="Retour au menu de sélection" style="position:absolute;top:18px;left:22px;font-size:2.2rem;color:#4e9cff;background:none;border:none;cursor:pointer;z-index:10;display:none;">&#128682;</button>
+        <div class="menu-title">Création du personnage</div>
+        <div id="menu-player-visual" style="display:flex;flex-direction:column;align-items:center;gap:18px;margin:18px 0 0 0;">
+          <div id="menu-avatar-select" style="display:flex;gap:24px;justify-content:center;">
+            <img class="menu-avatar-option" src="assets/ui/playerinventaire.png" alt="Avatar 1" data-avatar="assets/ui/playerinventaire.png" style="width:144px;height:144px;image-rendering:pixelated;cursor:pointer;border:4px solid transparent;border-radius:16px;transition:border-color 0.2s;" />
+            <img class="menu-avatar-option" src="assets/personnages/player.png" alt="Avatar 2" data-avatar="assets/personnages/player.png" style="width:144px;height:144px;image-rendering:pixelated;cursor:pointer;border:4px solid transparent;border-radius:16px;transition:border-color 0.2s;" />
+            <img class="menu-avatar-option" src="assets/personnages/corbeau.png" alt="Avatar 3" data-avatar="assets/personnages/corbeau.png" style="width:144px;height:144px;image-rendering:pixelated;cursor:pointer;border:4px solid transparent;border-radius:16px;transition:border-color 0.2s;" />
+          </div>
+          <div id="menu-player-name" style="color:#ffd952;font-size:1.2rem;font-weight:bold;text-shadow:0 2px 8px #0008;">&nbsp;</div>
+        </div>
+        <div id="menu-name-form" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%;">
+          <label class="menu-label" for="player-name-input">Nom du personnage</label>
+          <input id="player-name-input" type="text" maxlength="16" autocomplete="off" placeholder="Entrez votre nom..." />
+          <button id="play-btn">Créer</button>
+        </div>
+      </div>
     </div>
 
-    <!-- Icône de sort -->
-    <div id="sort-icon" title="Sorts">
-      <span style="font-size: 2em; line-height: 1;">✨</span>
+    <!-- Menu de jeu/profil après création du personnage -->
+    <div id="profile-menu" style="display:none;">
+      <div class="menu-box">
+        <button id="delete-character-x" title="Supprimer le personnage">&#10006;</button>
+        <div class="menu-title">Mon personnage</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:18px;margin:18px 0 0 0;">
+          <img id="profile-avatar" src="" alt="Avatar" tabindex="0" style="width:144px;height:144px;image-rendering:pixelated;border-radius:16px;box-shadow:0 2px 8px #0008;" />
+          <div id="profile-name" style="color:#ffd952;font-size:1.3rem;font-weight:bold;text-shadow:0 2px 8px #0008;">&nbsp;</div>
+          <div id="profile-level" style="color:#4e9cff;font-size:1.1rem;font-weight:bold;">Niveau : <span id="profile-level-value">1</span></div>
+        </div>
+        <div class="profile-actions" style="display:flex;flex-direction:row;justify-content:center;align-items:center;gap:32px;margin-top:36px;">
+          <button id="profile-play-btn">Continuer</button>
+          <button id="to-creation-btn" title="Retour à la création de personnage">&#128682;</button>
+        </div>
+      </div>
+      <!-- Overlay de confirmation suppression -->
+      <div id="delete-confirm-overlay" style="display:none;">
+        <div id="delete-confirm-box">
+          <p>Voulez-vous vraiment supprimer votre personnage&nbsp;?</p>
+          <div id="delete-confirm-actions">
+            <button id="delete-confirm-yes">Oui</button>
+            <button id="delete-confirm-no">Non</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bouton Menu en haut à droite du jeu -->
+    <button id="game-menu-btn" style="position:fixed;top:18px;right:24px;z-index:1001;display:none;background:#ffd952;color:#23272e;font-weight:bold;font-size:1.1rem;padding:8px 18px;border-radius:8px;border:none;box-shadow:0 2px 8px #0005;cursor:pointer;">Menu</button>
+
+    <div id="canvas-wrapper" style="position: relative; width: fit-content; margin: 0 auto;">
+        <canvas id="gameCanvas" width="1536" height="910"></canvas>
+        <div id="hud-layer">
+            <div id="inventory-icon"></div>
+            <div id="stats-icon">⭐</div>
+            <div id="metier-icon">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <rect x="18" y="5" width="5" height="22" rx="2.2" fill="#bfa14a" stroke="#684726" stroke-width="2.5"/>
+                    <rect x="12" y="2" width="16" height="8" rx="2.5" fill="#8d8d8d" stroke="#684726" stroke-width="2.5"/>
+                    <rect x="19.5" y="28" width="2" height="10" rx="1.2" fill="#684726"/>
+                </svg>
+            </div>
+            <div id="sort-icon"><span style="font-size: 2em; line-height: 1;">✨</span></div>
+        </div>
     </div>
 
     <!-- Fenêtre d'inventaire -->
@@ -462,6 +507,7 @@
 <script src="js/collision.js"></script>
 <script src="js/tileset.js"></script>
 <script src="js/map.js"></script>
+<script src="js/save-system.js"></script>
 <script src="js/main.js"></script>
 <script src="js/inventory.js"></script>
 <script src="js/chat.js"></script>
@@ -471,6 +517,7 @@
 <script src="js/loot-system.js"></script>
 <script src="js/metier/etablie.js"></script>
 <script src="js/metier/niveaudemetier.js"></script>
+<script src="js/menu.js"></script>
 
 
 </body>

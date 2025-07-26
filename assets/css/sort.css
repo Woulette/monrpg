@@ -271,9 +271,7 @@
 }
 
 #spell-shortcut-bar {
-  position: fixed;
-  left: 210px;
-  bottom: 35px;
+  position: absolute;
   display: flex;
   flex-direction: row;
   gap: 8px;

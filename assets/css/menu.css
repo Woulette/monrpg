@@ -1,0 +1,252 @@
+body.menu-active {
+  overflow: hidden;
+}
+
+#game-menu {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(120deg, #23272e 60%, #181b20 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.menu-box {
+  background: #23272e;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px #000a;
+  padding: 40px 32px 32px 32px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.menu-title {
+  font-size: 2.2rem;
+  color: #ffd952;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-weight: bold;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 8px #0008;
+}
+
+.menu-label {
+  color: #e0e0e0;
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+#player-name-input {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1.5px solid #444a55;
+  font-size: 1.1rem;
+  width: 220px;
+  background: #181b20;
+  color: #ffd952;
+  outline: none;
+  margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+#player-name-input:focus {
+  border-color: #4e9cff;
+}
+
+#play-btn {
+  background: linear-gradient(90deg, #ffd952 60%, #ffb347 100%);
+  color: #23272e;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 36px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0005;
+  transition: background 0.2s, color 0.2s, transform 0.1s;
+}
+#play-btn:hover {
+  background: linear-gradient(90deg, #ffb347 60%, #ffd952 100%);
+  color: #181b20;
+  transform: scale(1.04);
+}
+
+#profile-menu {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(120deg, #23272e 60%, #181b20 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+#profile-menu .menu-box {
+  min-width: 320px;
+  padding-bottom: 36px;
+  position: relative;
+}
+#profile-menu .profile-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  margin-top: 32px;
+  justify-content: center;
+}
+#delete-character-btn {
+  background: linear-gradient(90deg, #ff4e4e 60%, #ffb347 100%);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0005;
+  transition: background 0.2s, color 0.2s, transform 0.1s;
+}
+#delete-character-btn:hover {
+  background: linear-gradient(90deg, #ffb347 60%, #ff4e4e 100%);
+  color: #23272e;
+  transform: scale(1.04);
+}
+#delete-character-x {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  font-size: 2.2rem;
+  color: #ff4e4e;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+  transition: color 0.2s, transform 0.1s;
+}
+#delete-character-x:hover {
+  color: #ff2222;
+  transform: scale(1.15);
+}
+#profile-play-btn {
+  display: block;
+  margin: 36px auto 0 auto;
+  background: linear-gradient(90deg, #4e9cff 60%, #4ecf7a 100%);
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 12px;
+  padding: 18px 54px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0005;
+  transition: background 0.2s, color 0.2s, transform 0.1s;
+}
+#profile-play-btn:hover {
+  background: linear-gradient(90deg, #4ecf7a 60%, #4e9cff 100%);
+  color: #23272e;
+  transform: scale(1.04);
+}
+#profile-play-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+#profile-avatar {
+  cursor: pointer;
+  border: 4px solid transparent;
+  transition: border-color 0.2s;
+}
+#profile-avatar.selected {
+  border-color: #4e9cff;
+}
+#delete-confirm-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(30,32,38,0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+}
+#delete-confirm-box {
+  background: #23272e;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px #000a;
+  padding: 38px 32px 32px 32px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+#delete-confirm-box p {
+  color: #ffd952;
+  font-size: 1.15rem;
+  text-align: center;
+  margin-bottom: 18px;
+}
+#delete-confirm-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  justify-content: center;
+}
+#delete-confirm-yes {
+  background: linear-gradient(90deg, #ff4e4e 60%, #ffb347 100%);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 32px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0005;
+  transition: background 0.2s, color 0.2s, transform 0.1s;
+}
+#delete-confirm-yes:hover {
+  background: linear-gradient(90deg, #ffb347 60%, #ff4e4e 100%);
+  color: #23272e;
+  transform: scale(1.04);
+}
+#delete-confirm-no {
+  background: linear-gradient(90deg, #4e9cff 60%, #23272e 100%);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 32px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0005;
+  transition: background 0.2s, color 0.2s, transform 0.1s;
+}
+#delete-confirm-no:hover {
+  background: linear-gradient(90deg, #23272e 60%, #4e9cff 100%);
+  color: #ffd952;
+  transform: scale(1.04);
+}
+
+#to-creation-btn, #to-profile-btn {
+  font-size: 2.2rem;
+  color: #4e9cff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+  transition: color 0.2s, transform 0.1s;
+}
+#to-creation-btn:hover, #to-profile-btn:hover {
+  color: #ffd952;
+  transform: scale(1.12);
+}
+#to-creation-btn {
+  margin-top: 28px;
+}

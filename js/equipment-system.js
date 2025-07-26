@@ -121,6 +121,12 @@ function equipItem(itemId) {
     applyEquipmentStats();
     
     console.log(`Équipé: ${item.name}`);
+    
+    // Sauvegarde automatique lors de l'équipement
+    if (typeof autoSaveOnEvent === 'function') {
+        autoSaveOnEvent();
+    }
+    
     return true;
 }
 
@@ -136,6 +142,12 @@ function unequipItem(slot) {
     playerEquipment[slot] = null;
     
     console.log(`Déséquipé: ${item.name}`);
+    
+    // Sauvegarde automatique lors du déséquipement
+    if (typeof autoSaveOnEvent === 'function') {
+        autoSaveOnEvent();
+    }
+    
     return true;
 }
 

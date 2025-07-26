@@ -1,7 +1,31 @@
 console.log("Fichier js/collision.js chargé");
 
-// GIDs bloquants sur le calque 2 de map1.json
-window.BLOCKED_GIDS = [741, 788, 789, 730, 790, 791, 50, 51, 52, 97, 101, 145, 149, 193, 194, 196, 197, 241, 294, 296, 245, 490, 491, 742, 743, 795, 156, 157, 204, 205, 109, 158, 159, 160, 161, 108];
+// GIDs bloquants - sera mis à jour automatiquement selon la map
+window.BLOCKED_GIDS = [];
+
+// Fonction pour mettre à jour les GIDs bloquants selon la map actuelle
+window.updateBlockedGids = function() {
+    if (!window.mapData) return;
+    
+    // Trouver le calque 2 par son ID
+    const layer2 = window.mapData.layers.find(layer => layer.id === 2);
+    if (!layer2) {
+        window.BLOCKED_GIDS = [];
+        return;
+    }
+    
+    // Récupérer tous les GID non-nuls du calque 2
+    const blockedGids = new Set();
+    for (let i = 0; i < layer2.data.length; i++) {
+        const gid = layer2.data[i];
+        if (gid !== 0) {
+            blockedGids.add(gid);
+        }
+    }
+    
+    window.BLOCKED_GIDS = Array.from(blockedGids);
+    console.log(`Collisions mises à jour: ${window.BLOCKED_GIDS.length} GIDs bloquants`);
+};
 
 window.isBlocked = function(x, y) {
   if (!window.mapData) return false;

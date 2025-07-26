@@ -28,6 +28,11 @@ async function loadMap(mapName) {
         // Charger les tilesets de la nouvelle map
         await loadTilesets(json.tilesets);
         
+        // Mettre à jour les collisions basées sur le calque 2
+        if (typeof window.updateBlockedGids === "function") {
+            window.updateBlockedGids();
+        }
+        
         console.log(`Map ${mapName} chargée avec succès !`);
         return true;
     } catch (error) {
@@ -81,6 +86,11 @@ function teleportPlayer(mapName, spawnX, spawnY) {
             }
             
             console.log(`Joueur téléporté vers ${mapName} !`);
+            
+            // Sauvegarde automatique lors du changement de map
+            if (typeof autoSaveOnEvent === 'function') {
+                autoSaveOnEvent();
+            }
         }
     });
 }
@@ -256,7 +266,7 @@ function drawMap() {
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Dessiner les calques 1, 2 et 4 en premier (sol et collisions)
+    // Dessiner les calques 1, 2 et 4 en premier (sol, collisions et décors)
     for (let layerIndex = 0; layerIndex < window.mapData.layers.length; layerIndex++) {
         let layer = window.mapData.layers[layerIndex];
         
@@ -272,17 +282,25 @@ function drawMap() {
                 let gid = layer.data[i];
                 if (gid === 0) continue;
                 let ts = getTilesetForGid(gid);
-                if (!ts) continue;
+                if (!ts) {
+                    console.warn(`GID ${gid} non trouvé dans les tilesets disponibles`);
+                    continue;
+                }
 
                 let localId = gid - ts.firstgid;
                 let sx = (localId % ts.columns) * ts.tilewidth;
                 let sy = Math.floor(localId / ts.columns) * ts.tileheight;
 
-                ctx.drawImage(
-                    ts.image,
-                    sx, sy, ts.tilewidth, ts.tileheight,
-                    x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE
-                );
+                // Vérifier que l'image est bien chargée avant de l'utiliser
+                if (ts.image && ts.image.complete && ts.image.naturalWidth !== 0) {
+                    ctx.drawImage(
+                        ts.image,
+                        sx, sy, ts.tilewidth, ts.tileheight,
+                        x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE
+                    );
+                } else {
+                    console.warn(`Image non chargée pour le tileset: ${ts.image ? ts.image.src : 'undefined'}`);
+                }
             }
         }
     }
@@ -340,11 +358,16 @@ function drawMap() {
                     ctx.globalAlpha = 0.4; // 40% d'opacité pour voir le joueur/monstre à travers
                 }
 
-                ctx.drawImage(
-                    ts.image,
-                    sx, sy, ts.tilewidth, ts.tileheight,
-                    x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE
-                );
+                // Vérifier que l'image est bien chargée avant de l'utiliser
+                if (ts.image && ts.image.complete && ts.image.naturalWidth !== 0) {
+                    ctx.drawImage(
+                        ts.image,
+                        sx, sy, ts.tilewidth, ts.tileheight,
+                        x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE
+                    );
+                } else {
+                    console.warn(`Image non chargée pour le tileset (calque 3): ${ts.image ? ts.image.src : 'undefined'}`);
+                }
                 
                 // Restaurer l'opacité si elle a été modifiée
                 if (isPlayerHere || isMonsterHere) {

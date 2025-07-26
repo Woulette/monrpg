@@ -2,7 +2,7 @@
 #inventory-icon {
     position: absolute;
     top: 850px;
-    right: 200px;
+    left: 1660px;
     width: 48px;
     height: 48px;
     background: linear-gradient(135deg, #ffe17d 60%, #a0a0a0 100%);
@@ -30,7 +30,7 @@
 
 /* Icône des statistiques */
 #stats-icon {
-    position: fixed;
+    position: absolute;
     top: 849px;
     left:1595px; /* Position à gauche de l'icône d'inventaire */
     width: 50px;
@@ -63,7 +63,7 @@
 
 /* Icône du niveau de métier */
 #metier-icon {
-    position: fixed;
+    position: absolute;
     top: 849px;
     left: 1530px; /* Position à gauche de #stats-icon */
     width: 50px;
@@ -83,7 +83,7 @@
 }
 
 #sort-icon {
-    position: fixed;
+    position: absolute;
     top: 849px;
     left: 1465px; /* À gauche de #metier-icon */
     width: 50px;
@@ -100,6 +100,25 @@
 }
 #sort-icon:hover {
     box-shadow: 0 4px 32px #ffd95299;
+}
+
+#canvas-wrapper {
+    position: relative;
+    width: fit-content;
+    margin: 0 auto;
+}
+#hud-layer {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 20;
+}
+#hud-layer > div {
+    position: absolute;
+    pointer-events: auto;
+    width: 48px;
+    height: 48px;
 }
 
 @media (max-width: 1600px) {
