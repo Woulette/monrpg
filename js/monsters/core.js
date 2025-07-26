@@ -9,38 +9,85 @@ const monsters = [];
 // Compteur global de corbeaux tués
 let crowKillCount = 0;
 
-// Variable pour éviter les appels multiples
-let isInitializingMonsters = false;
+// Système de sauvegarde des monstres par map
+const monsterSaves = {};
 
-function initMonsters() {
-    // Protection contre les appels multiples
-    if (isInitializingMonsters) {
-        console.log("initMonsters déjà en cours, ignoré");
-        return;
-    }
+function saveMonstersForMap(mapName) {
+    if (!mapName) return;
     
-    isInitializingMonsters = true;
-    console.log("=== DÉBUT INITIALISATION MONSTRES ===");
-    console.log("Nombre de monstres avant nettoyage:", monsters.length);
+    console.log(`Sauvegarde des monstres pour la map: ${mapName}`);
     
-    // Nettoyer complètement les anciens monstres
-    monsters.forEach((monster, index) => {
-        console.log(`Libération position monstre ${index}: (${monster.x}, ${monster.y})`);
-        // Libérer la position occupée par chaque monstre
+    // Sauvegarder l'état actuel des monstres
+    monsterSaves[mapName] = {
+        monsters: monsters.map(monster => ({
+            ...monster,
+            // Ne pas sauvegarder les références d'images
+            img: null
+        })),
+        crowKillCount: crowKillCount
+    };
+    
+    console.log(`${monsters.length} monstres sauvegardés pour ${mapName}`);
+}
+
+function loadMonstersForMap(mapName) {
+    if (!mapName) return false;
+    
+    console.log(`Chargement des monstres pour la map: ${mapName}`);
+    
+    // Nettoyer les monstres actuels
+    monsters.forEach(monster => {
         if (typeof release === "function") {
             release(monster.x, monster.y);
         }
     });
-    
-    // Vider complètement le tableau des monstres
     monsters.length = 0;
-    console.log("Tableau des monstres vidé");
     
-    // Vérifier que les fonctions nécessaires sont disponibles
-    console.log("Vérification des fonctions:");
-    console.log("- window.isBlocked disponible:", typeof window.isBlocked !== 'undefined');
-    console.log("- TILE_SIZE disponible:", typeof TILE_SIZE !== 'undefined');
-    console.log("- occupy disponible:", typeof occupy !== 'undefined');
+    // Vérifier s'il y a une sauvegarde pour cette map
+    if (monsterSaves[mapName]) {
+        console.log(`Restauration de ${monsterSaves[mapName].monsters.length} monstres pour ${mapName}`);
+        
+        // Restaurer les monstres
+        monsterSaves[mapName].monsters.forEach(monsterData => {
+            monsters.push({
+                ...monsterData,
+                // Réassigner l'image
+                img: null
+            });
+            
+            // Marquer la position comme occupée
+            if (typeof occupy === "function") {
+                occupy(monsterData.x, monsterData.y);
+            }
+        });
+        
+        // Restaurer le compteur de corbeaux tués
+        crowKillCount = monsterSaves[mapName].crowKillCount;
+        
+        // Assigner les images aux monstres
+        if (typeof assignMonsterImages === "function") {
+            assignMonsterImages();
+        }
+        
+        return true;
+    } else {
+        console.log(`Aucune sauvegarde trouvée pour ${mapName}, création de nouveaux monstres`);
+        return false;
+    }
+}
+
+function initMonsters() {
+    console.log("Initialisation des monstres...");
+    
+    // Vérifier si on doit charger une sauvegarde ou créer de nouveaux monstres
+    const currentMap = window.currentMap;
+    if (currentMap && loadMonstersForMap(currentMap)) {
+        console.log("Monstres restaurés depuis la sauvegarde");
+        return;
+    }
+    
+    // Créer de nouveaux monstres si pas de sauvegarde
+    console.log("Création de nouveaux monstres...");
     
     // Créer les monstres
     for (let i = 0; i < 10; i++) {
@@ -60,7 +107,6 @@ function initMonsters() {
         
         // Si on n'a pas trouvé de position libre, prendre une position aléatoire
         if (attempts >= maxAttempts) {
-            console.log(`Monstre ${i + 1}: Impossible de trouver position libre après ${maxAttempts} tentatives`);
             sx = Math.floor(Math.random() * PATROL_ZONE.width);
             sy = Math.floor(Math.random() * PATROL_ZONE.height);
         }
@@ -116,32 +162,17 @@ function initMonsters() {
         // Marquer la position comme occupée
         if (typeof occupy === "function") {
             occupy(sx, sy);
-            console.log(`Monstre ${i + 1} créé et position (${sx}, ${sy}) marquée comme occupée`);
-        } else {
-            console.log(`Monstre ${i + 1} créé à (${sx}, ${sy}) mais fonction occupy non disponible`);
         }
+        
+        console.log(`Monstre ${i + 1} créé à la position (${sx}, ${sy}) - Niveau ${level}`);
     }
     
-    console.log(`=== FIN INITIALISATION: ${monsters.length} monstres créés ===`);
-    console.log("Positions des monstres:", monsters.map(m => `(${m.x}, ${m.y})`));
+    console.log(`${monsters.length} monstres initialisés avec succès`);
     
     // Assigner l'image aux monstres si elle est déjà chargée
     if (typeof assignMonsterImages === "function") {
         assignMonsterImages();
     }
-    
-    // Aligner les positions pixel avec les positions de grille pour éviter les téléportations
-    monsters.forEach(monster => {
-        monster.px = monster.x * TILE_SIZE;
-        monster.py = monster.y * TILE_SIZE;
-        monster.moveTarget = { x: monster.x, y: monster.y };
-        monster.moving = false;
-        monster.movePath = [];
-        monster.state = "idle";
-    });
-    
-    // Libérer le verrou
-    isInitializingMonsters = false;
 }
 
 // Fonction pour créer un Maitrecorbeau à une position aléatoire
@@ -322,4 +353,6 @@ window.killMonster = killMonster;
 window.alignMonsterToGrid = alignMonsterToGrid;
 window.updateMonsterAlignment = updateMonsterAlignment; 
 window.crowKillCount = crowKillCount;
-window.spawnMaitreCorbeau = spawnMaitreCorbeau; 
+window.spawnMaitreCorbeau = spawnMaitreCorbeau;
+window.saveMonstersForMap = saveMonstersForMap;
+window.loadMonstersForMap = loadMonstersForMap; 

@@ -45,6 +45,11 @@ async function loadMap(mapName) {
 function teleportPlayer(mapName, spawnX, spawnY) {
     console.log(`Téléportation vers ${mapName} à la position (${spawnX}, ${spawnY})`);
     
+    // Sauvegarder les monstres de la map actuelle avant de partir
+    if (typeof saveMonstersForMap === "function" && window.currentMap) {
+        saveMonstersForMap(window.currentMap);
+    }
+    
     // Libérer l'ancienne position
     if (typeof release === "function") {
         release(player.x, player.y);
@@ -80,7 +85,7 @@ function teleportPlayer(mapName, spawnX, spawnY) {
                 occupy(player.x, player.y);
             }
             
-            // Réinitialiser les monstres pour la nouvelle map
+            // Charger les monstres pour la nouvelle map
             if (typeof initMonsters === "function") {
                 initMonsters();
             }
