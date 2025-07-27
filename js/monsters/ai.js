@@ -186,22 +186,11 @@ function updateMonsters(ts) {
                 monster.moving = false;
                 continue;
             }
-            // Attaque si adjacent
+            // Attaque si adjacent - DÉSACTIVÉ pour éviter les attaques doubles
+            // L'attaque se fait maintenant uniquement en riposte dans player.js
             if (distToPlayer === 1) {
-                if (!monster.lastAttack || ts - monster.lastAttack > 1000) {
-                    // Calcul des dégâts : dégâts de base + force du monstre
-                    let dmg = (monster.damage !== undefined ? monster.damage : 3) + (monster.force || 0);
-                    // Prendre en compte la défense du joueur, minimum 1 dégât
-                    let damageToPlayer = Math.max(1, dmg - player.defense);
-                    player.life -= damageToPlayer;
-                    if (player.life < 0) player.life = 0;
-                    monster.lastAttack = ts;
-                    monster.lastCombat = ts; // Mettre à jour le timer de combat
-                    // Afficher les dégâts reçus par le joueur
-                    if (typeof displayDamage === "function") {
-                        displayDamage(player.px, player.py, damageToPlayer, 'damage', true);
-                    }
-                }
+                // Mettre à jour le timer de combat pour maintenir l'aggro
+                monster.lastCombat = ts;
                 monster.movePath = [];
                 monster.moving = false;
                 continue;
