@@ -199,6 +199,48 @@ const PLAYER_ATTACK_RANGE = 1;
 let attackTarget = null; // Monstre ciblé pour le combat
 window.attackTarget = attackTarget;
 
+// Fonction utilitaire pour détecter les monstres dans une zone
+function findMonsterInRadius(mx, my, radius) {
+    if (!monsters || monsters.length === 0) return null;
+    
+    let closestMonster = null;
+    let closestDistance = radius;
+    
+    monsters.forEach(monster => {
+        if (monster.hp > 0 && !monster.isDead) {
+            // Calculer la position réelle du sprite du monstre (comme dans drawMonsters)
+            let monsterSize = 32;
+            let monsterHeight = 32;
+            let offsetX, offsetY;
+            
+            if (monster.type === "maitrecorbeau") {
+                monsterSize = 48;
+                monsterHeight = 64;
+                offsetX = (TILE_SIZE / 2) - (monsterSize / 2);
+                offsetY = TILE_SIZE - monsterHeight;
+            } else {
+                offsetX = (TILE_SIZE / 2) - (monsterSize / 2);
+                offsetY = (TILE_SIZE / 2) - (monsterHeight / 2);
+            }
+            
+            // Position réelle du centre du sprite (pas du centre de la case)
+            const monsterCenterX = monster.px + offsetX + monsterSize / 2;
+            const monsterCenterY = monster.py + offsetY + monsterHeight / 2;
+            
+            const distance = Math.sqrt(
+                Math.pow(mx - monsterCenterX, 2) + Math.pow(my - monsterCenterY, 2)
+            );
+            
+            if (distance <= radius && distance < closestDistance) {
+                closestDistance = distance;
+                closestMonster = monster;
+            }
+        }
+    });
+    
+    return closestMonster;
+}
+
 // Fonction pour recalculer les stats totales
 function recalculateTotalStats() {
     player.force = player.baseForce + player.equipForce;
@@ -300,7 +342,7 @@ function drawPlayer(ctx) {
         player.frame * PLAYER_WIDTH,
         player.direction * PLAYER_HEIGHT,
         PLAYER_WIDTH, PLAYER_HEIGHT,
-        player.px, player.py,
+        player.px + (window.mapOffsetX || 0), player.py + (window.mapOffsetY || 0),
         TILE_SIZE, TILE_SIZE
     );
 }
@@ -492,14 +534,17 @@ function updatePlayer(ts) {
                     damage = Math.floor(baseDamage * critMultiplier * (1 + critBonus));
                 }
                 // Attaque du joueur
-                attackTarget.hp -= damage;
+                const baseDamage = damage;
+                // Prendre en compte la défense du monstre, minimum 1 dégât
+                const finalDamage = Math.max(1, baseDamage - (attackTarget.defense || 0));
+                attackTarget.hp -= finalDamage;
                 // Déclenche le cooldown visuel du sort de base
                 if (typeof startSpellCooldown === 'function') {
                   startSpellCooldown('spell-slot-1', 1.0);
                 }
                 // Afficher les dégâts infligés au monstre (critique ou non)
                 if (typeof displayDamage === "function") {
-                    displayDamage(attackTarget.px, attackTarget.py, damage, isCrit ? 'critique' : 'damage', false);
+                    displayDamage(attackTarget.px, attackTarget.py, finalDamage, isCrit ? 'critique' : 'damage', false);
                 }
                 
                 // Aligner le monstre sur sa case pendant le combat
@@ -509,7 +554,12 @@ function updatePlayer(ts) {
 
                 // Riposte du monstre si vivant
                 if (attackTarget.hp > 0) {
-                    let monsterDamage = getPlayerDamageReceived(3); // 3 dégâts de base du monstre
+                    // Calcul des dégâts du monstre : dégâts de base + force du monstre avec variation de 25%
+                    const monsterBaseDamage = attackTarget.damage !== undefined ? attackTarget.damage : 3;
+                    const monsterTotalDamage = monsterBaseDamage + (attackTarget.force || 0);
+                    const variation = 0.25; // 25% de variation
+                    const randomFactor = 1 + (Math.random() * 2 - 1) * variation; // Entre 0.75 et 1.25
+                    const monsterDamage = Math.max(1, Math.floor(monsterTotalDamage * randomFactor) - player.defense);
                     player.life -= monsterDamage;
                     if (player.life < 0) player.life = 0;
                     
@@ -836,65 +886,49 @@ function updatePlayer(ts) {
 }
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('gameCanvas');
+    // Gestionnaire de clic simple (sélection)
     canvas.addEventListener('click', function(e) {
         e.preventDefault(); // Empêcher le comportement par défaut
         
         const rect = canvas.getBoundingClientRect();
-        // Correction : prendre en compte le ratio de redimensionnement du canvas
-        const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
-        const my = (e.clientY - rect.top) * (canvas.height / rect.height);
+        // Correction : prendre en compte le ratio de redimensionnement du canvas et les offsets de centrage
+        const mx = (e.clientX - rect.left) * (canvas.width / rect.width) - (window.mapOffsetX || 0);
+        const my = (e.clientY - rect.top) * (canvas.height / rect.height) - (window.mapOffsetY || 0);
+        
+        // Vérifier si le clic est sur la croix de fermeture de la fiche du monstre
+        if (window.monsterInfoCloseBox && window.attackTarget) {
+            const {x, y, w, h} = window.monsterInfoCloseBox;
+            if (mx >= x && mx <= x + w && my >= y && my <= y + h) {
+                window.attackTarget = null;
+                attackTarget = null;
+                return; // Arrêter ici, ne pas traiter le clic comme un déplacement
+            }
+        }
 
         const nx = Math.floor(mx / TILE_SIZE);
         const ny = Math.floor(my / TILE_SIZE);
 
         // Recherche d’un monstre vivant sur la case cliquée
-        let clickedMonster = monsters.find(m => m.x === nx && m.y === ny && m.hp > 0);
+        // Recherche d'un monstre vivant avec zone de clic élargie
+        // Priorité au monstre survolé si il existe
+        let clickedMonster = null;
+        if (window.hoveredMonster && window.hoveredMonster.hp > 0 && !window.hoveredMonster.isDead) {
+            clickedMonster = window.hoveredMonster;
+        } else {
+            clickedMonster = findMonsterInRadius(mx, my, 35);
+        }
 
         if (clickedMonster) {
-            // Aligner le monstre sur sa case avant l'attaque
+            // Aligner le monstre sur sa case
             if (typeof alignMonsterToGrid === 'function') {
                 alignMonsterToGrid(clickedMonster);
             }
             
+            // Sélectionner le monstre (clic simple) - PAS de déplacement automatique
             attackTarget = clickedMonster;
             window.attackTarget = attackTarget;
-            player.autoFollow = true; // Activer le suivi automatique
-
-            if (typeof findPath === "function" && window.mapData) {
-                let destinations = [
-                    {x: clickedMonster.x+1, y: clickedMonster.y},
-                    {x: clickedMonster.x-1, y: clickedMonster.y},
-                    {x: clickedMonster.x, y: clickedMonster.y+1},
-                    {x: clickedMonster.x, y: clickedMonster.y-1},
-                ].filter(pos =>
-                    pos.x >= 0 && pos.x < mapData.width &&
-                    pos.y >= 0 && pos.y < mapData.height &&
-                    !window.isBlocked(pos.x, pos.y) &&
-                    !monsters.some(m => m.x === pos.x && m.y === pos.y)
-                );
-                
-                if (destinations.length) {
-                    // Trouver la destination la plus proche du joueur
-                    let closestDestination = destinations[0];
-                    let closestDistance = Math.abs(destinations[0].x - player.x) + Math.abs(destinations[0].y - player.y);
-                    
-                    for (let i = 1; i < destinations.length; i++) {
-                        const distance = Math.abs(destinations[i].x - player.x) + Math.abs(destinations[i].y - player.y);
-                        if (distance < closestDistance) {
-                            closestDistance = distance;
-                            closestDestination = destinations[i];
-                        }
-                    }
-                    
-                    player.path = findPath(
-                        { x: player.x, y: player.y },
-                        closestDestination,
-                        window.isBlocked,
-                        mapData.width, mapData.height
-                    ) || [];
-                    nextStepToTarget();
-                }
-            }
+            player.autoFollow = false; // Désactiver le suivi automatique pour le clic simple
+            
             return;
         }
 
@@ -1316,6 +1350,208 @@ document.addEventListener('DOMContentLoaded', () => {
             nextStepToTarget();
         }
     });
+    
+    // Gestionnaire de double-clic (attaque directe)
+    canvas.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+        
+        const rect = canvas.getBoundingClientRect();
+        const mx = (e.clientX - rect.left) * (canvas.width / rect.width) - (window.mapOffsetX || 0);
+        const my = (e.clientY - rect.top) * (canvas.height / rect.height) - (window.mapOffsetY || 0);
+
+        const nx = Math.floor(mx / TILE_SIZE);
+        const ny = Math.floor(my / TILE_SIZE);
+
+        // Recherche d'un monstre vivant avec zone de clic élargie
+        // Priorité au monstre survolé si il existe
+        let clickedMonster = null;
+        if (window.hoveredMonster && window.hoveredMonster.hp > 0 && !window.hoveredMonster.isDead) {
+            clickedMonster = window.hoveredMonster;
+        } else {
+            clickedMonster = findMonsterInRadius(mx, my, 35);
+        }
+
+        if (clickedMonster) {
+            // Aligner le monstre sur sa case
+            if (typeof alignMonsterToGrid === 'function') {
+                alignMonsterToGrid(clickedMonster);
+            }
+            
+            // Sélectionner le monstre et activer le suivi automatique pour l'attaque
+            attackTarget = clickedMonster;
+            window.attackTarget = attackTarget;
+            player.autoFollow = true; // Activer le suivi automatique pour le double-clic
+            
+            // Créer un chemin vers le monstre et attaquer dès qu'on est à portée
+            if (typeof findPath === "function" && window.mapData) {
+                let destinations = [
+                    {x: clickedMonster.x+1, y: clickedMonster.y},
+                    {x: clickedMonster.x-1, y: clickedMonster.y},
+                    {x: clickedMonster.x, y: clickedMonster.y+1},
+                    {x: clickedMonster.x, y: clickedMonster.y-1},
+                ].filter(pos =>
+                    pos.x >= 0 && pos.x < mapData.width &&
+                    pos.y >= 0 && pos.y < mapData.height &&
+                    !window.isBlocked(pos.x, pos.y) &&
+                    !monsters.some(m => m.x === pos.x && m.y === pos.y)
+                );
+                
+                if (destinations.length) {
+                    let closestDestination = destinations[0];
+                    let closestDistance = Math.abs(destinations[0].x - player.x) + Math.abs(destinations[0].y - player.y);
+                    
+                    for (let i = 1; i < destinations.length; i++) {
+                        const distance = Math.abs(destinations[i].x - player.x) + Math.abs(destinations[i].y - player.y);
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            closestDestination = destinations[i];
+                        }
+                    }
+                    
+                    player.path = findPath(
+                        { x: player.x, y: player.y },
+                        closestDestination,
+                        window.isBlocked,
+                        mapData.width, mapData.height
+                    ) || [];
+                    nextStepToTarget();
+                }
+            }
+        }
+    });
+    
+    // Gestionnaires d'événements de souris pour le hover et la zone de clic élargie
+    canvas.addEventListener('mousemove', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const mx = (e.clientX - rect.left) * (canvas.width / rect.width) - (window.mapOffsetX || 0);
+        const my = (e.clientY - rect.top) * (canvas.height / rect.height) - (window.mapOffsetY || 0);
+        
+        // Détecter quel monstre est survolé avec une zone élargie
+        // Zone de hover plus grande pour une meilleure détection
+        window.hoveredMonster = findMonsterInRadius(mx, my, 30);
+    });
+    
+    canvas.addEventListener('mouseleave', function(e) {
+        // Effacer le hover quand la souris quitte le canvas
+        window.hoveredMonster = null;
+    });
+    
+    // Gestionnaire de touche espace pour attaquer le monstre sélectionné
+    document.addEventListener('keydown', function(e) {
+        if (e.code === 'Space') {
+            e.preventDefault(); // Empêcher le défilement de la page
+            
+            // Vérifier si un monstre est sélectionné et vivant
+            if (attackTarget && attackTarget.hp > 0) {
+                // Activer le suivi automatique quand on appuie sur espace
+                player.autoFollow = true;
+                // Vérifier si le joueur est à portée d'attaque
+                const dist = Math.abs(player.x - attackTarget.x) + Math.abs(player.y - attackTarget.y);
+                if (dist === PLAYER_ATTACK_RANGE) {
+                    // Attaquer le monstre
+                    const currentTime = Date.now();
+                    if (!player.lastAttack || currentTime - player.lastAttack > 1000) {
+                        player.lastAttack = currentTime;
+                        
+                        // Calculer les dégâts
+                        let damage = getPlayerAttackDamage();
+                        const isCrit = isPlayerCrit();
+                        if (isCrit) {
+                            damage = Math.floor(damage * getPlayerCritDamage());
+                        }
+                        
+                        // Appliquer les dégâts au monstre
+                        const baseDamage = getPlayerAttackDamage();
+                        const finalDamage = Math.max(1, baseDamage - (attackTarget.defense || 0));
+                        attackTarget.hp -= finalDamage;
+                        
+                        // Afficher les dégâts
+                        if (typeof displayDamage === 'function') {
+                            displayDamage(attackTarget.px, attackTarget.py, finalDamage, isCrit ? 'critique' : 'damage', false);
+                        }
+                        
+                        // Aligner le monstre sur sa case
+                        if (typeof alignMonsterToGrid === 'function') {
+                            alignMonsterToGrid(attackTarget);
+                        }
+                        
+                        // Riposte du monstre s'il est encore vivant
+                        if (attackTarget.hp > 0) {
+                            const monsterBaseDamage = attackTarget.damage !== undefined ? attackTarget.damage : 3;
+                            const monsterTotalDamage = monsterBaseDamage + (attackTarget.force || 0);
+                            const randomFactor = 0.75 + Math.random() * 0.5; // Variation de +/- 25%
+                            const monsterDamage = Math.max(1, Math.floor(monsterTotalDamage * randomFactor) - player.defense);
+                            player.life -= monsterDamage;
+                            
+                            if (typeof displayDamage === 'function') {
+                                displayDamage(player.px, player.py, monsterDamage, 'damage', true);
+                            }
+                        }
+                        
+                        // Vérifier si le monstre est mort
+                        if (attackTarget.hp <= 0) {
+                            if (typeof release === "function") release(attackTarget.x, attackTarget.y);
+                            
+                            // Gain d'XP
+                            if (typeof displayDamage === 'function') {
+                                displayDamage(player.px, player.py, `+${attackTarget.xpValue || 0} XP`, 'xp', true);
+                            }
+                            if (typeof gainXP === "function") gainXP(attackTarget.xpValue || 0);
+                            
+                            // Loot
+                            if (typeof triggerLoot === "function") triggerLoot(attackTarget);
+                            
+                            // Tuer le monstre
+                            if (typeof killMonster === "function") killMonster(attackTarget);
+                            
+                            attackTarget.aggro = false;
+                            attackTarget.aggroTarget = null;
+                            attackTarget = null;
+                            window.attackTarget = null;
+                        }
+                        
+                        player.lastAttack = currentTime;
+                    }
+                } else {
+                    // Si pas à portée, se déplacer vers le monstre
+                    if (typeof findPath === "function" && window.mapData) {
+                        let destinations = [
+                            {x: attackTarget.x+1, y: attackTarget.y},
+                            {x: attackTarget.x-1, y: attackTarget.y},
+                            {x: attackTarget.x, y: attackTarget.y+1},
+                            {x: attackTarget.x, y: attackTarget.y-1},
+                        ].filter(pos =>
+                            pos.x >= 0 && pos.x < mapData.width &&
+                            pos.y >= 0 && pos.y < mapData.height &&
+                            !window.isBlocked(pos.x, pos.y) &&
+                            !monsters.some(m => m !== attackTarget && m.x === pos.x && m.y === pos.y)
+                        );
+                        
+                        if (destinations.length) {
+                            let closestDestination = destinations[0];
+                            let closestDistance = Math.abs(destinations[0].x - player.x) + Math.abs(destinations[0].y - player.y);
+                            
+                            for (let i = 1; i < destinations.length; i++) {
+                                const distance = Math.abs(destinations[i].x - player.x) + Math.abs(destinations[i].y - player.y);
+                                if (distance < closestDistance) {
+                                    closestDistance = distance;
+                                    closestDestination = destinations[i];
+                                }
+                            }
+                            
+                            player.path = findPath(
+                                { x: player.x, y: player.y },
+                                closestDestination,
+                                window.isBlocked,
+                                mapData.width, mapData.height
+                            ) || [];
+                            nextStepToTarget();
+                        }
+                    }
+                }
+            }
+        }
+    });
 });
 
 function gainXP(amount) {
@@ -1420,8 +1656,8 @@ function drawBubble(ctx, bubble) {
     const bgHeight = textHeight + padding * 2;
     
     // Position (centré au-dessus du joueur, suit le mouvement)
-    const bgX = player.px + (TILE_SIZE - bgWidth) / 2;
-    const bgY = player.py - bgHeight - 15;
+    const bgX = player.px + (TILE_SIZE - bgWidth) / 2 + (window.mapOffsetX || 0);
+    const bgY = player.py - bgHeight - 15 + (window.mapOffsetY || 0);
     
     // Sauvegarder le contexte
     ctx.save();

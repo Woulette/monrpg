@@ -12,6 +12,33 @@ window.debugGridLayer3Enabled = false;
 window.blackScreenStartTime = null;
 window.blackScreenDuration = 250; // 250ms
 
+// Variables pour le centrage de la map
+window.mapOffsetX = 0;
+window.mapOffsetY = 0;
+
+// Fonction pour calculer les offsets de centrage de la map
+function calculateMapCentering() {
+    if (!window.mapData || !window.mapData.width || !window.mapData.height) {
+        window.mapOffsetX = 0;
+        window.mapOffsetY = 0;
+        return;
+    }
+    
+    const mapWidth = window.mapData.width * TILE_SIZE;
+    const mapHeight = window.mapData.height * TILE_SIZE;
+    
+    // Centrer la map donjon slime spécifiquement
+    if (window.currentMap === "mapdonjonslime") {
+        window.mapOffsetX = Math.max(0, (canvas.width - mapWidth) / 2);
+        window.mapOffsetY = Math.max(0, (canvas.height - mapHeight) / 2);
+        console.log(`🎯 Centrage de mapdonjonslime: offsetX=${window.mapOffsetX}, offsetY=${window.mapOffsetY}`);
+    } else {
+        // Pour les autres maps, pas de centrage
+        window.mapOffsetX = 0;
+        window.mapOffsetY = 0;
+    }
+}
+
 // Fonction pour charger une map
 async function loadMap(mapName) {
     try {
@@ -28,6 +55,9 @@ async function loadMap(mapName) {
         
         window.mapData = json;
         window.currentMap = mapName;
+        
+        // Calculer le centrage de la map
+        calculateMapCentering();
         
         // Plus de nettoyage des données de monstres - système supprimé
         
@@ -136,60 +166,47 @@ function initMap() {
 }
 
 function drawGameGrid() {
-    if (!window.mapData) return;
+    if (!window.debugGridEnabled || !window.mapData) return;
     
-    ctx.save();
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'; // Blanc plus visible (30% d'opacité)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.lineWidth = 1;
     
-    // Dessiner les lignes verticales
+    // Dessiner la grille avec les offsets de centrage
     for (let x = 0; x <= window.mapData.width; x++) {
         ctx.beginPath();
-        ctx.moveTo(x * TILE_SIZE, 0);
-        ctx.lineTo(x * TILE_SIZE, window.mapData.height * TILE_SIZE);
+        ctx.moveTo(x * TILE_SIZE + window.mapOffsetX, window.mapOffsetY);
+        ctx.lineTo(x * TILE_SIZE + window.mapOffsetX, window.mapData.height * TILE_SIZE + window.mapOffsetY);
         ctx.stroke();
     }
     
-    // Dessiner les lignes horizontales
     for (let y = 0; y <= window.mapData.height; y++) {
         ctx.beginPath();
-        ctx.moveTo(0, y * TILE_SIZE);
-        ctx.lineTo(window.mapData.width * TILE_SIZE, y * TILE_SIZE);
+        ctx.moveTo(window.mapOffsetX, y * TILE_SIZE + window.mapOffsetY);
+        ctx.lineTo(window.mapData.width * TILE_SIZE + window.mapOffsetX, y * TILE_SIZE + window.mapOffsetY);
         ctx.stroke();
     }
-    
-    ctx.restore();
 }
 
 function drawDebugGrid() {
     if (!window.debugGridEnabled || !window.mapData) return;
     
     ctx.save();
-    ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)'; // Rouge pour la grille de debug
     ctx.lineWidth = 1;
-    ctx.font = '10px Arial';
-    ctx.fillStyle = 'white';
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 2;
     
-    // Trouver le calque 2 par son ID
-    const layer2 = window.mapData.layers.find(layer => layer.id === 2);
-    if (!layer2) return;
+    // Dessiner la grille de debug avec les offsets de centrage
+    for (let x = 0; x <= window.mapData.width; x++) {
+        ctx.beginPath();
+        ctx.moveTo(x * TILE_SIZE + window.mapOffsetX, window.mapOffsetY);
+        ctx.lineTo(x * TILE_SIZE + window.mapOffsetX, window.mapData.height * TILE_SIZE + window.mapOffsetY);
+        ctx.stroke();
+    }
     
-    // Dessiner la grille et les IDs du calque 2
-    for (let y = 0; y < window.mapData.height; y++) {
-        for (let x = 0; x < window.mapData.width; x++) {
-            const idx = y * window.mapData.width + x;
-            const gid = layer2.data[idx];
-            
-            // Dessiner la grille
-            ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-            
-            // Afficher l'ID de la tuile
-            if (gid !== 0) {
-                ctx.fillText(gid.toString(), x * TILE_SIZE + 2, y * TILE_SIZE + 12);
-            }
-        }
+    for (let y = 0; y <= window.mapData.height; y++) {
+        ctx.beginPath();
+        ctx.moveTo(window.mapOffsetX, y * TILE_SIZE + window.mapOffsetY);
+        ctx.lineTo(window.mapData.width * TILE_SIZE + window.mapOffsetX, y * TILE_SIZE + window.mapOffsetY);
+        ctx.stroke();
     }
     
     ctx.restore();
@@ -199,7 +216,7 @@ function drawDebugGridLayer1() {
     if (!window.debugGridLayer1Enabled || !window.mapData) return;
     
     ctx.save();
-    ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)'; // Vert pour calque 1
+    ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)'; // Vert pour le calque 1
     ctx.lineWidth = 1;
     ctx.font = '10px Arial';
     ctx.fillStyle = 'white';
@@ -210,18 +227,18 @@ function drawDebugGridLayer1() {
     const layer1 = window.mapData.layers.find(layer => layer.id === 1);
     if (!layer1) return;
     
-    // Dessiner la grille et les IDs du calque 1
+    // Dessiner la grille et les IDs du calque 1 avec les offsets de centrage
     for (let y = 0; y < window.mapData.height; y++) {
         for (let x = 0; x < window.mapData.width; x++) {
             const idx = y * window.mapData.width + x;
             const gid = layer1.data[idx];
             
-            // Dessiner la grille
-            ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            // Dessiner la grille avec les offsets
+            ctx.strokeRect(x * TILE_SIZE + window.mapOffsetX, y * TILE_SIZE + window.mapOffsetY, TILE_SIZE, TILE_SIZE);
             
             // Afficher l'ID de la tuile
             if (gid !== 0) {
-                ctx.fillText(gid.toString(), x * TILE_SIZE + 2, y * TILE_SIZE + 12);
+                ctx.fillText(gid.toString(), x * TILE_SIZE + window.mapOffsetX + 2, y * TILE_SIZE + window.mapOffsetY + 12);
             }
         }
     }
@@ -233,7 +250,7 @@ function drawDebugGridLayer3() {
     if (!window.debugGridLayer3Enabled || !window.mapData) return;
     
     ctx.save();
-    ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)'; // Bleu pour calque 3
+    ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)'; // Bleu pour le calque 3
     ctx.lineWidth = 1;
     ctx.font = '10px Arial';
     ctx.fillStyle = 'white';
@@ -244,18 +261,18 @@ function drawDebugGridLayer3() {
     const layer3 = window.mapData.layers.find(layer => layer.id === 3);
     if (!layer3) return;
     
-    // Dessiner la grille et les IDs du calque 3
+    // Dessiner la grille et les IDs du calque 3 avec les offsets de centrage
     for (let y = 0; y < window.mapData.height; y++) {
         for (let x = 0; x < window.mapData.width; x++) {
             const idx = y * window.mapData.width + x;
             const gid = layer3.data[idx];
             
-            // Dessiner la grille
-            ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            // Dessiner la grille avec les offsets
+            ctx.strokeRect(x * TILE_SIZE + window.mapOffsetX, y * TILE_SIZE + window.mapOffsetY, TILE_SIZE, TILE_SIZE);
             
             // Afficher l'ID de la tuile
             if (gid !== 0) {
-                ctx.fillText(gid.toString(), x * TILE_SIZE + 2, y * TILE_SIZE + 12);
+                ctx.fillText(gid.toString(), x * TILE_SIZE + window.mapOffsetX + 2, y * TILE_SIZE + window.mapOffsetY + 12);
             }
         }
     }
@@ -332,7 +349,7 @@ function drawMap() {
                     ctx.drawImage(
                         ts.image,
                         sx, sy, ts.tilewidth, ts.tileheight,
-                        x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE
+                        x * TILE_SIZE + window.mapOffsetX, y * TILE_SIZE + window.mapOffsetY, TILE_SIZE, TILE_SIZE
                     );
                 } else {
                     console.warn(`Image non chargée pour le tileset: ${ts.image ? ts.image.src : 'undefined'}`);
@@ -399,7 +416,7 @@ function drawMap() {
                     ctx.drawImage(
                         ts.image,
                         sx, sy, ts.tilewidth, ts.tileheight,
-                        x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE
+                        x * TILE_SIZE + window.mapOffsetX, y * TILE_SIZE + window.mapOffsetY, TILE_SIZE, TILE_SIZE
                     );
                 } else {
                     console.warn(`Image non chargée pour le tileset (calque 3): ${ts.image ? ts.image.src : 'undefined'}`);

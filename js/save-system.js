@@ -31,19 +31,90 @@ class SaveSystem {
         const saveData = {
             timestamp: Date.now(),
             player: {
+                // Position et mouvement
                 x: player.x,
                 y: player.y,
                 px: player.px,
                 py: player.py,
+                direction: player.direction,
+                frame: player.frame,
+                moving: player.moving,
+                moveTarget: player.moveTarget,
+                path: player.path,
+                
+                // Niveau et XP
                 level: player.level,
                 xp: player.xp,
                 xpToNextLevel: player.xpToNextLevel,
+                
+                // Vie
                 life: player.life,
                 maxLife: player.maxLife,
+                
+                // Statistiques de base
+                baseForce: player.baseForce,
+                baseIntelligence: player.baseIntelligence,
+                baseAgilite: player.baseAgilite,
+                baseDefense: player.baseDefense,
+                baseChance: player.baseChance,
+                baseVitesse: player.baseVitesse,
+                baseVie: player.baseVie,
+                
+                // Statistiques d'équipement
+                equipForce: player.equipForce,
+                equipIntelligence: player.equipIntelligence,
+                equipAgilite: player.equipAgilite,
+                equipDefense: player.equipDefense,
+                equipChance: player.equipChance,
+                equipVitesse: player.equipVitesse,
+                equipVie: player.equipVie,
+                
+                // Statistiques totales
+                force: player.force,
+                intelligence: player.intelligence,
+                agilite: player.agilite,
+                defense: player.defense,
+                chance: player.chance,
+                vitesse: player.vitesse,
+                vie: player.vie,
+                
+                // XP des statistiques
+                forceXp: player.forceXp,
+                intelligenceXp: player.intelligenceXp,
+                agiliteXp: player.agiliteXp,
+                defenseXp: player.defenseXp,
+                chanceXp: player.chanceXp,
+                vitesseXp: player.vitesseXp,
+                
+                // XP nécessaire pour le prochain niveau
+                forceXpToNext: player.forceXpToNext,
+                intelligenceXpToNext: player.intelligenceXpToNext,
+                agiliteXpToNext: player.agiliteXpToNext,
+                defenseXpToNext: player.defenseXpToNext,
+                chanceXpToNext: player.chanceXpToNext,
+                vitesseXpToNext: player.vitesseXpToNext,
+                
+                // Points de caractéristiques et monnaie
                 statPoints: player.statPoints,
-                stats: player.stats,
+                pecka: player.pecka,
+                
+                // État de combat
+                inCombat: player.inCombat,
+                lastCombatTime: player.lastCombatTime,
+                lastRegenTime: player.lastRegenTime,
+                
+                // Suivi automatique
+                autoFollow: player.autoFollow,
+                
+                // Système de mort et respawn
+                isDead: player.isDead,
+                deathTime: player.deathTime,
+                respawnTime: player.respawnTime,
                 spawnX: player.spawnX,
-                spawnY: player.spawnY
+                spawnY: player.spawnY,
+                
+                // Anciennes propriétés pour compatibilité
+                stats: player.stats
             },
             gameState: {
                 currentMap: window.currentMap,
@@ -76,19 +147,97 @@ class SaveSystem {
             
             // Restaurer les données du joueur
             if (data.player && typeof player !== 'undefined') {
+                // Position et mouvement
                 player.x = data.player.x;
                 player.y = data.player.y;
                 player.px = data.player.px;
                 player.py = data.player.py;
+                player.direction = data.player.direction || 0;
+                player.frame = data.player.frame || 0;
+                player.moving = data.player.moving || false;
+                player.moveTarget = data.player.moveTarget || { x: player.x, y: player.y };
+                player.path = data.player.path || [];
+                
+                // Niveau et XP
                 player.level = data.player.level;
                 player.xp = data.player.xp;
                 player.xpToNextLevel = data.player.xpToNextLevel;
+                
+                // Vie
                 player.life = data.player.life;
                 player.maxLife = data.player.maxLife;
+                
+                // Statistiques de base
+                player.baseForce = data.player.baseForce || 1;
+                player.baseIntelligence = data.player.baseIntelligence || 1;
+                player.baseAgilite = data.player.baseAgilite || 1;
+                player.baseDefense = data.player.baseDefense || 1;
+                player.baseChance = data.player.baseChance || 1;
+                player.baseVitesse = data.player.baseVitesse || 1;
+                player.baseVie = data.player.baseVie || 1;
+                
+                // Statistiques d'équipement
+                player.equipForce = data.player.equipForce || 0;
+                player.equipIntelligence = data.player.equipIntelligence || 0;
+                player.equipAgilite = data.player.equipAgilite || 0;
+                player.equipDefense = data.player.equipDefense || 0;
+                player.equipChance = data.player.equipChance || 0;
+                player.equipVitesse = data.player.equipVitesse || 0;
+                player.equipVie = data.player.equipVie || 0;
+                
+                // Statistiques totales
+                player.force = data.player.force || 1;
+                player.intelligence = data.player.intelligence || 1;
+                player.agilite = data.player.agilite || 1;
+                player.defense = data.player.defense || 1;
+                player.chance = data.player.chance || 1;
+                player.vitesse = data.player.vitesse || 1;
+                player.vie = data.player.vie || 1;
+                
+                // XP des statistiques
+                player.forceXp = data.player.forceXp || 0;
+                player.intelligenceXp = data.player.intelligenceXp || 0;
+                player.agiliteXp = data.player.agiliteXp || 0;
+                player.defenseXp = data.player.defenseXp || 0;
+                player.chanceXp = data.player.chanceXp || 0;
+                player.vitesseXp = data.player.vitesseXp || 0;
+                
+                // XP nécessaire pour le prochain niveau
+                player.forceXpToNext = data.player.forceXpToNext || 10;
+                player.intelligenceXpToNext = data.player.intelligenceXpToNext || 10;
+                player.agiliteXpToNext = data.player.agiliteXpToNext || 10;
+                player.defenseXpToNext = data.player.defenseXpToNext || 10;
+                player.chanceXpToNext = data.player.chanceXpToNext || 10;
+                player.vitesseXpToNext = data.player.vitesseXpToNext || 50;
+                
+                // Points de caractéristiques et monnaie
                 player.statPoints = data.player.statPoints;
-                player.stats = data.player.stats;
+                player.pecka = data.player.pecka || 0;
+                
+                // État de combat
+                player.inCombat = data.player.inCombat || false;
+                player.lastCombatTime = data.player.lastCombatTime || 0;
+                player.lastRegenTime = data.player.lastRegenTime || 0;
+                
+                // Suivi automatique
+                player.autoFollow = data.player.autoFollow || false;
+                
+                // Système de mort et respawn
+                player.isDead = data.player.isDead || false;
+                player.deathTime = data.player.deathTime || 0;
+                player.respawnTime = data.player.respawnTime || 3000;
                 player.spawnX = data.player.spawnX;
                 player.spawnY = data.player.spawnY;
+                
+                // Anciennes propriétés pour compatibilité
+                if (data.player.stats) {
+                    player.stats = data.player.stats;
+                }
+                
+                // Recalculer les stats totales pour s'assurer qu'elles sont cohérentes
+                if (typeof window.recalculateTotalStats === 'function') {
+                    window.recalculateTotalStats();
+                }
             }
 
             // Restaurer les infos du personnage

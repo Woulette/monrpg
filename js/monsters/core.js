@@ -45,11 +45,10 @@ function initMonsters() {
         if (currentMap && (currentMap === "mapdonjonslime" || currentMap.includes("slime"))) {
             console.log("Map slime détectée, création de slimes uniquement...");
             createSlimes(8); // 8 slimes sur la map slime
-        }
-    
-    // Créer les corbeaux UNIQUEMENT pour les autres maps (pas mapdonjonslime)
-    console.log("Création de nouveaux corbeaux...");
-    for (let i = 0; i < 8; i++) {
+        } else if (currentMap && (currentMap === "map1" || currentMap === "map2" || currentMap === "map3")) {
+                         // Créer les corbeaux UNIQUEMENT pour les maps 1, 2 et 3
+             console.log("Map normale détectée (map1/2/3), création de corbeaux...");
+             for (let i = 0; i < 10; i++) {
         // Générer une position aléatoire sur toute la map
         let sx, sy;
         let attempts = 0;
@@ -78,6 +77,12 @@ function initMonsters() {
         const baseXp = 10;
         const hpMultiplier = 1 + (level - 1) * 0.2; // +20% par niveau
         const xpMultiplier = 1 + (level - 1) * 0.3; // +30% par niveau
+        
+        // Statistiques de force et défense pour les corbeaux
+        const baseForce = 4;
+        const baseDefense = 2;
+        const forceMultiplier = 1 + (level - 1) * 0.15; // +15% par niveau
+        const defenseMultiplier = 1 + (level - 1) * 0.1; // +10% par niveau
         
         const newMonster = {
             id: i + 1,
@@ -112,7 +117,10 @@ function initMonsters() {
             xpValue: Math.floor(baseXp * xpMultiplier),
             isDead: false,
             deathTime: 0,
-            respawnTime: RESPAWN_DELAY
+            respawnTime: RESPAWN_DELAY,
+            // Nouvelles statistiques de force et défense
+            force: Math.floor(baseForce * forceMultiplier),
+            defense: Math.floor(baseDefense * defenseMultiplier)
         };
         
         monsters.push(newMonster);
@@ -123,8 +131,9 @@ function initMonsters() {
         }
         
         console.log(`Corbeau ${i + 1} créé à la position (${sx}, ${sy}) - Niveau ${level}`);
-    }
-    
+        } // Fin de la boucle for
+    } // Fin du else
+        
         console.log(`${monsters.length} monstres initialisés avec succès`);
         
         // Assigner l'image aux monstres si elle est déjà chargée
@@ -171,6 +180,12 @@ function createSlimes(count = 5) {
         const hpMultiplier = 1 + (level - 5) * 0.2; // +20% par niveau à partir du niveau 5
         const xpMultiplier = 1 + (level - 5) * 0.3; // +30% par niveau à partir du niveau 5
         
+        // Statistiques de force et défense pour les slimes
+        const baseForce = 7; // Plus de force que les corbeaux
+        const baseDefense = 4; // Plus de défense que les corbeaux
+        const forceMultiplier = 1 + (level - 5) * 0.2; // +20% par niveau à partir du niveau 5
+        const defenseMultiplier = 1 + (level - 5) * 0.15; // +15% par niveau à partir du niveau 5
+        
         const newSlime = {
             id: 200 + i + 1, // ID différent pour éviter les conflits
             name: "Slime",
@@ -204,7 +219,10 @@ function createSlimes(count = 5) {
             xpValue: Math.floor(baseXp * xpMultiplier),
             isDead: false,
             deathTime: 0,
-            respawnTime: RESPAWN_DELAY
+            respawnTime: RESPAWN_DELAY,
+            // Nouvelles statistiques de force et défense
+            force: Math.floor(baseForce * forceMultiplier),
+            defense: Math.floor(baseDefense * defenseMultiplier)
         };
         
         monsters.push(newSlime);
@@ -228,9 +246,9 @@ function spawnMaitreCorbeau() {
     const currentMap = window.currentMap;
     if (!currentMap) return;
     
-    // Le Maitrecorbeau ne peut pas spawner sur la map slime
-    if (currentMap === "mapdonjonslime" || (currentMap && currentMap.includes("slime"))) {
-        console.log("Maitrecorbeau ne peut pas spawner sur la map slime");
+    // Le Maitrecorbeau ne peut spawner que sur les maps 1, 2 et 3
+    if (currentMap !== "map1" && currentMap !== "map2" && currentMap !== "map3") {
+        console.log(`Maitrecorbeau ne peut pas spawner sur la map ${currentMap}`);
         return;
     }
     
@@ -252,6 +270,8 @@ function spawnMaitreCorbeau() {
     const level = 10; // Niveau élevé pour le boss
     const baseHp = 120;
     const baseXp = 500;
+    const baseForce = 20; // Force élevée pour le boss
+    const baseDefense = 15; // Défense élevée pour le boss
     monsters.push({
         id: 'MC' + Date.now(),
         name: "Maitrecorbeau",
@@ -287,9 +307,10 @@ function spawnMaitreCorbeau() {
         deathTime: 0,
         respawnTime: RESPAWN_DELAY,
         damage: 5, // Dégâts du Maitrecorbeau
-        force: 10,
+        force: baseForce,
         agilite: 10,
-        intelligence: 10
+        intelligence: 10,
+        defense: baseDefense
     });
     console.log(`Maitrecorbeau apparu sur ${currentMap} à la position (${sx}, ${sy}) !`);
     if (typeof assignMonsterImages === "function") {
@@ -308,7 +329,33 @@ function updateMonsterRespawn() {
         return;
     }
     
+    // Protection contre les données de map invalides
+    if (!currentMap) {
+        console.warn("Map actuelle invalide dans updateMonsterRespawn");
+        return;
+    }
+    
+    // Créer une liste des monstres à supprimer pour éviter les conflits d'itération
+    const monstersToRemove = [];
+    
+    // Première passe : identifier les monstres à supprimer et ceux à respawn
+    let processedCount = 0;
+    const maxProcessed = monsters.length; // Protection contre les boucles infinies
+    
     monsters.forEach(monster => {
+        if (!monster) return; // Protection contre les monstres invalides
+        processedCount++;
+        
+        if (processedCount > maxProcessed) {
+            console.warn("Trop de monstres traités, arrêt de la boucle pour éviter le freeze");
+            return;
+        }
+        
+        // Éviter de traiter les monstres en cours de mort
+        if (monster.isBeingKilled) {
+            return;
+        }
+        
         if (monster.isDead && currentTime - monster.deathTime >= monster.respawnTime) {
             
             // VÉRIFICATION CRUCIALE : Ne respawn que les monstres du bon type selon la map
@@ -316,24 +363,21 @@ function updateMonsterRespawn() {
                 // Sur mapdonjonslime, seuls les slimes peuvent respawn
                 if (monster.type !== "slime") {
                     console.log(`🚫 ${monster.type} ${monster.id} supprimé de la map slime - respawn interdit`);
-                    // Supprimer complètement le monstre de la liste
-                    const index = monsters.indexOf(monster);
-                    if (index > -1) {
-                        monsters.splice(index, 1);
-                    }
+                    monstersToRemove.push(monster);
+                    return;
+                }
+            } else if (currentMap === "map1" || currentMap === "map2" || currentMap === "map3") {
+                // Sur les maps 1, 2 et 3, seuls les corbeaux peuvent respawn
+                if (monster.type !== "crow" && monster.type !== "maitrecorbeau") {
+                    console.log(`🚫 ${monster.type} ${monster.id} supprimé de la map normale - respawn interdit`);
+                    monstersToRemove.push(monster);
                     return;
                 }
             } else {
-                // Sur les autres maps, seuls les corbeaux peuvent respawn
-                if (monster.type !== "crow" && monster.type !== "maitrecorbeau") {
-                    console.log(`🚫 ${monster.type} ${monster.id} supprimé de la map normale - respawn interdit`);
-                    // Supprimer complètement le monstre de la liste
-                    const index = monsters.indexOf(monster);
-                    if (index > -1) {
-                        monsters.splice(index, 1);
-                    }
-                    return;
-                }
+                // Sur les autres maps (non reconnues), supprimer tous les monstres
+                console.log(`🚫 ${monster.type} ${monster.id} supprimé de la map non reconnue ${currentMap} - respawn interdit`);
+                monstersToRemove.push(monster);
+                return;
             }
             
             // Générer une nouvelle position de spawn aléatoire sur toute la map
@@ -373,12 +417,20 @@ function updateMonsterRespawn() {
                 const hpMultiplier = 1 + (newLevel - 5) * 0.2; // +20% par niveau à partir du niveau 5
                 const xpMultiplier = 1 + (newLevel - 5) * 0.3; // +30% par niveau à partir du niveau 5
                 
+                // Statistiques de force et défense pour les slimes
+                const baseForce = 7;
+                const baseDefense = 4;
+                const forceMultiplier = 1 + (newLevel - 5) * 0.2; // +20% par niveau à partir du niveau 5
+                const defenseMultiplier = 1 + (newLevel - 5) * 0.15; // +15% par niveau à partir du niveau 5
+                
                 // Respawn du slime
                 monster.isDead = false;
                 monster.level = newLevel;
                 monster.hp = Math.floor(baseHp * hpMultiplier);
                 monster.maxHp = Math.floor(baseHp * hpMultiplier);
                 monster.xpValue = Math.floor(baseXp * xpMultiplier);
+                monster.force = Math.floor(baseForce * forceMultiplier);
+                monster.defense = Math.floor(baseDefense * defenseMultiplier);
             } else if (monster.type === "crow") {
                 // Générer un nouveau niveau aléatoire entre 1 et 4 pour les corbeaux
                 newLevel = Math.floor(Math.random() * 4) + 1;
@@ -389,12 +441,20 @@ function updateMonsterRespawn() {
                 const hpMultiplier = 1 + (newLevel - 1) * 0.2; // +20% par niveau
                 const xpMultiplier = 1 + (newLevel - 1) * 0.3; // +30% par niveau
                 
+                // Statistiques de force et défense pour les corbeaux
+                const baseForce = 4;
+                const baseDefense = 2;
+                const forceMultiplier = 1 + (newLevel - 1) * 0.15; // +15% par niveau
+                const defenseMultiplier = 1 + (newLevel - 1) * 0.1; // +10% par niveau
+                
                 // Respawn du corbeau
                 monster.isDead = false;
                 monster.level = newLevel;
                 monster.hp = Math.floor(baseHp * hpMultiplier);
                 monster.maxHp = Math.floor(baseHp * hpMultiplier);
                 monster.xpValue = Math.floor(baseXp * xpMultiplier);
+                monster.force = Math.floor(baseForce * forceMultiplier);
+                monster.defense = Math.floor(baseDefense * defenseMultiplier);
             } else {
                 // Type de monstre non reconnu, utiliser un niveau par défaut
                 newLevel = 1;
@@ -405,6 +465,8 @@ function updateMonsterRespawn() {
                 monster.hp = 15;
                 monster.maxHp = 15;
                 monster.xpValue = 10;
+                monster.force = 2;
+                monster.defense = 1;
             }
             
             // Mise à jour de la position pour tous les monstres
@@ -433,11 +495,36 @@ function updateMonsterRespawn() {
             }
         }
     });
+    
+    // Deuxième passe : supprimer les monstres invalides de manière sûre
+    if (monstersToRemove.length > 0) {
+        console.log(`🗑️ Suppression de ${monstersToRemove.length} monstres invalides`);
+        monstersToRemove.forEach(monsterToRemove => {
+            const index = monsters.indexOf(monsterToRemove);
+            if (index > -1) {
+                monsters.splice(index, 1);
+                console.log(`✅ Monstre ${monsterToRemove.type} ${monsterToRemove.id} supprimé avec succès`);
+            }
+        });
+        
+        // Sauvegarder l'état après nettoyage
+        if (window.saveMonstersForMap && currentMap) {
+            window.saveMonstersForMap(currentMap);
+        }
+    }
 }
 
 // Fonction pour tuer un monstre (appelée depuis player.js)
 function killMonster(monster) {
-    if (monster && !monster.isDead) {
+    // Protection contre les appels multiples sur le même monstre
+    if (!monster || monster.isDead || monster.isBeingKilled) {
+        return;
+    }
+    
+    // Marquer le monstre comme en cours de mort pour éviter les appels multiples
+    monster.isBeingKilled = true;
+    
+    try {
         monster.isDead = true;
         monster.deathTime = Date.now();
         monster.hp = 0;
@@ -449,9 +536,9 @@ function killMonster(monster) {
             }
             
             // Vérifier si on doit spawn un Maitrecorbeau sur cette map spécifique
-            // MAIS PAS sur la map slime
+            // UNIQUEMENT sur les maps 1, 2 et 3
             const currentMap = window.currentMap;
-            if (currentMap && currentMap !== "mapdonjonslime" && !currentMap.includes("slime")) {
+            if (currentMap && (currentMap === "map1" || currentMap === "map2" || currentMap === "map3")) {
                 const currentMapKillCount = monsters.filter(m => m.isDead && m.type === "crow").length;
                 console.log(`Corbeaux tués sur ${window.currentMap}: ${currentMapKillCount}`);
                 
@@ -474,6 +561,13 @@ function killMonster(monster) {
         // Sauvegarder l'état des monstres après la mort
         if (typeof window.saveMonstersForMap === "function" && window.currentMap) {
             window.saveMonstersForMap(window.currentMap);
+        }
+    } catch (error) {
+        console.error("Erreur lors de la mort du monstre:", error);
+    } finally {
+        // Toujours nettoyer le flag de mort en cours
+        if (monster) {
+            monster.isBeingKilled = false;
         }
     }
 }

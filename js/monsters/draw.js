@@ -95,8 +95,8 @@ function drawMonsters(ctx) {
             ctx.font = "bold 12px Arial";
             ctx.textAlign = "center";
             ctx.textBaseline = "bottom";
-            const textX = monster.px + offsetX + monsterSize / 2;
-            const textY = monster.py + offsetY - 8;
+            const textX = monster.px + offsetX + monsterSize / 2 + (window.mapOffsetX || 0);
+            const textY = monster.py + offsetY - 8 + (window.mapOffsetY || 0);
             // Calculer la différence de niveau
             const levelDiff = Math.abs((monster.level || 1) - (player.level || 1));
             // Choisir la couleur selon la différence de niveau
@@ -113,34 +113,49 @@ function drawMonsters(ctx) {
             ctx.drawImage(
                 monster.img,
                 0, 0, 48, 64,
-                monster.px + offsetX, monster.py + offsetY, monsterSize, monsterHeight
+                monster.px + offsetX + (window.mapOffsetX || 0), monster.py + offsetY + (window.mapOffsetY || 0), monsterSize, monsterHeight
             );
         } else if (monster.type === "slime") {
             // Animation du slime avec 4 frames (32x32 chaque frame)
             ctx.drawImage(
                 monster.img,
                 monster.frame * 32, 0, 32, 32,
-                monster.px + offsetX, monster.py + offsetY, monsterSize, monsterHeight
+                monster.px + offsetX + (window.mapOffsetX || 0), monster.py + offsetY + (window.mapOffsetY || 0), monsterSize, monsterHeight
             );
         } else {
             // Animation normale pour les corbeaux
             ctx.drawImage(
                 monster.img,
                 monster.frame * 32, 0, 32, 32,
-                monster.px + offsetX, monster.py + offsetY, monsterSize, monsterHeight
+                monster.px + offsetX + (window.mapOffsetX || 0), monster.py + offsetY + (window.mapOffsetY || 0), monsterSize, monsterHeight
             );
         }
 
         // Afficher la barre de vie SEULEMENT si le monstre est sélectionné/attaqué ou en aggro
         if (window.attackTarget === monster || monster.state === "aggro") {
             let barWidth = 32, barHeight = 5;
-            let barX = monster.px + offsetX, barY = monster.py + offsetY - 10;
+            let barX = monster.px + offsetX + (window.mapOffsetX || 0), barY = monster.py + offsetY - 10 + (window.mapOffsetY || 0);
             ctx.fillStyle = "black";
             ctx.fillRect(barX, barY, barWidth, barHeight);
             let hpRatio = monster.hp / monster.maxHp;
             ctx.fillStyle = "#44ff44";
             ctx.fillRect(barX + 1, barY + 1, (barWidth - 2) * hpRatio, barHeight - 2);
             // Pas de texte !
+        }
+        
+        // Effet de hover - bordure colorée quand la souris survole le monstre
+        if (window.hoveredMonster === monster) {
+            ctx.save();
+            ctx.strokeStyle = '#00ffff'; // Cyan pour l'effet de hover
+            ctx.lineWidth = 3;
+            ctx.setLineDash([5, 5]); // Ligne pointillée
+            ctx.strokeRect(
+                monster.px + offsetX + (window.mapOffsetX || 0) - 2, 
+                monster.py + offsetY + (window.mapOffsetY || 0) - 2, 
+                monsterSize + 4, 
+                monsterHeight + 4
+            );
+            ctx.restore();
         }
     });
 }
@@ -152,7 +167,7 @@ function drawMonsterInfo(ctx) {
     const infoX = 650;
     const infoY = 827;
     const infoWidth = 300;
-    const infoHeight = 80;
+    const infoHeight = 81; // Réduit pour que l'encadrement soit visible
 
     // Fond de la fiche
     ctx.save();
@@ -165,7 +180,7 @@ function drawMonsterInfo(ctx) {
     ctx.strokeRect(infoX, infoY, infoWidth, infoHeight);
 
     // Nom du monstre (centré)
-    ctx.font = "bold 22px Arial";
+    ctx.font = "bold 18px Arial";
     ctx.fillStyle = "#fff";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
@@ -173,9 +188,9 @@ function drawMonsterInfo(ctx) {
 
     // Barre de vie
     const barX = infoX + 16;
-    const barY = infoY + 42;
+    const barY = infoY + 38;
     const barWidth = infoWidth - 32;
-    const barHeight = 18;
+    const barHeight = 16;
     let ratio = Math.max(0, Math.min(1, attackTarget.hp / attackTarget.maxHp));
     ctx.fillStyle = "#222";
     ctx.fillRect(barX, barY, barWidth, barHeight);
@@ -193,6 +208,18 @@ function drawMonsterInfo(ctx) {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(`${attackTarget.hp} / ${attackTarget.maxHp} PV`, barX + barWidth / 2, barY + barHeight / 2);
+
+    // Statistiques de force et défense
+    ctx.font = "bold 12px Arial";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    
+    // Force et Défense sur la même ligne
+    ctx.fillStyle = "#ff6b6b";
+    ctx.fillText(`Force: ${attackTarget.force || 0}`, infoX + 16, infoY + 62);
+    
+    ctx.fillStyle = "#4ecdc4";
+    ctx.fillText(`Défense: ${attackTarget.defense || 0}`, infoX + 75, infoY + 62);
 
     // Bouton de fermeture (croix)
     const closeSize = 22;
@@ -219,21 +246,7 @@ function drawMonsterInfo(ctx) {
     ctx.restore();
 }
 
-// Gestion du clic sur la croix de fermeture
-if (!window._monsterInfoCloseHandler) {
-    window._monsterInfoCloseHandler = true;
-    document.addEventListener('click', function(e) {
-        if (!window.monsterInfoCloseBox || !window.attackTarget) return;
-        const rect = gameCanvas.getBoundingClientRect();
-        const mx = e.clientX - rect.left;
-        const my = e.clientY - rect.top;
-        const {x, y, w, h} = window.monsterInfoCloseBox;
-        if (mx >= x && mx <= x + w && my >= y && my <= y + h) {
-            window.attackTarget = null;
-            attackTarget = null;
-        }
-    });
-}
+// Le gestionnaire de clic pour la croix est maintenant dans player.js
 
 // Export global
 window.drawMonsters = drawMonsters;

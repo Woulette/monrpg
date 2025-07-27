@@ -16,12 +16,16 @@ function saveMonstersForMap(mapName) {
         // Sur les maps slime, sauvegarder UNIQUEMENT les slimes
         monstersToSave = window.monsters.filter(m => m.type === "slime" && !m.isDead);
         console.log(`🔵 ${monstersToSave.length} slimes sauvegardés pour ${mapName}`);
-    } else {
-        // Sur les autres maps, sauvegarder UNIQUEMENT les corbeaux et maitrecorbeaux
+    } else if (mapName === "map1" || mapName === "map2" || mapName === "map3") {
+        // Sur les maps 1, 2 et 3, sauvegarder UNIQUEMENT les corbeaux et maitrecorbeaux
         monstersToSave = window.monsters.filter(m => 
             (m.type === "crow" || m.type === "maitrecorbeau") && !m.isDead
         );
         console.log(`⚫ ${monstersToSave.length} corbeaux/maitrecorbeaux sauvegardés pour ${mapName}`);
+    } else {
+        // Sur les autres maps (non reconnues), ne sauvegarder aucun monstre
+        monstersToSave = [];
+        console.log(`🚫 Aucun monstre sauvegardé pour la map non reconnue ${mapName}`);
     }
     
     // Préparer les données à sauvegarder (sans les références d'images)
@@ -64,6 +68,7 @@ function saveMonstersForMap(mapName) {
         // Propriétés spéciales pour les maitrecorbeaux
         damage: monster.damage,
         force: monster.force,
+        defense: monster.defense,
         agilite: monster.agilite,
         intelligence: monster.intelligence
     }));
@@ -107,10 +112,28 @@ function loadMonstersForMap(mapName) {
             // Sur les maps slime, charger UNIQUEMENT les slimes
             validMonsters = mapSaves.filter(m => m.type === "slime");
             console.log(`🔵 ${validMonsters.length} slimes chargés pour ${mapName}`);
-        } else {
-            // Sur les autres maps, charger UNIQUEMENT les corbeaux et maitrecorbeaux
+        } else if (mapName === "map1" || mapName === "map2" || mapName === "map3") {
+            // Sur les maps 1, 2 et 3, charger UNIQUEMENT les corbeaux et maitrecorbeaux
             validMonsters = mapSaves.filter(m => m.type === "crow" || m.type === "maitrecorbeau");
             console.log(`⚫ ${validMonsters.length} corbeaux/maitrecorbeaux chargés pour ${mapName}`);
+        } else {
+            // Sur les autres maps (non reconnues), ne charger aucun monstre
+            validMonsters = [];
+            console.log(`🚫 Aucun monstre chargé pour la map non reconnue ${mapName}`);
+        }
+        
+        // Vérifier si tous les monstres sont morts
+        const aliveMonsters = validMonsters.filter(m => !m.isDead);
+        if (aliveMonsters.length === 0 && validMonsters.length > 0) {
+            console.log(`⚠️ Tous les monstres sont morts sur ${mapName}, pas de chargement`);
+            return false; // Ne pas charger si tous sont morts
+        }
+        
+        // Vérifier s'il y a assez de monstres vivants
+        const expectedCount = (mapName === "mapdonjonslime" || mapName.includes("slime")) ? 8 : 10;
+        if (aliveMonsters.length < expectedCount) {
+            console.log(`⚠️ Pas assez de monstres vivants sur ${mapName} (${aliveMonsters.length}/${expectedCount}), pas de chargement`);
+            return false; // Ne pas charger si pas assez de monstres vivants
         }
         
         if (validMonsters.length === 0) {
@@ -173,21 +196,33 @@ function cleanCorruptedSaveData() {
             const mapSaves = allSaves[mapName];
             
             if (mapName === "mapdonjonslime" || mapName.includes("slime")) {
-                // Sur les maps slime, supprimer les corbeaux
+                // Sur les maps slime, supprimer TOUS les corbeaux et ne garder que les slimes
                 const invalidMonsters = mapSaves.filter(m => m.type !== "slime");
                 if (invalidMonsters.length > 0) {
                     console.log(`🚫 Suppression de ${invalidMonsters.length} monstres invalides sur ${mapName}`);
                     allSaves[mapName] = mapSaves.filter(m => m.type === "slime");
                     hasCorruption = true;
                 }
-            } else {
-                // Sur les autres maps, supprimer les slimes
+                
+                // Si aucun slime, supprimer complètement la sauvegarde pour cette map
+                if (allSaves[mapName].length === 0) {
+                    console.log(`🗑️ Suppression complète des données pour ${mapName} (aucun slime valide)`);
+                    delete allSaves[mapName];
+                    hasCorruption = true;
+                }
+            } else if (mapName === "map1" || mapName === "map2" || mapName === "map3") {
+                // Sur les maps 1, 2 et 3, supprimer les slimes et ne garder que les corbeaux
                 const invalidMonsters = mapSaves.filter(m => m.type === "slime");
                 if (invalidMonsters.length > 0) {
                     console.log(`🚫 Suppression de ${invalidMonsters.length} monstres invalides sur ${mapName}`);
                     allSaves[mapName] = mapSaves.filter(m => m.type !== "slime");
                     hasCorruption = true;
                 }
+            } else {
+                // Sur les autres maps (non reconnues), supprimer tous les monstres
+                console.log(`🗑️ Suppression de tous les monstres sur la map non reconnue ${mapName}`);
+                delete allSaves[mapName];
+                hasCorruption = true;
             }
         });
         
@@ -237,6 +272,21 @@ function clearAllMonsterData() {
 (function() {
     console.log("🧹 Nettoyage automatique des données de monstres au démarrage");
     cleanCorruptedSaveData();
+    
+    // Forcer le nettoyage des données de mapdonjonslime au démarrage
+    try {
+        const savedData = localStorage.getItem('monsterSaves');
+        if (savedData) {
+            const allSaves = JSON.parse(savedData);
+            if (allSaves.mapdonjonslime) {
+                console.log("🗑️ Suppression forcée des données de mapdonjonslime au démarrage");
+                delete allSaves.mapdonjonslime;
+                localStorage.setItem('monsterSaves', JSON.stringify(allSaves));
+            }
+        }
+    } catch (error) {
+        console.error('Erreur lors du nettoyage forcé:', error);
+    }
 })();
 
 // Export global

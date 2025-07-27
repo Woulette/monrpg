@@ -173,11 +173,11 @@ function drawDamageEffects(ctx) {
             
             // Ombre pour la lisibilité
             ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-            ctx.fillText(effect.damage, effect.x + 1, effect.y + 1);
+            ctx.fillText(effect.damage, effect.x + 1 + (window.mapOffsetX || 0), effect.y + 1 + (window.mapOffsetY || 0));
             
             // Texte principal
             ctx.fillStyle = effect.color;
-            ctx.fillText(effect.damage, effect.x, effect.y);
+            ctx.fillText(effect.damage, effect.x + (window.mapOffsetX || 0), effect.y + (window.mapOffsetY || 0));
             
         } else if (effect.type === 'sprite_flash') {
             // Effet de changement de couleur du sprite - seulement sur les pixels non-transparents
@@ -188,7 +188,7 @@ function drawDamageEffects(ctx) {
             ctx.globalAlpha = alpha;
             ctx.globalCompositeOperation = 'multiply';
             ctx.fillStyle = effect.color;
-            ctx.fillRect(effect.x, effect.y, TILE_SIZE, TILE_SIZE);
+            ctx.fillRect(effect.x + (window.mapOffsetX || 0), effect.y + (window.mapOffsetY || 0), TILE_SIZE, TILE_SIZE);
             ctx.restore();
         } else if (effect.type === 'crit_flash') {
             // Effet spécial pour les coups critiques - explosion impressionnante
@@ -208,8 +208,8 @@ function drawDamageEffects(ctx) {
             for (let i = 0; i < numParticles; i++) {
                 const angle = (i / numParticles) * 2 * Math.PI;
                 const distance = explosionRadius * progress;
-                const particleX = effect.x + Math.cos(angle) * distance;
-                const particleY = effect.y + Math.sin(angle) * distance;
+                const particleX = effect.x + Math.cos(angle) * distance + (window.mapOffsetX || 0);
+                const particleY = effect.y + Math.sin(angle) * distance + (window.mapOffsetY || 0);
                 const particleSize = baseSize * (1 - progress * 0.3);
                 
                 // Couleurs variées
@@ -225,8 +225,8 @@ function drawDamageEffects(ctx) {
             for (let i = 0; i < innerParticles; i++) {
                 const angle = (i / innerParticles) * 2 * Math.PI;
                 const distance = innerRadius * progress * 1.5;
-                const particleX = effect.x + Math.cos(angle) * distance;
-                const particleY = effect.y + Math.sin(angle) * distance;
+                const particleX = effect.x + Math.cos(angle) * distance + (window.mapOffsetX || 0);
+                const particleY = effect.y + Math.sin(angle) * distance + (window.mapOffsetY || 0);
                 const particleSize = baseSize * 1.5 * (1 - progress * 0.7);
                 
                 ctx.fillStyle = '#ffffff';
@@ -240,7 +240,7 @@ function drawDamageEffects(ctx) {
             ctx.fillStyle = '#ffffff';
             ctx.globalAlpha = alpha * 0.8;
             ctx.beginPath();
-            ctx.arc(effect.x, effect.y, flashSize, 0, 2 * Math.PI);
+            ctx.arc(effect.x + (window.mapOffsetX || 0), effect.y + (window.mapOffsetY || 0), flashSize, 0, 2 * Math.PI);
             ctx.fill();
             
             ctx.restore();
@@ -257,8 +257,8 @@ function drawDamageEffects(ctx) {
             for (let i = 0; i < numParticles; i++) {
                 const angle = (i / numParticles) * 2 * Math.PI;
                 const distance = explosionRadius * progress;
-                const particleX = effect.x + Math.cos(angle) * distance;
-                const particleY = effect.y + Math.sin(angle) * distance;
+                const particleX = effect.x + Math.cos(angle) * distance + (window.mapOffsetX || 0);
+                const particleY = effect.y + Math.sin(angle) * distance + (window.mapOffsetY || 0);
                 const particleSize = baseSize * (1 - progress * 0.4);
                 ctx.fillStyle = colors[i % colors.length];
                 ctx.beginPath();
