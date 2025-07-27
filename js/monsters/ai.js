@@ -116,12 +116,48 @@ function getRandomPatrolDelay() {
 }
 
 function updateMonsters(ts) {
+    // Protection contre les timestamps invalides
+    if (!ts || ts < 0) {
+        console.warn("Timestamp invalide détecté, utilisation de Date.now()");
+        ts = Date.now();
+    }
+    
+    // Protection contre les boucles infinies
+    if (!window.mapData) return;
+    
+    // Protection contre les monstres invalides
+    if (!monsters || !Array.isArray(monsters)) {
+        console.warn("Liste de monstres invalide");
+        return;
+    }
+    
     for (let monster of monsters) {
+        // Protection contre les monstres invalides
+        if (!monster || typeof monster !== 'object') {
+            console.warn("Monstre invalide détecté, ignoré");
+            continue;
+        }
+        
         if (!monster.img || monster.hp <= 0) continue;
         
         // Mettre à jour l'alignement fluide si nécessaire
         if (typeof updateMonsterAlignment === 'function') {
             updateMonsterAlignment(monster);
+        }
+        
+        // Animation idle pour le slime (même quand il ne bouge pas)
+        if (monster.type === "slime" && !monster.moving) {
+            // Protection contre les boucles infinies
+            if (!monster.lastAnim || ts - monster.lastAnim > monster.animDelay) {
+                monster.frame = (monster.frame + 1) % 4;
+                monster.lastAnim = ts;
+                
+                // Protection supplémentaire : réinitialiser si l'animation tourne trop longtemps
+                if (ts - monster.lastAnim > 10000) { // 10 secondes max
+                    monster.lastAnim = ts;
+                    monster.frame = 0;
+                }
+            }
         }
         
         // Mouvement en cours : on ne touche pas au path sauf en aggro

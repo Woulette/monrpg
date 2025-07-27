@@ -15,10 +15,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         })
         .then(() => {
+            // Plus de nettoyage des données de monstres - système supprimé
+            
             // Initialize game systems
             initMap();
             initPlayer();
-            initMonsters();
+            // initMonsters() est maintenant appelé automatiquement dans loadMap()
+            // Nettoyage des données corrompues au démarrage
+            if (typeof window.cleanCorruptedSaveData === "function") {
+                window.cleanCorruptedSaveData();
+            }
             initInventory();
             initStats();
             initHUD();

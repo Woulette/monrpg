@@ -25,6 +25,8 @@ async function loadMap(mapName) {
         window.mapData = json;
         window.currentMap = mapName;
         
+        // Plus de nettoyage des données de monstres - système supprimé
+        
         // Charger les tilesets de la nouvelle map
         await loadTilesets(json.tilesets);
         
@@ -32,6 +34,18 @@ async function loadMap(mapName) {
         if (typeof window.updateBlockedGids === "function") {
             window.updateBlockedGids();
         }
+        
+        // Réinitialiser les monstres après le chargement de la map
+        if (typeof window.initMonsters === "function") {
+            window.initMonsters();
+        }
+        
+        // Sauvegarder les monstres après un délai pour s'assurer qu'ils sont créés
+        setTimeout(() => {
+            if (typeof window.saveMonstersForMap === "function") {
+                window.saveMonstersForMap(mapName);
+            }
+        }, 200);
         
         console.log(`Map ${mapName} chargée avec succès !`);
         return true;
@@ -45,10 +59,7 @@ async function loadMap(mapName) {
 function teleportPlayer(mapName, spawnX, spawnY) {
     console.log(`Téléportation vers ${mapName} à la position (${spawnX}, ${spawnY})`);
     
-    // Sauvegarder les monstres de la map actuelle avant de partir
-    if (typeof saveMonstersForMap === "function" && window.currentMap) {
-        saveMonstersForMap(window.currentMap);
-    }
+    // Plus de sauvegarde des monstres - système supprimé
     
     // Libérer l'ancienne position
     if (typeof release === "function") {
@@ -85,10 +96,7 @@ function teleportPlayer(mapName, spawnX, spawnY) {
                 occupy(player.x, player.y);
             }
             
-            // Charger les monstres pour la nouvelle map
-            if (typeof initMonsters === "function") {
-                initMonsters();
-            }
+            // Les monstres sont maintenant initialisés automatiquement dans loadMap()
             
             console.log(`Joueur téléporté vers ${mapName} !`);
             

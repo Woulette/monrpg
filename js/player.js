@@ -646,22 +646,51 @@ function updatePlayer(ts) {
             // Extraire le numéro de la map actuelle
             const currentMapNumber = parseInt(window.currentMap.replace('map', ''));
             
-            if (portalGid === 1) {
-                // Portail ID 1 → Map suivante, portail ID 2
-                destinationMap = `map${currentMapNumber + 1}`;
-                targetPortalId = 2;
-            } else if (portalGid === 2) {
-                // Portail ID 2 → Map précédente, portail ID 1
-                destinationMap = `map${currentMapNumber - 1}`;
-                targetPortalId = 1;
-            } else if (portalGid === 3) {
-                // Portail ID 3 → Map suivante, portail ID 4
-                destinationMap = `map${currentMapNumber + 1}`;
-                targetPortalId = 4;
-            } else if (portalGid === 4) {
-                // Portail ID 4 → Map précédente, portail ID 3
-                destinationMap = `map${currentMapNumber - 1}`;
-                targetPortalId = 3;
+            // Gestion spéciale pour la map 3
+            if (window.currentMap === "map3") {
+                if (portalGid === 1) {
+                    // Portail ID 1 → Map Slime
+                    destinationMap = "mapdonjonslime";
+                    targetPortalId = 2;
+                } else if (portalGid === 2) {
+                    // Portail ID 2 → Map 2
+                    destinationMap = "map2";
+                    targetPortalId = 1;
+                } else if (portalGid === 3) {
+                    // Portail ID 3 → Map 4 (si elle existe)
+                    destinationMap = `map${currentMapNumber + 1}`;
+                    targetPortalId = 4;
+                } else if (portalGid === 4) {
+                    // Portail ID 4 → Map 2
+                    destinationMap = `map${currentMapNumber - 1}`;
+                    targetPortalId = 3;
+                }
+            } else if (window.currentMap === "mapdonjonslime") {
+                // Gestion spéciale pour la map slime
+                if (portalGid === 2) {
+                    // Portail ID 2 → Map 3
+                    destinationMap = "map3";
+                    targetPortalId = 1;
+                }
+            } else {
+                // Logique générale pour les autres maps
+                if (portalGid === 1) {
+                    // Portail ID 1 → Map suivante, portail ID 2
+                    destinationMap = `map${currentMapNumber + 1}`;
+                    targetPortalId = 2;
+                } else if (portalGid === 2) {
+                    // Portail ID 2 → Map précédente, portail ID 1
+                    destinationMap = `map${currentMapNumber - 1}`;
+                    targetPortalId = 1;
+                } else if (portalGid === 3) {
+                    // Portail ID 3 → Map suivante, portail ID 4
+                    destinationMap = `map${currentMapNumber + 1}`;
+                    targetPortalId = 4;
+                } else if (portalGid === 4) {
+                    // Portail ID 4 → Map précédente, portail ID 3
+                    destinationMap = `map${currentMapNumber - 1}`;
+                    targetPortalId = 3;
+                }
             }
             if (destinationMap) {
                 // Détecter la direction d'entrée dans le portail
@@ -802,19 +831,7 @@ function updatePlayer(ts) {
                 }
             }
         }
-        // --- PORTAIL MAP3 → MAP2 ---
-        if (window.currentMap === "map3" && window.mapData) {
-            const layer4 = window.mapData.layers.find(layer => layer.id === 4);
-            if (layer4) {
-                const idx = player.y * window.mapData.width + player.x;
-                const gid = layer4.data[idx];
-                console.log('[DEBUG portail map3]', 'x:', player.x, 'y:', player.y, 'gid:', gid);
-                if (gid === 1) {
-                    teleportPlayer('map2', Math.floor(window.mapData.width/2), Math.floor(window.mapData.height/2));
-                    return;
-                }
-            }
-        }
+
     }
 }
 document.addEventListener('DOMContentLoaded', () => {

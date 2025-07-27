@@ -104,6 +104,13 @@ class SaveSystem {
                     loadMap(data.gameState.currentMap);
                 }
             }
+            
+            // Nettoyer les données de monstres si on charge une map slime
+            if (data.gameState && data.gameState.currentMap === "mapdonjonslime") {
+                if (typeof window.clearAllMonsterData === "function") {
+                    window.clearAllMonsterData();
+                }
+            }
 
             console.log('🎮 Partie chargée avec succès');
             this.showLoadSuccess();

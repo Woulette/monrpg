@@ -30,12 +30,27 @@ maitreCorbeauImg.onerror = () => {
     console.error("Erreur lors du chargement de l'image corbeauelite.png");
 };
 
+// Chargement de l'image du Slime
+const slimeImg = new Image();
+slimeImg.src = "assets/personnages/slime.png";
+slimeImg.onload = () => {
+    console.log("Image Slime chargée avec succès");
+    if (typeof assignMonsterImages === "function") {
+        assignMonsterImages();
+    }
+};
+slimeImg.onerror = () => {
+    console.error("Erreur lors du chargement de l'image slime.png");
+};
+
 // Fonction pour assigner l'image aux monstres (appelée après création des monstres)
 function assignMonsterImages() {
     if (window.monsters) {
         window.monsters.forEach(m => {
             if (m.type === "maitrecorbeau") {
                 m.img = maitreCorbeauImg;
+            } else if (m.type === "slime") {
+                m.img = slimeImg;
             } else {
                 m.img = corbeauImg;
             }
@@ -98,6 +113,13 @@ function drawMonsters(ctx) {
             ctx.drawImage(
                 monster.img,
                 0, 0, 48, 64,
+                monster.px + offsetX, monster.py + offsetY, monsterSize, monsterHeight
+            );
+        } else if (monster.type === "slime") {
+            // Animation du slime avec 4 frames (32x32 chaque frame)
+            ctx.drawImage(
+                monster.img,
+                monster.frame * 32, 0, 32, 32,
                 monster.px + offsetX, monster.py + offsetY, monsterSize, monsterHeight
             );
         } else {
