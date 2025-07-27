@@ -2,7 +2,7 @@
 const PLAYER_WIDTH = 32;
 const PLAYER_HEIGHT = 32;
 const TILE_SIZE = window.TILE_SIZE || 32;  // Utiliser la constante globale si possible
-const MOVE_SPEED = 5;
+const MOVE_SPEED = 1.5;
 
 // Initialisation du joueur
 const player = {
@@ -458,7 +458,12 @@ function updatePlayer(ts) {
             nextStepToTarget();
         } else {
             // Appliquer la vitesse du joueur (1 vitesse = +0.01 de vitesse de déplacement)
-            const currentMoveSpeed = MOVE_SPEED * (1 + (player.vitesse - 1) * 0.01);
+            let currentMoveSpeed = MOVE_SPEED * (1 + (player.vitesse - 1) * 0.01);
+            
+            // Ralentir le joueur sur la carte du donjon slime pour compenser la petite taille
+            if (window.currentMap && window.currentMap.includes('mapdonjonslime')) {
+                currentMoveSpeed *= 0.5; // Ralentir de 50%
+            }
             if (dx !== 0) player.px += currentMoveSpeed * Math.sign(dx);
             if (dy !== 0) player.py += currentMoveSpeed * Math.sign(dy);
             
@@ -472,10 +477,10 @@ function updatePlayer(ts) {
         attackTarget.hp > 0 &&
         player.life > 0
     ) {
-        // Maintenir l'aggro du monstre
-        attackTarget.aggro = true;
-        attackTarget.aggroTarget = player;
-        player.inCombat = true;
+        // L'aggro ne sera déclenché que lors d'une vraie attaque, pas juste une sélection
+        // attackTarget.aggro = true; // DÉPLACÉ vers la vraie attaque
+        // attackTarget.aggroTarget = player; // DÉPLACÉ vers la vraie attaque
+        // player.inCombat = true; // DÉPLACÉ vers la vraie attaque
 
         let dist = Math.abs(player.x - attackTarget.x) + Math.abs(player.y - attackTarget.y);
 
@@ -538,6 +543,11 @@ function updatePlayer(ts) {
                 // Prendre en compte la défense du monstre, minimum 1 dégât
                 const finalDamage = Math.max(1, baseDamage - (attackTarget.defense || 0));
                 attackTarget.hp -= finalDamage;
+                
+                // DÉCLENCHER L'AGGRO SEULEMENT LORS D'UNE VRAIE ATTAQUE
+                attackTarget.aggro = true;
+                attackTarget.aggroTarget = player;
+                player.inCombat = true;
                 // Déclenche le cooldown visuel du sort de base
                 if (typeof startSpellCooldown === 'function') {
                   startSpellCooldown('spell-slot-1', 1.0);
@@ -919,10 +929,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (clickedMonster) {
-            // Aligner le monstre sur sa case
-            if (typeof alignMonsterToGrid === 'function') {
-                alignMonsterToGrid(clickedMonster);
-            }
+            // SÉLECTION PASSIVE - Ne rien faire au monstre
+            // Le monstre continue exactement ce qu'il était en train de faire
             
             // Sélectionner le monstre (clic simple) - PAS de déplacement automatique
             attackTarget = clickedMonster;
@@ -1372,10 +1380,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (clickedMonster) {
-            // Aligner le monstre sur sa case
-            if (typeof alignMonsterToGrid === 'function') {
-                alignMonsterToGrid(clickedMonster);
-            }
+            // SÉLECTION PASSIVE - Ne rien faire au monstre
+            // Le monstre continue exactement ce qu'il était en train de faire
             
             // Sélectionner le monstre et activer le suivi automatique pour l'attaque
             attackTarget = clickedMonster;

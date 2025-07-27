@@ -167,16 +167,35 @@ function updateMonsters(ts) {
         let distToPlayer = Math.abs(player.x - monster.x) + Math.abs(player.y - monster.y);
         
         // Déclencher l'aggro si le monstre a été attaqué ET n'est pas en train de retourner
+        // ET seulement s'il y a eu une interaction de combat récente (pas juste une sélection)
         if (monster.aggro && monster.aggroTarget === player && distToPlayer <= AGGRO_RANGE && monster.state !== 'return') {
-            if (monster.state !== 'aggro') {
-                monster.state = 'aggro';
-                monster.lastCombat = ts; // Initialiser le timer de combat
-                console.log(`Monstre ${monster.id} entre en aggro`);
+            // Vérifier qu'il y a eu une vraie interaction de combat récente
+            if (monster.lastCombat && (ts - monster.lastCombat) < AGGRO_TIMEOUT) {
+                if (monster.state !== 'aggro') {
+                    monster.state = 'aggro';
+                    console.log(`Monstre ${monster.id} entre en aggro`);
+                }
+            } else {
+                // Si pas d'interaction récente, réinitialiser l'aggro
+                monster.aggro = false;
+                monster.aggroTarget = null;
             }
         }
         
         // --- AGGRO ---
         if (monster.state === 'aggro') {
+            // Vérifier qu'il y a eu une vraie interaction de combat récente
+            if (!monster.lastCombat || (ts - monster.lastCombat) >= AGGRO_TIMEOUT) {
+                // Pas d'interaction récente, sortir de l'aggro et retourner à la patrouille normale
+                monster.state = 'idle';
+                monster.aggro = false;
+                monster.aggroTarget = null;
+                monster.movePath = [];
+                monster.moving = false;
+                monster.nextPatrolTime = ts + getRandomPatrolDelay();
+                continue;
+            }
+            
             // Délock si joueur mort ou trop loin (fail-safe)
             if (player.life <= 0 || distToPlayer > DEAGGRO_RANGE) {
                 monster.state = 'return';
@@ -191,8 +210,8 @@ function updateMonsters(ts) {
             if (distToPlayer === 1) {
                 // Mettre à jour le timer de combat pour maintenir l'aggro
                 monster.lastCombat = ts;
-                monster.movePath = [];
-                monster.moving = false;
+                // Ne pas arrêter le monstre s'il est juste sélectionné, seulement s'il attaque
+                // Le monstre peut continuer à bouger même adjacent au joueur
                 continue;
             }
             // Délock par timeout (8 secondes sans combat) peu importe la distance, sauf si le joueur vient d'être attaqué
@@ -252,7 +271,6 @@ function updateMonsters(ts) {
                 monster.nextPatrolTime = ts + getRandomPatrolDelay();
                 monster.movePath = [];
                 monster.moving = false;
-                console.log(`Monstre ${monster.id} est retourné à sa position initiale`);
                 continue;
             }
             if (!monster.moving || !monster.movePath || monster.movePath.length === 0) {
