@@ -134,18 +134,8 @@ document.addEventListener("DOMContentLoaded", function() {
                         recalculateTotalStats();
                     }
                     
-                    // Recalculer l'XP nécessaire pour le prochain niveau de cette stat
-                    const xpToNextProp = statName + 'XpToNext';
-                    if (player[xpToNextProp] !== undefined) {
-                        // Réinitialiser l'XP nécessaire selon la nouvelle valeur de la stat de base
-                        const baseStatName = statName === 'vitesse' ? 'baseVitesse' : 'base' + statName.charAt(0).toUpperCase() + statName.slice(1);
-                        let baseXP = statName === 'vitesse' ? 50 : 10;
-                        for (let i = 1; i < player[baseStatName]; i++) {
-                            baseXP = Math.floor(baseXP * 1.2);
-                        }
-                        player[xpToNextProp] = baseXP;
-                        console.log(`${statName} de base niveau ${player[baseStatName]}, XP nécessaire: ${player[xpToNextProp]}`);
-                    }
+                    // Note: L'XP nécessaire pour les stats de combat n'est plus recalculé ici
+                    // pour éviter que les stats modulables influencent la progression des stats permanentes
                     
                     updateStatsModalDisplay();
                     updateStatsDisplay(); // Mettre à jour aussi l'inventaire
@@ -175,17 +165,8 @@ document.addEventListener("DOMContentLoaded", function() {
                         recalculateTotalStats();
                     }
                     
-                    // Recalculer l'XP nécessaire pour le prochain niveau de cette stat
-                    const xpToNextProp = statName + 'XpToNext';
-                    if (player[xpToNextProp] !== undefined) {
-                        // Réinitialiser l'XP nécessaire selon la nouvelle valeur de la stat de base
-                        let baseXP = statName === 'vitesse' ? 50 : 10;
-                        for (let i = 1; i < player[baseStatName]; i++) {
-                            baseXP = Math.floor(baseXP * 1.2);
-                        }
-                        player[xpToNextProp] = baseXP;
-                        console.log(`${statName} de base niveau ${player[baseStatName]}, XP nécessaire: ${player[xpToNextProp]}`);
-                    }
+                    // Note: L'XP nécessaire pour les stats de combat n'est plus recalculé ici
+                    // pour éviter que les stats modulables influencent la progression des stats permanentes
                     
                     updateStatsModalDisplay();
                     updateStatsDisplay(); // Mettre à jour aussi l'inventaire
@@ -455,17 +436,16 @@ function updateStatsDisplay() {
     
     const stats = ['force', 'intelligence', 'agilite', 'defense', 'chance'];
     stats.forEach(stat => {
-        // Mettre à jour la valeur
+        // Mettre à jour la valeur totale
         const valueElement = document.getElementById(`stat-${stat}`);
         if (valueElement && player[stat] !== undefined) {
             valueElement.textContent = player[stat];
         }
         
-        // Mettre à jour la barre d'XP (sauf pour chance)
+        // Mettre à jour la barre d'XP et afficher la décomposition (sauf pour chance)
         if (stat !== 'chance') {
             const xpElement = document.getElementById(`stat-${stat}-xp`);
             const xpTextElement = document.getElementById(`stat-${stat}-xp-text`);
-            const xpToNextElement = document.getElementById(`stat-${stat}-xp-to-next`);
             
             if (xpElement && xpTextElement) {
                 const currentXP = player[stat + 'Xp'] || 0;
@@ -473,7 +453,19 @@ function updateStatsDisplay() {
                 const ratio = currentXP / xpToNext;
                 
                 xpElement.style.width = (ratio * 100) + '%';
-                xpTextElement.textContent = `${currentXP}/${xpToNext}`;
+                
+                // Afficher la décomposition des stats
+                const baseStatName = 'base' + stat.charAt(0).toUpperCase() + stat.slice(1);
+                const combatStatName = 'combat' + stat.charAt(0).toUpperCase() + stat.slice(1);
+                const baseValue = player[baseStatName] || 0;
+                const combatValue = player[combatStatName] || 0;
+                const equipValue = player[stat] - baseValue - combatValue;
+                
+                let statBreakdown = `Base: ${baseValue}`;
+                if (combatValue > 0) statBreakdown += ` | Combat: ${combatValue}`;
+                if (equipValue > 0) statBreakdown += ` | Équip: ${equipValue}`;
+                
+                xpTextElement.textContent = statBreakdown;
             }
         }
     });
@@ -524,11 +516,41 @@ function updateStatsModalDisplay() {
         const minusBtn = document.querySelector(`[data-stat="${stat}"].stat-minus`);
         const plusBtn = document.querySelector(`[data-stat="${stat}"].stat-plus`);
         
+        // Afficher la stat totale
         if (valueElement) valueElement.textContent = player[stat];
         
-        // Gestion des boutons
-        if (minusBtn) minusBtn.disabled = player[stat] <= 1;
-        if (plusBtn) plusBtn.disabled = player.statPoints <= 0;
+        // Gestion des boutons - seulement pour les stats modulables (base)
+        if (stat !== 'chance' && stat !== 'vitesse' && stat !== 'vie') {
+            const baseStatName = 'base' + stat.charAt(0).toUpperCase() + stat.slice(1);
+            const combatStatName = 'combat' + stat.charAt(0).toUpperCase() + stat.slice(1);
+            
+            // Les boutons ne peuvent modifier que les stats de base
+            if (minusBtn) minusBtn.disabled = player[baseStatName] <= 1;
+            if (plusBtn) plusBtn.disabled = player.statPoints <= 0;
+            
+            // Afficher la décomposition des stats
+            if (xpTextElement) {
+                const baseValue = player[baseStatName] || 0;
+                const combatValue = player[combatStatName] || 0;
+                const equipValue = player[stat] - baseValue - combatValue;
+                
+                let statBreakdown = `Base: ${baseValue}`;
+                if (combatValue > 0) statBreakdown += ` | Combat: ${combatValue}`;
+                if (equipValue > 0) statBreakdown += ` | Équip: ${equipValue}`;
+                
+                xpTextElement.textContent = statBreakdown;
+            }
+        } else {
+            // Pour chance, vitesse, vie - pas de modification
+            if (minusBtn) minusBtn.disabled = true;
+            if (plusBtn) plusBtn.disabled = true;
+            
+            if (xpTextElement) {
+                if (stat === 'chance') xpTextElement.textContent = "Équipement";
+                else if (stat === 'vitesse') xpTextElement.textContent = "Caractéristiques";
+                else if (stat === 'vie') xpTextElement.textContent = "Vie";
+            }
+        }
         
         if (stat === 'chance' || stat === 'vitesse' || stat === 'vie') {
             if (xpTextElement) xpTextElement.textContent = stat === 'chance' ? "Équipement" : stat === 'vitesse' ? "Caractéristiques" : "Vie";

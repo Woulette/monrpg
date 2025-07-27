@@ -60,6 +60,15 @@ class SaveSystem {
                 baseVitesse: player.baseVitesse,
                 baseVie: player.baseVie,
                 
+                // Stats gagnées par l'XP de combat (permanentes, non modulables)
+                combatForce: player.combatForce,
+                combatIntelligence: player.combatIntelligence,
+                combatAgilite: player.combatAgilite,
+                combatDefense: player.combatDefense,
+                combatChance: player.combatChance,
+                combatVitesse: player.combatVitesse,
+                combatVie: player.combatVie,
+                
                 // Statistiques d'équipement
                 equipForce: player.equipForce,
                 equipIntelligence: player.equipIntelligence,
@@ -175,6 +184,15 @@ class SaveSystem {
                 player.baseChance = data.player.baseChance || 1;
                 player.baseVitesse = data.player.baseVitesse || 1;
                 player.baseVie = data.player.baseVie || 1;
+                
+                // Stats gagnées par l'XP de combat (permanentes, non modulables)
+                player.combatForce = data.player.combatForce || 0;
+                player.combatIntelligence = data.player.combatIntelligence || 0;
+                player.combatAgilite = data.player.combatAgilite || 0;
+                player.combatDefense = data.player.combatDefense || 0;
+                player.combatChance = data.player.combatChance || 0;
+                player.combatVitesse = data.player.combatVitesse || 0;
+                player.combatVie = data.player.combatVie || 0;
                 
                 // Statistiques d'équipement
                 player.equipForce = data.player.equipForce || 0;

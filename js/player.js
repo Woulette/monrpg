@@ -38,7 +38,7 @@ const player = {
     equipVitesse: 0,
     equipVie: 0, // Bonus de vie via équipement
     
-    // Statistiques totales (affichées) = base + équipement
+    // Statistiques totales (affichées) = base + combat + équipement
     force: 1,
     intelligence: 1,
     agilite: 1,
@@ -46,6 +46,15 @@ const player = {
     chance: 1,
     vitesse: 1,
     vie: 1, // Stat totale de vie
+    
+    // Stats gagnées par l'XP de combat (permanentes, non modulables)
+    combatForce: 0,
+    combatIntelligence: 0,
+    combatAgilite: 0,
+    combatDefense: 0,
+    combatChance: 0,
+    combatVitesse: 0,
+    combatVie: 0,
     
     // XP des statistiques de base
     forceXp: 0,
@@ -61,8 +70,8 @@ const player = {
     defenseXpToNext: 10,
     chanceXpToNext: 10,
     vitesseXpToNext: 50, // 5 points de caractéristique = +1 vitesse
-    // Points de caractéristiques à distribuer
-    statPoints: 10, // Points de test pour tester la vitesse
+    // Points de caractéristiques à distribuer (modulables)
+    statPoints: 0, // Démarrage avec 0 point
     // Monnaie
     pecka: 0,
     // État de combat
@@ -131,6 +140,15 @@ function resetPlayer() {
     player.baseVitesse = 1;
     player.baseVie = 1;
     
+    // Réinitialiser les stats de combat (permanentes)
+    player.combatForce = 0;
+    player.combatIntelligence = 0;
+    player.combatAgilite = 0;
+    player.combatDefense = 0;
+    player.combatChance = 0;
+    player.combatVitesse = 0;
+    player.combatVie = 0;
+    
     // Réinitialiser les statistiques d'équipement
     player.equipForce = 0;
     player.equipIntelligence = 0;
@@ -157,7 +175,7 @@ function resetPlayer() {
     player.vitesseXpToNext = 50;
     
     // Réinitialiser les points de caractéristiques
-    player.statPoints = 10;
+    player.statPoints = 0; // Démarrage avec 0 point
     
     // Réinitialiser la monnaie
     player.pecka = 0;
@@ -243,13 +261,14 @@ function findMonsterInRadius(mx, my, radius) {
 
 // Fonction pour recalculer les stats totales
 function recalculateTotalStats() {
-    player.force = player.baseForce + player.equipForce;
-    player.intelligence = player.baseIntelligence + player.equipIntelligence;
-    player.agilite = player.baseAgilite + player.equipAgilite;
-    player.defense = player.baseDefense + player.equipDefense;
-    player.chance = player.baseChance + player.equipChance;
-    player.vitesse = player.baseVitesse + player.equipVitesse;
-    player.vie = player.baseVie + player.equipVie;
+    // Stats totales = Base (modulables) + Combat (permanentes) + Équipement
+    player.force = player.baseForce + player.combatForce + player.equipForce;
+    player.intelligence = player.baseIntelligence + player.combatIntelligence + player.equipIntelligence;
+    player.agilite = player.baseAgilite + player.combatAgilite + player.equipAgilite;
+    player.defense = player.baseDefense + player.combatDefense + player.equipDefense;
+    player.chance = player.baseChance + player.combatChance + player.equipChance;
+    player.vitesse = player.baseVitesse + player.combatVitesse + player.equipVitesse;
+    player.vie = player.baseVie + player.combatVie + player.equipVie;
 }
 
 // Rendre la fonction accessible globalement
@@ -267,9 +286,9 @@ function gainStatXP(statName, amount) {
         // Vérifier si la stat monte
         while (player[xpProp] >= player[xpToNextProp]) {
             player[xpProp] -= player[xpToNextProp];
-            // Modifier la stat de base au lieu de la stat totale
-            const baseStatName = 'base' + statName.charAt(0).toUpperCase() + statName.slice(1);
-            player[baseStatName]++;
+            // Modifier la stat de combat (permanente, non modulable)
+            const combatStatName = 'combat' + statName.charAt(0).toUpperCase() + statName.slice(1);
+            player[combatStatName]++;
             
             // Recalculer les stats totales
             recalculateTotalStats();
