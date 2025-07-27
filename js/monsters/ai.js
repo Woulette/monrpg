@@ -107,7 +107,7 @@ function moveMonsters(ts) {
 const PATROL_DELAY_MIN = 3000; // ms minimum entre chaque patrouille
 const PATROL_DELAY_MAX = 10000; // ms maximum entre chaque patrouille
 const AGGRO_RANGE = 8;     // distance d'aggro
-const DEAGGRO_RANGE = 15;  // distance de délock (augmenté)
+const DEAGGRO_RANGE = 20;  // distance de délock (augmenté)
 const AGGRO_TIMEOUT = 8000; // ms sans combat pour délock
 
 // Fonction pour générer un délai de patrouille aléatoire
@@ -162,13 +162,25 @@ function updateMonsters(ts) {
         
         // Mouvement en cours : on ne touche pas au path sauf en aggro
         if (monster.moving && monster.state !== 'aggro') continue;
-
-        // --- AGGRO ---
+        
+        // --- DÉTECTION AGGRO ---
         let distToPlayer = Math.abs(player.x - monster.x) + Math.abs(player.y - monster.y);
+        
+        // Déclencher l'aggro si le monstre a été attaqué ET n'est pas en train de retourner
+        if (monster.aggro && monster.aggroTarget === player && distToPlayer <= AGGRO_RANGE && monster.state !== 'return') {
+            if (monster.state !== 'aggro') {
+                monster.state = 'aggro';
+                monster.lastCombat = ts; // Initialiser le timer de combat
+                console.log(`Monstre ${monster.id} entre en aggro`);
+            }
+        }
+        
+        // --- AGGRO ---
         if (monster.state === 'aggro') {
             // Délock si joueur mort ou trop loin (fail-safe)
             if (player.life <= 0 || distToPlayer > DEAGGRO_RANGE) {
                 monster.state = 'return';
+                monster.aggro = false;
                 monster.aggroTarget = null;
                 monster.movePath = [];
                 monster.moving = false;
@@ -196,8 +208,9 @@ function updateMonsters(ts) {
             }
             // Délock par timeout (8 secondes sans combat) peu importe la distance, sauf si le joueur vient d'être attaqué
             if ((ts - monster.lastCombat) > AGGRO_TIMEOUT) {
-                console.log('Délock timeout pour le corbeau', monster.id);
+                console.log('Délock timeout pour le monstre', monster.id);
                 monster.state = 'return';
+                monster.aggro = false;
                 monster.aggroTarget = null;
                 monster.movePath = [];
                 monster.moving = false;
@@ -245,9 +258,12 @@ function updateMonsters(ts) {
         if (monster.state === 'return') {
             if (monster.x === monster.spawnX && monster.y === monster.spawnY) {
                 monster.state = 'idle';
+                monster.aggro = false;
+                monster.aggroTarget = null;
                 monster.nextPatrolTime = ts + getRandomPatrolDelay();
                 monster.movePath = [];
                 monster.moving = false;
+                console.log(`Monstre ${monster.id} est retourné à sa position initiale`);
                 continue;
             }
             if (!monster.moving || !monster.movePath || monster.movePath.length === 0) {
