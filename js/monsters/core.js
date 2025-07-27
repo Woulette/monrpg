@@ -6,6 +6,13 @@ const RESPAWN_DELAY = 30000; // 30 secondes en millisecondes
 
 const monsters = [];
 
+// Compteur global de corbeaux tués par map (ne se remet jamais à zéro)
+const crowKillCounts = {
+    map1: 0,
+    map2: 0,
+    map3: 0
+};
+
 // Le système de sauvegarde est maintenant dans savemonster.js
 // Nettoyage automatique au démarrage
 
@@ -171,20 +178,20 @@ function createSlimes(count = 5) {
             sy = Math.floor(Math.random() * slimePatrolZone.height);
         }
         
-        // Générer un niveau aléatoire entre 5 et 7
-        const level = Math.floor(Math.random() * 3) + 5; // 5, 6, ou 7
+        // Générer un niveau aléatoire entre 7 et 9
+        const level = Math.floor(Math.random() * 3) + 7; // 7, 8, ou 9
         
         // Stats du slime (niveaux plus élevés)
-        const baseHp = 25; // Plus de PV de base
-        const baseXp = 20; // Plus d'XP de base
-        const hpMultiplier = 1 + (level - 5) * 0.2; // +20% par niveau à partir du niveau 5
-        const xpMultiplier = 1 + (level - 5) * 0.3; // +30% par niveau à partir du niveau 5
+        const baseHp = 30; // Plus de PV de base pour les niveaux 7-9
+        const baseXp = 25; // Plus d'XP de base pour les niveaux 7-9
+        const hpMultiplier = 1 + (level - 7) * 0.25; // +25% par niveau à partir du niveau 7
+        const xpMultiplier = 1 + (level - 7) * 0.35; // +35% par niveau à partir du niveau 7
         
         // Statistiques de force et défense pour les slimes
-        const baseForce = 7; // Plus de force que les corbeaux
-        const baseDefense = 4; // Plus de défense que les corbeaux
-        const forceMultiplier = 1 + (level - 5) * 0.2; // +20% par niveau à partir du niveau 5
-        const defenseMultiplier = 1 + (level - 5) * 0.15; // +15% par niveau à partir du niveau 5
+        const baseForce = 9; // Plus de force que les corbeaux
+        const baseDefense = 6; // Plus de défense que les corbeaux
+        const forceMultiplier = 1 + (level - 7) * 0.25; // +25% par niveau à partir du niveau 7
+        const defenseMultiplier = 1 + (level - 7) * 0.2; // +20% par niveau à partir du niveau 7
         
         const newSlime = {
             id: 200 + i + 1, // ID différent pour éviter les conflits
@@ -318,6 +325,96 @@ function spawnMaitreCorbeau() {
     }
 }
 
+// Fonction pour faire apparaître un Corbeau d'élite
+function spawnCorbeauElite() {
+    const currentMap = window.currentMap;
+    if (!currentMap) return;
+    
+    // Le Corbeau d'élite ne peut spawner que sur les maps 1, 2 et 3
+    if (currentMap !== "map1" && currentMap !== "map2" && currentMap !== "map3") {
+        console.log(`Corbeau d'élite ne peut pas spawner sur la map ${currentMap}`);
+        return;
+    }
+    
+    let sx, sy;
+    let attempts = 0;
+    const maxAttempts = 100;
+    do {
+        sx = Math.floor(Math.random() * PATROL_ZONE.width);
+        sy = Math.floor(Math.random() * PATROL_ZONE.height);
+        attempts++;
+    } while (
+        attempts < maxAttempts && 
+        (window.isBlocked && window.isBlocked(sx, sy))
+    );
+    if (attempts >= maxAttempts) {
+        sx = Math.floor(Math.random() * PATROL_ZONE.width);
+        sy = Math.floor(Math.random() * PATROL_ZONE.height);
+    }
+    
+    const level = 5; // Niveau intermédiaire
+    const baseHp = 60; // 60 de vie comme demandé
+    const baseXp = 100; // 100 XP comme demandé
+    const baseForce = 15; // 15 de force comme demandé
+    const baseDefense = 10; // 10 de défense comme demandé
+    const TILE_SIZE = window.TILE_SIZE || 32; // Récupérer TILE_SIZE depuis window
+    
+    monsters.push({
+        id: 'CE' + Date.now(),
+        name: "Corbeau d'élite",
+        type: "corbeauelite",
+        level: level,
+        x: sx, y: sy,
+        px: sx * TILE_SIZE, py: sy * TILE_SIZE,
+        spawnX: sx, spawnY: sy,
+        frame: 0,
+        direction: 0,
+        img: null, // Sera assignée dans draw.js
+        animDelay: 100, // Animation de base (pour compatibilité)
+        idleAnimDelay: 200, // Animation idle 2x plus lente que walk
+        walkAnimDelay: 100, // Animation walk normale
+        lastAnim: 0,
+        state: "idle",
+        stateTime: 0,
+        movePath: [],
+        moving: false,
+        moveTarget: { x: sx, y: sy },
+        moveSpeed: 0.8,
+        moveCooldown: 0,
+        patrolZone: PATROL_ZONE,
+        hp: baseHp,
+        maxHp: baseHp,
+        aggro: false,
+        aggroTarget: null,
+        lastAttack: 0,
+        lastCombat: 0, // Initialisé à 0, sera mis à jour lors de la première attaque
+        stuckSince: 0,
+        returningHome: false,
+        lastPatrol: null,
+        xpValue: baseXp,
+        isDead: false,
+        deathTime: 0,
+        respawnTime: RESPAWN_DELAY,
+        damage: 8, // Dégâts du Corbeau d'élite
+        force: baseForce,
+        agilite: 8,
+        intelligence: 8,
+        defense: baseDefense
+    });
+    
+    // Ajouter les propriétés d'animation séparées pour le Corbeau d'élite
+    const newMonster = monsters[monsters.length - 1];
+    newMonster.idleFrame = 0;
+    newMonster.walkFrame = 0;
+    newMonster.lastIdleAnim = 0;
+    newMonster.lastWalkAnim = 0;
+    
+    console.log(`Corbeau d'élite apparu sur ${currentMap} à la position (${sx}, ${sy}) !`);
+    if (typeof assignMonsterImages === "function") {
+        assignMonsterImages();
+    }
+}
+
 // Fonction pour gérer le respawn des monstres
 function updateMonsterRespawn() {
     const currentTime = Date.now();
@@ -408,20 +505,20 @@ function updateMonsterRespawn() {
             // Gestion spéciale pour les slimes
             let newLevel;
             if (monster.type === "slime") {
-                // Générer un nouveau niveau aléatoire entre 5 et 7
-                newLevel = Math.floor(Math.random() * 3) + 5;
+                // Générer un nouveau niveau aléatoire entre 7 et 9
+                newLevel = Math.floor(Math.random() * 3) + 7;
                 
                 // Stats du slime (niveaux plus élevés)
-                const baseHp = 25;
-                const baseXp = 20;
-                const hpMultiplier = 1 + (newLevel - 5) * 0.2; // +20% par niveau à partir du niveau 5
-                const xpMultiplier = 1 + (newLevel - 5) * 0.3; // +30% par niveau à partir du niveau 5
+                const baseHp = 30;
+                const baseXp = 25;
+                const hpMultiplier = 1 + (newLevel - 7) * 0.25; // +25% par niveau à partir du niveau 7
+                const xpMultiplier = 1 + (newLevel - 7) * 0.35; // +35% par niveau à partir du niveau 7
                 
                 // Statistiques de force et défense pour les slimes
-                const baseForce = 7;
-                const baseDefense = 4;
-                const forceMultiplier = 1 + (newLevel - 5) * 0.2; // +20% par niveau à partir du niveau 5
-                const defenseMultiplier = 1 + (newLevel - 5) * 0.15; // +15% par niveau à partir du niveau 5
+                const baseForce = 9;
+                const baseDefense = 6;
+                const forceMultiplier = 1 + (newLevel - 7) * 0.25; // +25% par niveau à partir du niveau 7
+                const defenseMultiplier = 1 + (newLevel - 7) * 0.2; // +20% par niveau à partir du niveau 7
                 
                 // Respawn du slime
                 monster.isDead = false;
@@ -535,18 +632,31 @@ function killMonster(monster) {
                 release(monster.x, monster.y);
             }
             
-            // Vérifier si on doit spawn un Maitrecorbeau sur cette map spécifique
+            // Vérifier si on doit spawn un Corbeau d'élite ou Maitrecorbeau sur cette map spécifique
             // UNIQUEMENT sur les maps 1, 2 et 3
             const currentMap = window.currentMap;
             if (currentMap && (currentMap === "map1" || currentMap === "map2" || currentMap === "map3")) {
-                const currentMapKillCount = monsters.filter(m => m.isDead && m.type === "crow").length;
-                console.log(`Corbeaux tués sur ${window.currentMap}: ${currentMapKillCount}`);
+                // Incrémenter le compteur global pour cette map
+                crowKillCounts[currentMap]++;
+                console.log(`Corbeaux tués sur ${currentMap}: ${crowKillCounts[currentMap]}`);
                 
-                if (currentMapKillCount % 100 === 0) {
+                // Spawn Corbeau d'élite tous les 10 corbeaux tués
+                if (crowKillCounts[currentMap] % 10 === 0) {
+                    spawnCorbeauElite();
+                }
+                
+                // Spawn Maitrecorbeau tous les 100 corbeaux tués
+                if (crowKillCounts[currentMap] % 100 === 0) {
                     spawnMaitreCorbeau();
                 }
             }
             console.log(`Corbeau ${monster.id} tué sur ${window.currentMap}, respawn dans 30 secondes`);
+        } else if (monster.type === "corbeauelite") {
+            // Libérer la position occupée
+            if (typeof release === "function") {
+                release(monster.x, monster.y);
+            }
+            console.log(`Corbeau d'élite ${monster.id} tué sur ${window.currentMap}, respawn dans 30 secondes`);
         } else if (monster.type === "slime") {
             // Libérer la position occupée
             if (typeof release === "function") {
@@ -604,10 +714,12 @@ function updateMonsterAlignment(monster) {
 
 // Export global
 window.monsters = monsters;
+window.crowKillCounts = crowKillCounts;
 window.updateMonsterRespawn = updateMonsterRespawn;
 window.killMonster = killMonster;
 window.alignMonsterToGrid = alignMonsterToGrid;
 window.updateMonsterAlignment = updateMonsterAlignment; 
 window.spawnMaitreCorbeau = spawnMaitreCorbeau;
+window.spawnCorbeauElite = spawnCorbeauElite;
 window.createSlimes = createSlimes;
 window.initMonsters = initMonsters; 

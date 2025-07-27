@@ -479,6 +479,10 @@ function updatePlayer(ts) {
             // Appliquer la vitesse du joueur (1 vitesse = +0.01 de vitesse de déplacement)
             let currentMoveSpeed = MOVE_SPEED * (1 + (player.vitesse - 1) * 0.01);
             
+            // Bonus de vitesse par niveau (+0.01 par niveau au-dessus de 1)
+            const levelSpeedBonus = (player.level - 1) * 0.01;
+            currentMoveSpeed += levelSpeedBonus;
+            
             // Ralentir le joueur sur la carte du donjon slime pour compenser la petite taille
             if (window.currentMap && window.currentMap.includes('mapdonjonslime')) {
                 currentMoveSpeed *= 0.5; // Ralentir de 50%
@@ -566,6 +570,7 @@ function updatePlayer(ts) {
                 // DÉCLENCHER L'AGGRO SEULEMENT LORS D'UNE VRAIE ATTAQUE
                 attackTarget.aggro = true;
                 attackTarget.aggroTarget = player;
+                attackTarget.lastCombat = currentTime; // Mettre à jour le timer de combat pour maintenir l'aggro
                 player.inCombat = true;
                 // Déclenche le cooldown visuel du sort de base
                 if (typeof startSpellCooldown === 'function') {

@@ -7,7 +7,11 @@ corbeauImg.onload = () => {
     console.log("Image corbeau chargée avec succès");
     // Assigner l'image aux monstres existants
     if (window.monsters && window.monsters.length > 0) {
-        window.monsters.forEach(m => m.img = corbeauImg);
+        window.monsters.forEach(m => {
+            if (m.type === "crow") {
+                m.img = corbeauImg;
+            }
+        });
         console.log(`${window.monsters.length} monstres ont reçu l'image`);
     } else {
         console.log("Aucun monstre disponible pour recevoir l'image");
@@ -30,6 +34,19 @@ maitreCorbeauImg.onerror = () => {
     console.error("Erreur lors du chargement de l'image corbeauelite.png");
 };
 
+// Chargement de l'image du Corbeau d'élite
+const corbeauEliteImg = new Image();
+corbeauEliteImg.src = "assets/personnages/Corbeauchef.png";
+corbeauEliteImg.onload = () => {
+    console.log("Image Corbeau d'élite chargée avec succès");
+    if (typeof assignMonsterImages === "function") {
+        assignMonsterImages();
+    }
+};
+corbeauEliteImg.onerror = () => {
+    console.error("Erreur lors du chargement de l'image Corbeauchef.png");
+};
+
 // Chargement de l'image du Slime
 const slimeImg = new Image();
 slimeImg.src = "assets/personnages/slime.png";
@@ -49,10 +66,14 @@ function assignMonsterImages() {
         window.monsters.forEach(m => {
             if (m.type === "maitrecorbeau") {
                 m.img = maitreCorbeauImg;
+            } else if (m.type === "corbeauelite") {
+                m.img = corbeauEliteImg;
             } else if (m.type === "slime") {
                 m.img = slimeImg;
-            } else {
+            } else if (m.type === "crow") {
                 m.img = corbeauImg;
+            } else {
+                m.img = corbeauImg; // Fallback pour les autres types
             }
         });
         console.log(`${window.monsters.length} monstres ont reçu leur image (assignMonsterImages)`);
@@ -84,6 +105,11 @@ function drawMonsters(ctx) {
             monsterHeight = 64;
             offsetX = (TILE_SIZE / 2) - (monsterSize / 2);
             offsetY = TILE_SIZE - monsterHeight;
+        } else if (monster.type === "corbeauelite") {
+            monsterSize = 40;
+            monsterHeight = 48;
+            offsetX = (TILE_SIZE / 2) - (monsterSize / 2);
+            offsetY = TILE_SIZE - monsterHeight;
         } else {
             offsetX = (TILE_SIZE / 2) - (monsterSize / 2);
             offsetY = (TILE_SIZE / 2) - (monsterHeight / 2);
@@ -103,7 +129,7 @@ function drawMonsters(ctx) {
             if (levelDiff < 5) ctx.fillStyle = "#ffffff";
             else if (levelDiff <= 15) ctx.fillStyle = "#ffa500";
             else ctx.fillStyle = "#ff0000";
-            let nomAffiche = monster.name || (monster.type === "maitrecorbeau" ? "Maitrecorbeau" : "Corbeau");
+            let nomAffiche = monster.name || (monster.type === "maitrecorbeau" ? "Maitrecorbeau" : monster.type === "corbeauelite" ? "Corbeau d'élite" : "Corbeau");
             ctx.fillText(`${nomAffiche} Lv ${monster.level || 1}`, textX, textY);
             ctx.restore();
         }
@@ -115,6 +141,46 @@ function drawMonsters(ctx) {
                 0, 0, 48, 64,
                 monster.px + offsetX + (window.mapOffsetX || 0), monster.py + offsetY + (window.mapOffsetY || 0), monsterSize, monsterHeight
             );
+        } else if (monster.type === "corbeauelite") {
+            // Animation du Corbeau d'élite avec 8 frames (40x48 chaque frame)
+            // 1ère ligne (y=0) : 4 frames de marche (walk)
+            // 2ème ligne (y=48) : 4 frames d'idle
+            
+            const now = Date.now();
+            
+            // Initialiser les frames séparées si elles n'existent pas
+            if (monster.idleFrame === undefined) monster.idleFrame = 0;
+            if (monster.walkFrame === undefined) monster.walkFrame = 0;
+            
+            if (monster.moving) {
+                // Animation de marche - mettre à jour la frame de marche
+                if (!monster.lastWalkAnim || now - monster.lastWalkAnim > monster.walkAnimDelay) {
+                    monster.walkFrame = (monster.walkFrame + 1) % 4;
+                    monster.lastWalkAnim = now;
+                }
+                // Utiliser la frame de marche
+                let frameX = monster.walkFrame * 40;
+                let frameY = 0;
+                ctx.drawImage(
+                    monster.img,
+                    frameX, frameY, 40, 48,
+                    monster.px + offsetX + (window.mapOffsetX || 0), monster.py + offsetY + (window.mapOffsetY || 0), monsterSize, monsterHeight
+                );
+            } else {
+                // Animation d'idle - mettre à jour la frame d'idle
+                if (!monster.lastIdleAnim || now - monster.lastIdleAnim > monster.idleAnimDelay) {
+                    monster.idleFrame = (monster.idleFrame + 1) % 4;
+                    monster.lastIdleAnim = now;
+                }
+                // Utiliser la frame d'idle
+                let frameX = monster.idleFrame * 40;
+                let frameY = 48;
+                ctx.drawImage(
+                    monster.img,
+                    frameX, frameY, 40, 48,
+                    monster.px + offsetX + (window.mapOffsetX || 0), monster.py + offsetY + (window.mapOffsetY || 0), monsterSize, monsterHeight
+                );
+            }
         } else if (monster.type === "slime") {
             // Animation du slime avec 4 frames (32x32 chaque frame)
             ctx.drawImage(

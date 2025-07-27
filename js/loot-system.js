@@ -4,7 +4,8 @@
 function preloadLootImages() {
     const imagesToPreload = [
         'assets/objets/pattedecorbeau.png',
-        'assets/objets/plumedecorbeau.png'
+        'assets/objets/plumedecorbeau.png',
+        'assets/objets/certificadonjoncorbeau.png'
     ];
     
     imagesToPreload.forEach(src => {
@@ -41,6 +42,17 @@ const resourceDatabase = {
         rarity: 'common',
         stackable: true,
         maxStack: 99
+    },
+    'certificat_corbeau': {
+        id: 'certificat_corbeau',
+        name: 'Certificat de Rang Corbeau',
+        type: 'objet spécial',
+        category: 'certificat',
+        icon: 'assets/objets/certificadonjoncorbeau.png',
+        description: 'Un certificat prouvant votre valeur auprès des corbeaux mais vous donnant aussi accès au donjon slime.',
+        rarity: 'rare',
+        stackable: true,
+        maxStack: 99
     }
 };
 
@@ -65,6 +77,21 @@ const lootTables = {
             chance: 80, // 80% de chance
             minAmount: 3,
             maxAmount: 8
+        }
+    },
+    'corbeauelite': { // Type de monstre Corbeau d'élite
+        resources: [
+            {
+                id: 'certificat_corbeau',
+                chance: 100, // 100% de chance (drop garanti)
+                minQuantity: 1,
+                maxQuantity: 1
+            }
+        ],
+        pecka: {
+            chance: 100, // 100% de chance
+            minAmount: 10,
+            maxAmount: 20
         }
     }
 };

@@ -106,10 +106,10 @@ document.addEventListener("DOMContentLoaded", function() {
     // Gestion des boutons de statistiques
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('stat-btn')) {
-            const statName = e.target.dataset.stat;
-            const isPlus = e.target.classList.contains('stat-plus');
-            
-            if (isPlus) {
+                                  const statName = e.target.dataset.stat;
+                      const isPlus = e.target.classList.contains('stat-plus');
+                      
+                      if (isPlus) {
                 // Augmenter la statistique de base
                 if (player.statPoints > 0) {
                     // Gestion spéciale pour la vitesse : 5 points = +1 vitesse
