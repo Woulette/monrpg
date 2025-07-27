@@ -8,6 +8,10 @@ window.debugGridEnabled = false; // Désactivé par défaut
 window.debugGridLayer1Enabled = false;
 window.debugGridLayer3Enabled = false;
 
+// Variable pour l'écran noir de transition
+window.blackScreenStartTime = null;
+window.blackScreenDuration = 250; // 250ms
+
 // Fonction pour charger une map
 async function loadMap(mapName) {
     try {
@@ -40,12 +44,15 @@ async function loadMap(mapName) {
             window.initMonsters();
         }
         
+        // Démarrer l'écran noir de transition
+        window.blackScreenStartTime = Date.now();
+        
         // Sauvegarder les monstres après un délai pour s'assurer qu'ils sont créés
         setTimeout(() => {
             if (typeof window.saveMonstersForMap === "function") {
                 window.saveMonstersForMap(mapName);
             }
-        }, 200);
+        }, 250);
         
         console.log(`Map ${mapName} chargée avec succès !`);
         return true;
@@ -275,6 +282,22 @@ function drawMap() {
     if (!window.mapData) {
         console.log("drawMap appelé sans mapData !");
         return;
+    }
+    
+    // Vérifier si on doit afficher l'écran noir de transition
+    if (window.blackScreenStartTime) {
+        const currentTime = Date.now();
+        const elapsed = currentTime - window.blackScreenStartTime;
+        
+        if (elapsed < window.blackScreenDuration) {
+            // Afficher l'écran noir de transition
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            return; // Ne pas dessiner la map pendant l'écran noir
+        } else {
+            // Fin de l'écran noir, nettoyer
+            window.blackScreenStartTime = null;
+        }
     }
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
