@@ -2,7 +2,7 @@
 const PLAYER_WIDTH = 32;
 const PLAYER_HEIGHT = 32;
 const TILE_SIZE = window.TILE_SIZE || 32;  // Utiliser la constante globale si possible
-const MOVE_SPEED = 1.5;
+const MOVE_SPEED = 4;
 
 // Initialisation du joueur
 const player = {
@@ -21,7 +21,7 @@ const player = {
     maxLife: 50,
     life: 50,
     // Statistiques de base (modifiables avec points de caractéristiques)
-    baseForce: 1,
+    baseForce: 1000,
     baseIntelligence: 1,
     baseAgilite: 1,
     baseDefense: 1,
@@ -132,7 +132,7 @@ function resetPlayer() {
     player.life = 50;
     
     // Réinitialiser les statistiques de base
-    player.baseForce = 1;
+    player.baseForce = 100;
     player.baseIntelligence = 1;
     player.baseAgilite = 1;
     player.baseDefense = 1;
@@ -474,6 +474,11 @@ function updatePlayer(ts) {
             player.moving = false;
             player.frame = 0;
 
+            // Rafraîchir l'affichage des quêtes si la fenêtre est ouverte
+            if (typeof refreshQuestsOnPlayerMove === 'function') {
+                refreshQuestsOnPlayerMove();
+            }
+
             nextStepToTarget();
         } else {
             // Appliquer la vitesse du joueur (1 vitesse = +0.01 de vitesse de déplacement)
@@ -586,8 +591,8 @@ function updatePlayer(ts) {
                     alignMonsterToGrid(attackTarget);
                 }
 
-                // Riposte du monstre si vivant
-                if (attackTarget.hp > 0) {
+                // Riposte du monstre si vivant (sauf pour les slimes qui ont leur propre système d'attaque)
+                if (attackTarget.hp > 0 && attackTarget.type !== "slime") {
                     // Calcul des dégâts du monstre : dégâts de base + force du monstre avec variation de 25%
                     const monsterBaseDamage = attackTarget.damage !== undefined ? attackTarget.damage : 3;
                     const monsterTotalDamage = monsterBaseDamage + (attackTarget.force || 0);
@@ -1466,8 +1471,16 @@ document.addEventListener('DOMContentLoaded', () => {
         window.hoveredMonster = null;
     });
     
-    // Gestionnaire de touche espace pour attaquer le monstre sélectionné
+    // Gestionnaire de touches pour les interactions
     document.addEventListener('keydown', function(e) {
+        // Touche E pour interagir avec les PNJ
+        if (e.key === 'e' || e.key === 'E') {
+            if (typeof handlePNJInteraction === "function") {
+                handlePNJInteraction(e.key);
+            }
+        }
+        
+        // Touche espace pour attaquer le monstre sélectionné
         if (e.code === 'Space') {
             e.preventDefault(); // Empêcher le défilement de la page
             
@@ -1505,8 +1518,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             alignMonsterToGrid(attackTarget);
                         }
                         
-                        // Riposte du monstre s'il est encore vivant
-                        if (attackTarget.hp > 0) {
+                        // Riposte du monstre s'il est encore vivant (sauf pour les slimes qui ont leur propre système d'attaque)
+                        if (attackTarget.hp > 0 && attackTarget.type !== "slime") {
                             const monsterBaseDamage = attackTarget.damage !== undefined ? attackTarget.damage : 3;
                             const monsterTotalDamage = monsterBaseDamage + (attackTarget.force || 0);
                             const randomFactor = 0.75 + Math.random() * 0.5; // Variation de +/- 25%

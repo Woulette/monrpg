@@ -1,103 +1,129 @@
 // Système d'équipement - Mon RPG 2D
 
-// Équipement du joueur
-const playerEquipment = {
-    coiffe: null, // Correspond au slot dans le HTML
-    cape: null,
-    weapon: null,
-    armor: null
-};
-
 // Base de données des équipements
 const equipmentDatabase = {
-    'coiffe_simple': {
-        id: 'coiffe_simple',
-        name: 'Corbacoiffe',
+    // Coiffes
+    coiffe_corbeau: {
+        id: 'coiffe_corbeau',
+        name: 'Coiffe de Corbeau',
         type: 'coiffe',
-        slot: 'coiffe', // Correspond au slot dans le HTML
-        icon: 'assets/coiffecorbeau.png', // Image de la coiffe corbeau
+        slot: 'coiffe',
+        icon: 'assets/equipements/coiffes/coiffecorbeau.png',
+        description: 'Une coiffe mystérieuse qui vous donne l\'apparence d\'un corbeau.',
+        rarity: 'rare',
         stats: {
-            force: 1,
-            agilite: 1,
-            vie: 2,
-            chance: 2
-        },
-        description: 'Une coiffe simple qui augmente légèrement vos capacités.',
-        rarity: 'common',
-        stackable: false
+            force: 5,
+            defense: 3
+        }
     },
-    'cape_corbeau': {
+    
+    // Capes
+    cape_corbeau: {
         id: 'cape_corbeau',
-        name: 'Corbacape',
+        name: 'Cape de Corbeau',
         type: 'cape',
-        slot: 'cape', // Correspond au slot dans le HTML
-        icon: 'assets/capecorbeau.png', // Image de la cape corbeau
+        slot: 'cape',
+        icon: 'assets/equipements/capes/capecorbeau.png',
+        description: 'Une cape sombre qui vous permet de vous fondre dans l\'ombre.',
+        rarity: 'rare',
         stats: {
-            agilite: 1,
-            vie: 2,
-            chance: 2,
-            defense: 1
-        },
-        description: 'Une cape mystérieuse qui augmente vos capacités.',
-        rarity: 'common',
-        stackable: false
+            agilite: 8,
+            defense: 5
+        }
     },
-    'collier_corbeau': {
-        id: 'collier_corbeau',
-        name: 'Corbollier',
+    
+    // Amulettes
+    amulette_corbeau: {
+        id: 'amulette_corbeau',
+        name: 'Amulette de Corbeau',
         type: 'amulette',
-        slot: 'amulette', // Correspond au slot dans le HTML
-        icon: 'assets/colliercorbeau.png', // Image du collier corbeau
+        slot: 'amulette',
+        icon: 'assets/equipements/colliers/colliercorbeau.png',
+        description: 'Une amulette mystique qui renforce votre connexion avec les corbeaux.',
+        rarity: 'rare',
         stats: {
-            intelligence: 2,
-            vie: 1
-        },
-        description: 'Un collier mystérieux qui augmente l\'intelligence et la vie.',
-        rarity: 'common',
-        stackable: false
+            intelligence: 10,
+            chance: 5
+        }
     },
-    'anneau_corbeau': {
+    
+    // Anneaux
+    anneau_corbeau: {
         id: 'anneau_corbeau',
-        name: 'Corbaneau',
+        name: 'Anneau de Corbeau',
         type: 'anneau',
-        slot: 'anneau', // Correspond au slot dans le HTML
-        icon: 'assets/anneaucorbeau.png', // Image de l'anneau corbeau
+        slot: 'anneau',
+        icon: 'assets/equipements/anneaux/anneaucorbeau.png',
+        description: 'Un anneau enchanté qui vous donne la vision perçante d\'un corbeau.',
+        rarity: 'rare',
         stats: {
-            force: 1,
-            intelligence: 1,
-            vie: 1
-        },
-        description: 'Un anneau mystérieux qui augmente la force, l\'intelligence et la vie.',
-        rarity: 'common',
-        stackable: false
+            chance: 8,
+            agilite: 3
+        }
     },
-    'ceinture_corbeau': {
+    
+    // Ceintures
+    ceinture_corbeau: {
         id: 'ceinture_corbeau',
-        name: 'Corbature',
+        name: 'Ceinture de Corbeau',
         type: 'ceinture',
-        slot: 'ceinture', // Correspond au slot dans le HTML
-        icon: 'assets/ceinturecorbeau.png', // Image de la ceinture corbeau
+        slot: 'ceinture',
+        icon: 'assets/equipements/ceintures/ceinturecorbeau.png',
+        description: 'Une ceinture robuste qui renforce votre endurance.',
+        rarity: 'rare',
         stats: {
-            vie: 1,
-            chance: 2,
-            intelligence: 1
-        },
-        description: 'Une ceinture mystérieuse qui augmente la vie, la chance et l\'intelligence.',
-        rarity: 'common',
-        stackable: false
+            defense: 8,
+            vie: 20
+        }
     },
-    'bottes_corbeau': {
+    
+    // Bottes
+    bottes_corbeau: {
         id: 'bottes_corbeau',
-        name: 'Corbobotte',
+        name: 'Bottes de Corbeau',
         type: 'bottes',
-        slot: 'bottes', // Correspond au slot dans le HTML
-        icon: 'assets/bottecorbeau.png', // Image des bottes corbeau
+        slot: 'bottes',
+        icon: 'assets/equipements/bottes/bottecorbeau.png',
+        description: 'Des bottes légères qui vous permettent de marcher silencieusement.',
+        rarity: 'rare',
         stats: {
-            vitesse: 1
-        },
-        description: 'Des bottes mystérieuses qui augmentent la vitesse de déplacement de 0.01.',
+            vitesse: 10,
+            agilite: 5
+        }
+    },
+    
+    // Ressources (pour compatibilité avec le système de loot)
+    patte_corbeau: {
+        id: 'patte_corbeau',
+        name: 'Patte de Corbeau',
+        type: 'ressource',
+        icon: 'assets/objets/pattedecorbeau.png',
+        description: 'Une patte de corbeau mystérieuse.',
         rarity: 'common',
-        stackable: false
+        stackable: true,
+        maxStack: 99
+    },
+    
+    plume_corbeau: {
+        id: 'plume_corbeau',
+        name: 'Plume de Corbeau',
+        type: 'ressource',
+        icon: 'assets/objets/plumedecorbeau.png',
+        description: 'Une plume noire brillante.',
+        rarity: 'common',
+        stackable: true,
+        maxStack: 99
+    },
+    
+    certificat_donjon_corbeau: {
+        id: 'certificat_donjon_corbeau',
+        name: 'Certificat Donjon Corbeau',
+        type: 'ressource',
+        icon: 'assets/objets/certificadonjoncorbeau.png',
+        description: 'Un certificat prouvant votre valeur auprès des corbeaux mais vous donnant aussi accès au donjon slime.',
+        rarity: 'rare',
+        stackable: true,
+        maxStack: 99
     }
 };
 
@@ -109,13 +135,25 @@ function equipItem(itemId) {
         return false;
     }
     
+    // S'assurer que window.equippedItems existe
+    if (!window.equippedItems) {
+        window.equippedItems = {
+            coiffe: null,
+            cape: null,
+            collier: null,
+            anneau: null,
+            ceinture: null,
+            bottes: null
+        };
+    }
+    
     // Déséquiper l'item actuel dans ce slot
-    if (playerEquipment[item.slot]) {
+    if (window.equippedItems[item.slot]) {
         unequipItem(item.slot);
     }
     
     // Équiper le nouvel item
-    playerEquipment[item.slot] = item;
+    window.equippedItems[item.slot] = item;
     
     // Appliquer les bonus de stats
     applyEquipmentStats();
@@ -132,14 +170,16 @@ function equipItem(itemId) {
 
 // Fonction pour déséquiper un item
 function unequipItem(slot) {
-    const item = playerEquipment[slot];
+    if (!window.equippedItems) return false;
+    
+    const item = window.equippedItems[slot];
     if (!item) return false;
     
     // Retirer les bonus de stats
     removeEquipmentStats(item);
     
     // Retirer l'équipement
-    playerEquipment[slot] = null;
+    window.equippedItems[slot] = null;
     
     console.log(`Déséquipé: ${item.name}`);
     
@@ -165,17 +205,19 @@ function applyEquipmentStats() {
     player.equipVitesse = 0;
     
     // Appliquer les bonus d'équipement aux stats d'équipement
-    Object.values(playerEquipment).forEach(item => {
-        if (item && item.stats) {
-            if (item.stats.vie) player.maxLife += item.stats.vie;
-            if (item.stats.force) player.equipForce += item.stats.force;
-            if (item.stats.agilite) player.equipAgilite += item.stats.agilite;
-            if (item.stats.defense) player.equipDefense += item.stats.defense;
-            if (item.stats.chance) player.equipChance += item.stats.chance;
-            if (item.stats.intelligence) player.equipIntelligence += item.stats.intelligence;
-            if (item.stats.vitesse) player.equipVitesse += item.stats.vitesse;
-        }
-    });
+    if (window.equippedItems) {
+        Object.values(window.equippedItems).forEach(item => {
+            if (item && item.stats) {
+                if (item.stats.vie) player.maxLife += item.stats.vie;
+                if (item.stats.force) player.equipForce += item.stats.force;
+                if (item.stats.agilite) player.equipAgilite += item.stats.agilite;
+                if (item.stats.defense) player.equipDefense += item.stats.defense;
+                if (item.stats.chance) player.equipChance += item.stats.chance;
+                if (item.stats.intelligence) player.equipIntelligence += item.stats.intelligence;
+                if (item.stats.vitesse) player.equipVitesse += item.stats.vitesse;
+            }
+        });
+    }
     
     // Recalculer les stats totales
     if (typeof recalculateTotalStats === 'function') {
@@ -227,28 +269,42 @@ function removeEquipmentStats(item) {
 
 // Obtenir l'équipement actuel
 function getCurrentEquipment() {
-    return playerEquipment;
+    return window.equippedItems || {};
 }
 
 // Vérifier si un slot est occupé
 function isSlotOccupied(slot) {
-    return playerEquipment[slot] !== null;
+    if (!window.equippedItems) return false;
+    return window.equippedItems[slot] !== null;
 }
 
 // Obtenir l'item dans un slot
 function getItemInSlot(slot) {
-    return playerEquipment[slot];
+    if (!window.equippedItems) return null;
+    return window.equippedItems[slot];
 }
 
 // Fonction d'initialisation
 function initEquipmentSystem() {
     console.log("Initialisation du système d'équipement...");
+    
+    // S'assurer que window.equippedItems existe
+    if (!window.equippedItems) {
+        window.equippedItems = {
+            coiffe: null,
+            cape: null,
+            amulette: null,
+            anneau: null,
+            ceinture: null,
+            bottes: null
+        };
+    }
+    
     applyEquipmentStats();
 }
 
 // Fonctions d'export
 window.equipmentDatabase = equipmentDatabase;
-window.playerEquipment = playerEquipment;
 window.equipItem = equipItem;
 window.unequipItem = unequipItem;
 window.getCurrentEquipment = getCurrentEquipment;

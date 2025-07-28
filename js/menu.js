@@ -111,27 +111,9 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     
     window.playerName = name;
-    // Afficher le menu de jeu/profil
-    if(profileMenu && profileAvatar && profileName && profileLevel) {
-      menu.style.display = 'none';
-      profileMenu.style.display = 'flex';
-      document.body.classList.add('menu-active');
-      profileAvatar.src = window.playerAvatar;
-      profileName.textContent = window.playerName;
-      // Affichage dynamique du niveau
-      if (typeof player !== 'undefined' && player.level) {
-        profileLevelValue.textContent = player.level;
-      } else {
-        profileLevelValue.textContent = '1';
-      }
-      profileAvatar.classList.remove('selected');
-      profilePlayBtn.disabled = true;
-      
-      // Mettre à jour le texte du bouton Continuer avec l'info de sauvegarde
-      if (typeof getContinueButtonText === 'function') {
-        profilePlayBtn.textContent = getContinueButtonText();
-      }
-    }
+    
+    // Afficher directement le menu de profil
+    showProfileMenu();
   });
 
   // Sélection de l'avatar dans le menu de profil
@@ -154,6 +136,12 @@ window.addEventListener('DOMContentLoaded', function() {
           console.log('Partie chargée depuis le menu');
         } else {
           console.log('Aucune sauvegarde trouvée, démarrage d\'une nouvelle partie');
+          // Afficher le dialogue de bienvenue de Papi pour une nouvelle partie
+          setTimeout(() => {
+            if (typeof showCharacterCreationDialog === 'function') {
+              showCharacterCreationDialog();
+            }
+          }, 1000); // Délai de 1 seconde après le démarrage
         }
       }
       
@@ -161,6 +149,30 @@ window.addEventListener('DOMContentLoaded', function() {
       document.body.classList.remove('menu-active');
       menuBtn.style.display = 'block';
     });
+  }
+
+  // Fonction pour afficher le menu de profil
+  function showProfileMenu() {
+    if(profileMenu && profileAvatar && profileName && profileLevel) {
+      menu.style.display = 'none';
+      profileMenu.style.display = 'flex';
+      document.body.classList.add('menu-active');
+      profileAvatar.src = window.playerAvatar;
+      profileName.textContent = window.playerName;
+      // Affichage dynamique du niveau
+      if (typeof player !== 'undefined' && player.level) {
+        profileLevelValue.textContent = player.level;
+      } else {
+        profileLevelValue.textContent = '1';
+      }
+      profileAvatar.classList.remove('selected');
+      profilePlayBtn.disabled = true;
+      
+      // Mettre à jour le texte du bouton Continuer avec l'info de sauvegarde
+      if (typeof getContinueButtonText === 'function') {
+        profilePlayBtn.textContent = getContinueButtonText();
+      }
+    }
   }
 
   // Croix rouge pour suppression

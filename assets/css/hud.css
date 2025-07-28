@@ -102,6 +102,34 @@
     box-shadow: 0 4px 32px #ffd95299;
 }
 
+/* Icône de quêtes dans le HUD */
+#quetes-icon {
+    position: absolute;
+    top: 849px;
+    left: 1400px; /* À gauche de #sort-icon */
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(145deg, #8B4513, #A0522D);
+    border: 2px solid #654321;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: box-shadow 0.2s;
+}
+#quetes-icon:hover {
+    box-shadow: 0 4px 32px #ffd95299;
+}
+
+/* Assurer que l'emoji de l'icône des quêtes se redimensionne correctement */
+#quetes-icon span {
+    font-size: 2em !important;
+    line-height: 1 !important;
+    transition: font-size 0.3s ease;
+}
+
 #canvas-wrapper {
     position: relative;
     width: fit-content;
@@ -121,6 +149,21 @@
     height: 48px;
 }
 
+/* Surcharger les tailles dans les media queries */
+@media (max-width: 1600px) {
+  #hud-layer > div {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (max-width: 1100px) {
+  #hud-layer > div {
+    width: 28px;
+    height: 28px;
+  }
+}
+
 @media (max-width: 1600px) {
   #inventory-icon {
     top: 780px;
@@ -133,6 +176,27 @@
     left: 40px;
     width: 36px;
     height: 36px;
+  }
+  #metier-icon {
+    top: 780px;
+    left: 80px;
+    width: 36px;
+    height: 36px;
+  }
+  #sort-icon {
+    top: 780px;
+    left: 120px;
+    width: 36px;
+    height: 36px;
+  }
+  #quetes-icon {
+    top: 780px;
+    left: 160px;
+    width: 36px;
+    height: 36px;
+  }
+  #quetes-icon span {
+    font-size: 1.5em !important;
   }
 }
 
@@ -148,6 +212,27 @@
     left: 10px;
     width: 28px;
     height: 28px;
+  }
+  #metier-icon {
+    top: 700px;
+    left: 50px;
+    width: 28px;
+    height: 28px;
+  }
+  #sort-icon {
+    top: 700px;
+    left: 90px;
+    width: 28px;
+    height: 28px;
+  }
+  #quetes-icon {
+    top: 700px;
+    left: 130px;
+    width: 28px;
+    height: 28px;
+  }
+  #quetes-icon span {
+    font-size: 1.2em !important;
   }
 }
 

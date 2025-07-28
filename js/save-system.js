@@ -125,6 +125,24 @@ class SaveSystem {
                 // Anciennes propriétés pour compatibilité
                 stats: player.stats
             },
+            // Sauvegarde des inventaires
+            inventory: {
+                inventoryAll: window.inventoryAll || [],
+                inventoryEquipement: window.inventoryEquipement || [],
+                inventoryPotions: window.inventoryPotions || [],
+                inventoryRessources: window.inventoryRessources || []
+            },
+            // Sauvegarde de l'équipement
+            equipment: {
+                equippedItems: window.equippedItems || {
+                    coiffe: null,
+                    cape: null,
+                    amulette: null,
+                    anneau: null,
+                    ceinture: null,
+                    bottes: null
+                }
+            },
             gameState: {
                 currentMap: window.currentMap,
                 lastSaveTime: Date.now()
@@ -258,6 +276,69 @@ class SaveSystem {
                 }
             }
 
+            // Restaurer les inventaires
+            if (data.inventory) {
+                // Restaurer les inventaires en s'assurant qu'ils ont la bonne structure
+                window.inventoryAll = data.inventory.inventoryAll || Array.from({ length: 80 }, () => ({ item: null, category: null }));
+                window.inventoryEquipement = data.inventory.inventoryEquipement || Array.from({ length: 80 }, () => ({ item: null, category: 'equipement' }));
+                window.inventoryPotions = data.inventory.inventoryPotions || Array.from({ length: 80 }, () => ({ item: null, category: 'potions' }));
+                window.inventoryRessources = data.inventory.inventoryRessources || Array.from({ length: 80 }, () => ({ item: null, category: 'ressources' }));
+                
+                // S'assurer que tous les inventaires ont la bonne longueur
+                while (window.inventoryAll.length < 80) {
+                    window.inventoryAll.push({ item: null, category: null });
+                }
+                while (window.inventoryEquipement.length < 80) {
+                    window.inventoryEquipement.push({ item: null, category: 'equipement' });
+                }
+                while (window.inventoryPotions.length < 80) {
+                    window.inventoryPotions.push({ item: null, category: 'potions' });
+                }
+                while (window.inventoryRessources.length < 80) {
+                    window.inventoryRessources.push({ item: null, category: 'ressources' });
+                }
+                
+                // IMPORTANT: Mettre à jour la référence window.inventory pour pointer vers inventoryAll
+                window.inventory = window.inventoryAll;
+                
+                // Debug: Afficher le contenu des inventaires restaurés
+                console.log('🔍 DEBUG - Inventaires restaurés:');
+                console.log('inventoryAll:', window.inventoryAll.filter(slot => slot.item !== null));
+                console.log('inventoryRessources:', window.inventoryRessources.filter(slot => slot.item !== null));
+                console.log('inventory (référence):', window.inventory.filter(slot => slot.item !== null));
+                
+                // Mettre à jour l'affichage des inventaires
+                if (typeof window.updateAllGrids === 'function') {
+                    window.updateAllGrids();
+                }
+                
+                // Mettre à jour les établies si elles sont ouvertes
+                if (typeof window.updateEtabliesInventory === 'function') {
+                    window.updateEtabliesInventory();
+                }
+                
+                console.log('📦 Inventaires restaurés avec succès');
+            }
+
+            // Restaurer l'équipement
+            if (data.equipment) {
+                window.equippedItems = data.equipment.equippedItems || {
+                    coiffe: null,
+                    cape: null,
+                    amulette: null,
+                    anneau: null,
+                    ceinture: null,
+                    bottes: null
+                };
+                
+                // Mettre à jour l'affichage de l'équipement
+                if (typeof window.updateEquipmentDisplay === 'function') {
+                    window.updateEquipmentDisplay();
+                }
+                
+                console.log('⚔️ Équipement restauré avec succès');
+            }
+
             // Restaurer les infos du personnage
             if (data.character) {
                 window.playerName = data.character.name;
@@ -281,6 +362,16 @@ class SaveSystem {
 
             console.log('🎮 Partie chargée avec succès');
             this.showLoadSuccess();
+            
+            // Afficher le dialogue de bienvenue de Papi si c'est une nouvelle partie
+            if (!data.timestamp || data.timestamp < Date.now() - 60000) { // Si pas de timestamp ou sauvegarde ancienne
+                setTimeout(() => {
+                    if (typeof showCharacterCreationDialog === 'function') {
+                        showCharacterCreationDialog();
+                    }
+                }, 1000); // Délai de 1 seconde après le chargement
+            }
+            
             return true;
 
         } catch (error) {
@@ -402,4 +493,33 @@ window.autoSaveOnEvent = function() {
     if (saveSystem) {
         saveSystem.saveGame();
     }
+};
+
+// Fonction de test pour vérifier la sauvegarde des inventaires
+window.testInventorySave = function() {
+    console.log('🧪 Test de sauvegarde des inventaires...');
+    
+    // Ajouter quelques items de test
+    if (typeof window.addItemToInventory === 'function') {
+        window.addItemToInventory('coiffecorbeau', 'equipement');
+        window.addItemToInventory('capecorbeau', 'equipement');
+    }
+    
+    if (typeof window.addResourceToInventory === 'function') {
+        window.addResourceToInventory('patte_corbeau', 5);
+        window.addResourceToInventory('plume_corbeau', 3);
+    }
+    
+    // Forcer une sauvegarde
+    if (typeof window.autoSaveOnEvent === 'function') {
+        window.autoSaveOnEvent();
+    }
+    
+    console.log('✅ Test terminé. Vérifiez la console pour les détails.');
+    console.log('📦 Inventaires actuels:', {
+        all: window.inventoryAll,
+        equipement: window.inventoryEquipement,
+        potions: window.inventoryPotions,
+        ressources: window.inventoryRessources
+    });
 }; 

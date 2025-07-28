@@ -335,6 +335,18 @@ function openWorkshopModal({
   // Init grille
   updateCraftInventoryGrid();
   if (typeof window.enableInventoryDragAndDrop === 'function') window.enableInventoryDragAndDrop();
+  
+  // Fonction pour mettre à jour l'inventaire des établis
+  window.updateEtabliesInventory = function() {
+    if (typeof updateCraftInventoryGrid === 'function') {
+      updateCraftInventoryGrid();
+    }
+  };
+  
+  // Rendre la fonction accessible globalement
+  if (typeof window.updateEtabliesInventory === 'function') {
+    console.log("✓ Fonction updateEtabliesInventory disponible");
+  }
   // Fermer en cliquant à l'extérieur
   modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
   document.body.appendChild(modal);

@@ -106,3 +106,61 @@ function drawHUD(ctx) {
     if (typeof drawXPBar === "function") drawXPBar(ctx);
     if (typeof drawMonsterInfo === "function") drawMonsterInfo(ctx); // Ajoute cette ligne
 }
+
+// Fonction de positionnement des icônes du HUD avec pourcentages
+function positionHudIcons() {
+    const canvas = document.getElementById('gameCanvas');
+    const rect = canvas.getBoundingClientRect();
+
+    // Inventaire (en bas à droite)
+    const inventoryIcon = document.getElementById('inventory-icon');
+    if (inventoryIcon) {
+        inventoryIcon.style.left = (rect.width * 0.96) + 'px';
+        inventoryIcon.style.top = (rect.height * 0.91) + 'px';
+    }
+
+    // Stats (à gauche de l'inventaire)
+    const statsIcon = document.getElementById('stats-icon');
+    if (statsIcon) {
+        statsIcon.style.left = (rect.width * 0.92) + 'px';
+        statsIcon.style.top = (rect.height * 0.91) + 'px';
+    }
+
+    // Métier (encore à gauche)
+    const metierIcon = document.getElementById('metier-icon');
+    if (metierIcon) {
+        metierIcon.style.left = (rect.width * 0.88) + 'px';
+        metierIcon.style.top = (rect.height * 0.91) + 'px';
+    }
+
+    // Sort (encore à gauche)
+    const sortIcon = document.getElementById('sort-icon');
+    if (sortIcon) {
+        sortIcon.style.left = (rect.width * 0.84) + 'px';
+        sortIcon.style.top = (rect.height * 0.91) + 'px';
+    }
+
+    // Quêtes (à gauche du sort)
+    const quetesIcon = document.getElementById('quetes-icon');
+    if (quetesIcon) {
+        quetesIcon.style.left = (rect.width * 0.80) + 'px';
+        quetesIcon.style.top = (rect.height * 0.91) + 'px';
+    }
+
+    // Barre de sorts
+    const spellBar = document.getElementById('spell-shortcut-bar');
+    if (spellBar && canvas) {
+        spellBar.style.position = 'fixed';
+        spellBar.style.left = (rect.left + rect.width * 0.01) + 'px';
+        spellBar.style.top = (rect.top + rect.height * 0.915) + 'px';
+        spellBar.style.zIndex = 1200;
+        spellBar.style.display = 'flex';
+        // Largeur proportionnelle au canvas, mais jamais trop petite
+        const slotCount = spellBar.querySelectorAll('.spell-slot').length;
+        const minWidth = slotCount * 36 + (slotCount - 1) * 8 + 10;
+        spellBar.style.width = Math.max(rect.width * 0.38, minWidth) + 'px';
+    }
+}
+
+// Exporter la fonction pour qu'elle soit accessible depuis main.js
+window.positionHudIcons = positionHudIcons;

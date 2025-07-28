@@ -74,6 +74,11 @@ async function loadMap(mapName) {
             window.initMonsters();
         }
         
+        // Initialiser les PNJ pour cette map
+        if (typeof window.initPNJs === "function") {
+            window.initPNJs();
+        }
+        
         // Démarrer l'écran noir de transition
         window.blackScreenStartTime = Date.now();
         
@@ -140,6 +145,11 @@ function teleportPlayer(mapName, spawnX, spawnY) {
             // Sauvegarde automatique lors du changement de map
             if (typeof autoSaveOnEvent === 'function') {
                 autoSaveOnEvent();
+            }
+            
+            // Rafraîchir l'affichage des quêtes si la fenêtre est ouverte
+            if (typeof refreshQuestsOnPlayerMove === 'function') {
+                refreshQuestsOnPlayerMove();
             }
         }
     });
@@ -372,6 +382,10 @@ function drawMap() {
     // Affiche les monstres animés AVANT le calque 3 (pour qu'ils passent derrière)
     if (typeof drawMonsters === "function") {
         drawMonsters(ctx);
+    }
+    
+    if (typeof drawPNJs === "function") {
+        drawPNJs(ctx);
     }
     
     // Dessiner les effets de dégâts et flashs de sprite

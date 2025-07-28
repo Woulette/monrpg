@@ -106,7 +106,8 @@ function moveMonsters(ts) {
 
 const PATROL_DELAY_MIN = 3000; // ms minimum entre chaque patrouille
 const PATROL_DELAY_MAX = 10000; // ms maximum entre chaque patrouille
-const AGGRO_RANGE = 8;     // distance d'aggro
+const AGGRO_RANGE = 8;     // distance d'aggro pour les corbeaux
+const AGGRO_RANGE_SLIME = 7; // distance d'aggro pour les slimes (7 cases comme demandé)
 const DEAGGRO_RANGE = 20;  // distance de délock (augmenté)
 const AGGRO_TIMEOUT = 8000; // ms sans combat pour délock
 
@@ -166,9 +167,21 @@ function updateMonsters(ts) {
         // --- DÉTECTION AGGRO ---
         let distToPlayer = Math.abs(player.x - monster.x) + Math.abs(player.y - monster.y);
         
+        // Déterminer la distance d'aggro selon le type de monstre
+        let aggroRange = monster.type === "slime" ? AGGRO_RANGE_SLIME : AGGRO_RANGE;
+        
+        // AGGRO AUTOMATIQUE POUR LES SLIMES
+        if (monster.type === "slime" && !monster.aggro && distToPlayer <= AGGRO_RANGE_SLIME) {
+            // Les slimes entrent automatiquement en aggro quand le joueur s'approche
+            monster.aggro = true;
+            monster.aggroTarget = player;
+            monster.lastCombat = ts; // Initialiser le timer de combat
+            console.log(`Slime ${monster.id} entre en aggro automatique (distance: ${distToPlayer})`);
+        }
+        
         // Déclencher l'aggro si le monstre a été attaqué ET n'est pas en train de retourner
         // ET seulement s'il y a eu une interaction de combat récente (pas juste une sélection)
-        if (monster.aggro && monster.aggroTarget === player && distToPlayer <= AGGRO_RANGE && monster.state !== 'return') {
+        if (monster.aggro && monster.aggroTarget === player && distToPlayer <= aggroRange && monster.state !== 'return') {
             // Vérifier qu'il y a eu une vraie interaction de combat récente
             if (monster.lastCombat && (ts - monster.lastCombat) < AGGRO_TIMEOUT) {
                 if (monster.state !== 'aggro') {
@@ -205,6 +218,42 @@ function updateMonsters(ts) {
                 monster.moving = false;
                 continue;
             }
+            
+            // ATTAQUE AUTOMATIQUE POUR LES SLIMES
+            if (monster.type === "slime" && distToPlayer === 1) {
+                // Les slimes attaquent automatiquement quand ils sont adjacents au joueur
+                if (!monster.lastAttack || (ts - monster.lastAttack) >= 1000) { // Cooldown de 1 seconde entre attaques
+                    // Calcul des dégâts du slime
+                    const monsterBaseDamage = monster.damage !== undefined ? monster.damage : 3;
+                    const monsterTotalDamage = monsterBaseDamage + (monster.force || 0);
+                    const variation = 0.25; // 25% de variation
+                    const randomFactor = 1 + (Math.random() * 2 - 1) * variation; // Entre 0.75 et 1.25
+                    const monsterDamage = Math.max(1, Math.floor(monsterTotalDamage * randomFactor) - player.defense);
+                    
+                    // Appliquer les dégâts au joueur
+                    player.life -= monsterDamage;
+                    if (player.life < 0) player.life = 0;
+                    
+                    // Afficher les dégâts reçus par le joueur
+                    if (typeof displayDamage === "function") {
+                        displayDamage(player.px, player.py, monsterDamage, 'damage', true);
+                    }
+                    
+                    // Mettre à jour le timer d'attaque et de combat
+                    monster.lastAttack = ts;
+                    monster.lastCombat = ts;
+                    
+                    // XP défense pour avoir reçu des dégâts
+                    if (typeof gainStatXP === "function") {
+                        gainStatXP('defense', 1);
+                    }
+                    
+                    console.log(`Slime ${monster.id} attaque le joueur pour ${monsterDamage} dégâts`);
+                }
+                // Ne pas continuer pour éviter les attaques doubles - le slime reste en place
+                return;
+            }
+            
             // Attaque si adjacent - DÉSACTIVÉ pour éviter les attaques doubles
             // L'attaque se fait maintenant uniquement en riposte dans player.js
             if (distToPlayer === 1) {

@@ -51,7 +51,7 @@ function initMonsters() {
         // Gestion spéciale pour la map slime - AUCUN corbeau ici
         if (currentMap && (currentMap === "mapdonjonslime" || currentMap.includes("slime"))) {
             console.log("Map slime détectée, création de slimes uniquement...");
-            createSlimes(8); // 8 slimes sur la map slime
+            createSlimes(5); // 5 slimes de niveau 7 sur la map slime
         } else if (currentMap && (currentMap === "map1" || currentMap === "map2" || currentMap === "map3")) {
                          // Créer les corbeaux UNIQUEMENT pour les maps 1, 2 et 3
              console.log("Map normale détectée (map1/2/3), création de corbeaux...");
@@ -178,8 +178,8 @@ function createSlimes(count = 5) {
             sy = Math.floor(Math.random() * slimePatrolZone.height);
         }
         
-        // Générer un niveau aléatoire entre 7 et 9
-        const level = Math.floor(Math.random() * 3) + 7; // 7, 8, ou 9
+        // Niveau fixe à 7 pour le donjon slime
+        const level = 7; // Niveau 7 uniquement
         
         // Stats du slime (niveaux plus élevés)
         const baseHp = 30; // Plus de PV de base pour les niveaux 7-9
@@ -229,7 +229,9 @@ function createSlimes(count = 5) {
             respawnTime: RESPAWN_DELAY,
             // Nouvelles statistiques de force et défense
             force: Math.floor(baseForce * forceMultiplier),
-            defense: Math.floor(baseDefense * defenseMultiplier)
+            defense: Math.floor(baseDefense * defenseMultiplier),
+            // Dégâts de base du slime
+            damage: 6 // Dégâts de base pour les slimes
         };
         
         monsters.push(newSlime);
@@ -505,8 +507,8 @@ function updateMonsterRespawn() {
             // Gestion spéciale pour les slimes
             let newLevel;
             if (monster.type === "slime") {
-                // Générer un nouveau niveau aléatoire entre 7 et 9
-                newLevel = Math.floor(Math.random() * 3) + 7;
+                // Niveau fixe à 7 pour le respawn des slimes
+                newLevel = 7;
                 
                 // Stats du slime (niveaux plus élevés)
                 const baseHp = 30;
@@ -528,6 +530,7 @@ function updateMonsterRespawn() {
                 monster.xpValue = Math.floor(baseXp * xpMultiplier);
                 monster.force = Math.floor(baseForce * forceMultiplier);
                 monster.defense = Math.floor(baseDefense * defenseMultiplier);
+                monster.damage = 6; // Dégâts de base pour les slimes
             } else if (monster.type === "crow") {
                 // Générer un nouveau niveau aléatoire entre 1 et 4 pour les corbeaux
                 newLevel = Math.floor(Math.random() * 4) + 1;
@@ -630,6 +633,11 @@ function killMonster(monster) {
             // Libérer la position occupée
             if (typeof release === "function") {
                 release(monster.x, monster.y);
+            }
+            
+            // Mettre à jour le progrès de la quête de chasse aux corbeaux
+            if (typeof window.onCrowKilled === "function") {
+                window.onCrowKilled();
             }
             
             // Vérifier si on doit spawn un Corbeau d'élite ou Maitrecorbeau sur cette map spécifique

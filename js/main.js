@@ -25,14 +25,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof window.cleanCorruptedSaveData === "function") {
                 window.cleanCorruptedSaveData();
             }
+            
+            // Initialiser l'inventaire AVANT de charger la sauvegarde
             initInventory();
             initStats();
+            
+            // Charger la sauvegarde si elle existe APRÈS l'initialisation
+            if (typeof window.loadGame === "function") {
+                window.loadGame();
+            }
             initHUD();
             initPathfinding();
             initChat(); // Système de chat séparé
             initFloatingChat(); // Système de chat flottant
             initEquipmentSystem(); // Système d'équipement
             initEtablies(); // Système d'établies
+            initQuestsWindow(); // Système de fenêtre des quêtes
             
             requestAnimationFrame(gameLoop);
         })
@@ -90,6 +98,10 @@ function gameLoop(ts) {
     // Logique IA des monstres
     if (typeof updateMonsters === "function") {
         updateMonsters(ts);
+    }
+    
+    if (typeof updatePNJs === "function") {
+        updatePNJs(ts);
     }
 
     // Mise à jour des effets de dégâts
@@ -360,44 +372,7 @@ function resizeGameCanvas() {
     canvas.style.margin = '0 auto';
 }
 
-function positionHudIcons() {
-    const canvas = document.getElementById('gameCanvas');
-    const rect = canvas.getBoundingClientRect();
 
-    // Inventaire (en bas à droite)
-    const inventoryIcon = document.getElementById('inventory-icon');
-    inventoryIcon.style.left = (rect.width * 0.96) + 'px';
-    inventoryIcon.style.top = (rect.height * 0.91) + 'px';
-
-    // Stats (à gauche de l'inventaire)
-    const statsIcon = document.getElementById('stats-icon');
-    statsIcon.style.left = (rect.width * 0.92) + 'px';
-    statsIcon.style.top = (rect.height * 0.91) + 'px';
-
-    // Métier (encore à gauche)
-    const metierIcon = document.getElementById('metier-icon');
-    metierIcon.style.left = (rect.width * 0.88) + 'px';
-    metierIcon.style.top = (rect.height * 0.91) + 'px';
-
-    // Sort (encore à gauche)
-    const sortIcon = document.getElementById('sort-icon');
-    sortIcon.style.left = (rect.width * 0.84) + 'px';
-    sortIcon.style.top = (rect.height * 0.91) + 'px';
-
-    const spellBar = document.getElementById('spell-shortcut-bar');
-    if (spellBar && canvas) {
-        const rect = canvas.getBoundingClientRect();
-        spellBar.style.position = 'fixed'; // Utilise fixed, pas absolute !
-        spellBar.style.left = (rect.left + rect.width * 0.01) + 'px';
-        spellBar.style.top  = (rect.top  + rect.height * 0.915) + 'px';
-        spellBar.style.zIndex = 1200;
-        spellBar.style.display = 'flex';
-        // Largeur proportionnelle au canvas, mais jamais trop petite
-        const slotCount = spellBar.querySelectorAll('.spell-slot').length;
-        const minWidth = slotCount * 36 + (slotCount - 1) * 8 + 10;
-        spellBar.style.width = Math.max(rect.width * 0.38, minWidth) + 'px';
-    }    
-}
 window.addEventListener('resize', () => {
     resizeGameCanvas();
     positionHudIcons();

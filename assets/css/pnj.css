@@ -1,0 +1,126 @@
+/* assets/css/pnj.css - Styles pour les PNJ et leurs dialogues */
+
+/* Fenêtre de dialogue modale */
+#pnj-dialog-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    font-family: Arial, sans-serif;
+}
+
+#pnj-dialog-content {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border: 3px solid #8B7355;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+/* En-tête avec nom du PNJ */
+.pnj-dialog-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    padding-top: 25px;
+    padding-left: 70px;
+    border-bottom: 2px solid #8B7355;
+    position: relative;
+    justify-content: space-between;
+}
+
+.pnj-dialog-icon {
+    width: 80px;
+    height: 80px;
+    background: #8B7355;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    overflow: hidden;
+    position: absolute;
+    top: -20px;
+    left: -25px;
+    border: 3px solid #8B7355;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+
+.pnj-dialog-name {
+    color: #8B7355;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    flex: 1;
+}
+
+/* Contenu du dialogue */
+.pnj-dialog-text {
+    color: white;
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Bouton Continuer */
+.pnj-dialog-button {
+    background: linear-gradient(135deg, #8B7355, #6B4423);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.pnj-dialog-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.pnj-dialog-button:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Bouton de fermeture (croix) */
+.pnj-dialog-close {
+    background: #ff4e4e;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    margin-left: auto;
+    position: relative;
+    top: -30px;
+}
+
+.pnj-dialog-close:hover {
+    background: #ff3333;
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+} 

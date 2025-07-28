@@ -17,10 +17,14 @@
     <link rel="stylesheet" href="assets/css/metier.css">
     <link rel="stylesheet" href="assets/css/sort.css">
     <link rel="stylesheet" href="assets/css/menu.css">
+    <link rel="stylesheet" href="assets/css/pnj.css">
+    <link rel="stylesheet" href="assets/css/quetes.css">
     
 
     <!-- Charger utils.js en tout premier pour les fonctions globales -->
     <script src="js/utils.js"></script>
+    <script src="js/pnj.js"></script>
+    <script src="js/quetes.js"></script>
     <!-- Charger la logique des monstres découpée -->
     <script src="js/monsters/core.js"></script>
     <script src="js/monsters/draw.js"></script>
@@ -90,6 +94,7 @@
                     <rect x="19.5" y="28" width="2" height="10" rx="1.2" fill="#684726"/>
                 </svg>
             </div>
+            <div id="quetes-icon"><span>📋</span></div>
             <div id="sort-icon"><span style="font-size: 2em; line-height: 1;">✨</span></div>
         </div>
     </div>
@@ -500,6 +505,39 @@
       <div class="spell-slot empty"></div>
     </div>
 
+    <!-- Fenêtre principale des quêtes -->
+    <div id="quests-main-modal">
+        <div id="quests-main-content">
+            <div class="quests-header">
+                <div class="quests-title">Journal de Quêtes</div>
+                <button class="quests-close" id="close-quests-modal">✕</button>
+            </div>
+            <div class="quests-body">
+                <div class="quests-tabs">
+                    <div class="quest-tab active" data-tab="all">
+                        Toutes
+                        <span class="quest-tab-count" id="count-all">0</span>
+                    </div>
+                    <div class="quest-tab" data-tab="available">
+                        Disponibles
+                        <span class="quest-tab-count" id="count-available">0</span>
+                    </div>
+                    <div class="quest-tab" data-tab="active">
+                        En cours
+                        <span class="quest-tab-count" id="count-active">0</span>
+                    </div>
+                    <div class="quest-tab" data-tab="completed">
+                        Terminées
+                        <span class="quest-tab-count" id="count-completed">0</span>
+                    </div>
+                </div>
+                <div class="quests-list" id="quests-list">
+                    <!-- Les quêtes seront générées dynamiquement ici -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JS à charger en dernier (sauf utils.js et monsters/ déjà chargés dans le head) -->
 <script src="js/hud.js"></script>
 <script src="js/pathfinding.js"></script>
@@ -516,9 +554,12 @@
 <script src="js/damage-display.js"></script>
 <script src="js/equipment-system.js"></script>
 <script src="js/loot-system.js"></script>
-<script src="js/metier/etablie.js"></script>
-<script src="js/metier/niveaudemetier.js"></script>
-<script src="js/menu.js"></script>
+    <script src="js/metier/etablie.js"></script>
+    <script src="js/metier/niveaudemetier.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/test-save.js"></script>
+    <script src="js/test-ressources.js"></script>
+    <script src="js/diagnostic-ressources.js"></script>
 
 
 </body>

@@ -426,64 +426,25 @@ function addResourceToInventory(resourceId, quantity) {
     const resource = resourceDatabase[resourceId];
     if (!resource) return false;
     
-    // Chercher un slot avec la même ressource dans l'inventaire des ressources
-    let existingSlot = inventoryRessources.findIndex(slot => 
-        slot.item && slot.item.id === resourceId && slot.item.quantity < resource.maxStack
-    );
-    
-    if (existingSlot !== -1) {
-        // Ajouter à l'existant
-        inventoryRessources[existingSlot].item.quantity += quantity;
-        if (inventoryRessources[existingSlot].item.quantity > resource.maxStack) {
-            inventoryRessources[existingSlot].item.quantity = resource.maxStack;
-        }
-    } else {
-        // Chercher un slot vide dans l'inventaire des ressources
-        const emptySlot = inventoryRessources.findIndex(slot => slot.item === null);
-        if (emptySlot !== -1) {
-            inventoryRessources[emptySlot] = {
-                item: {
-                    ...resource,
-                    quantity: Math.min(quantity, resource.maxStack)
-                },
-                category: 'ressources'
-            };
+    // Utiliser la fonction addItemToInventory pour chaque unité de ressource
+    // Cela garantit que la sauvegarde automatique est déclenchée
+    let success = true;
+    for (let i = 0; i < quantity; i++) {
+        if (typeof window.addItemToInventory === 'function') {
+            const added = window.addItemToInventory(resourceId, 'ressources');
+            if (!added) {
+                console.log("Inventaire des ressources plein !");
+                success = false;
+                break;
+            }
         } else {
-            console.log("Inventaire des ressources plein !");
-            return false;
+            console.error("Fonction addItemToInventory non disponible");
+            success = false;
+            break;
         }
     }
     
-    // Ajouter aussi dans l'inventaire principal pour compatibilité
-    const mainExistingSlot = inventoryAll.findIndex(slot => 
-        slot.item && slot.item.id === resourceId && slot.item.quantity < resource.maxStack
-    );
-    
-    if (mainExistingSlot !== -1) {
-        // Ajouter à l'existant dans l'inventaire principal
-        inventoryAll[mainExistingSlot].item.quantity += quantity;
-        if (inventoryAll[mainExistingSlot].item.quantity > resource.maxStack) {
-            inventoryAll[mainExistingSlot].item.quantity = resource.maxStack;
-        }
-    } else {
-        // Chercher un slot vide dans l'inventaire principal
-        const mainEmptySlot = inventoryAll.findIndex(slot => slot.item === null);
-        if (mainEmptySlot !== -1) {
-            inventoryAll[mainEmptySlot] = {
-                item: {
-                    ...resource,
-                    quantity: Math.min(quantity, resource.maxStack)
-                },
-                category: 'ressources'
-            };
-        }
-    }
-    
-    // Mettre à jour toutes les grilles
-    if (typeof updateAllGrids === 'function') {
-        updateAllGrids();
-    }
-    return true;
+    return success;
 }
 
 // Fonction pour déclencher le loot quand un monstre meurt
@@ -505,4 +466,5 @@ function triggerLoot(monster) {
 window.generateLoot = generateLoot;
 window.showLootWindow = showLootWindow;
 window.addResourceToInventory = addResourceToInventory;
-window.triggerLoot = triggerLoot; 
+window.triggerLoot = triggerLoot;
+window.resourceDatabase = resourceDatabase; 

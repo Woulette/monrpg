@@ -16,6 +16,16 @@ window.inventoryEquipement = inventoryEquipement;
 window.inventoryPotions = inventoryPotions;
 window.inventoryRessources = inventoryRessources;
 
+// Initialiser l'équipement
+window.equippedItems = {
+    coiffe: null,
+    cape: null,
+    collier: null,
+    anneau: null,
+    ceinture: null,
+    bottes: null
+};
+
 // Rendre les fonctions de réinitialisation disponibles globalement
 window.resetInventory = resetInventory;
 window.resetEquipment = resetEquipment;
@@ -31,11 +41,11 @@ function initInventory() {
 function resetInventory() {
     console.log("Réinitialisation complète de l'inventaire...");
     
-    // Vider tous les inventaires
-    window.inventoryAll = [];
-    window.inventoryEquipement = [];
-    window.inventoryPotions = [];
-    window.inventoryRessources = [];
+    // Vider tous les inventaires en conservant la structure
+    window.inventoryAll = Array.from({ length: 80 }, () => ({ item: null, category: null }));
+    window.inventoryEquipement = Array.from({ length: 80 }, () => ({ item: null, category: 'equipement' }));
+    window.inventoryPotions = Array.from({ length: 80 }, () => ({ item: null, category: 'potions' }));
+    window.inventoryRessources = Array.from({ length: 80 }, () => ({ item: null, category: 'ressources' }));
     
     // Mettre à jour l'affichage
     if (typeof updateAllGrids === 'function') {
@@ -58,7 +68,7 @@ function resetEquipment() {
     window.equippedItems = {
         coiffe: null,
         cape: null,
-        collier: null,
+        amulette: null,
         anneau: null,
         ceinture: null,
         bottes: null
@@ -289,23 +299,8 @@ function updateGridContent(category) {
     const grid = document.getElementById(`inventory-grid-${category}`);
     if (!grid) return;
     
-    // Choisir le bon inventaire
-    let targetInventory;
-    switch (category) {
-        case 'equipement':
-            targetInventory = inventoryEquipement;
-            break;
-        case 'potions':
-            targetInventory = inventoryPotions;
-            break;
-        case 'ressources':
-            targetInventory = inventoryRessources;
-            break;
-        case 'all':
-        default:
-            targetInventory = inventoryAll;
-            break;
-    }
+    // Choisir le bon inventaire en utilisant getInventoryByCategory
+    const targetInventory = getInventoryByCategory(category);
     
     // Mettre à jour chaque slot
     const slots = grid.querySelectorAll('.inventory-slot');
@@ -419,14 +414,14 @@ function attachGridEvents(grid, category) {
 function getInventoryByCategory(category) {
     switch (category) {
         case 'equipement':
-            return inventoryEquipement;
+            return window.inventoryEquipement;
         case 'potions':
-            return inventoryPotions;
+            return window.inventoryPotions;
         case 'ressources':
-            return inventoryRessources;
+            return window.inventoryRessources;
         case 'all':
         default:
-            return inventoryAll;
+            return window.inventoryAll;
     }
 }
 
@@ -587,21 +582,84 @@ function addItemToInventory(itemId, category) {
         return false;
     }
     
-    // Choisir le bon inventaire selon la catégorie
+    // Choisir le bon inventaire selon la catégorie - UTILISER LES RÉFÉRENCES GLOBALES
     let targetInventory;
     switch (category) {
         case 'equipement':
-            targetInventory = inventoryEquipement;
+            targetInventory = window.inventoryEquipement;
             break;
         case 'potions':
-            targetInventory = inventoryPotions;
+            targetInventory = window.inventoryPotions;
             break;
         case 'ressources':
-            targetInventory = inventoryRessources;
+            targetInventory = window.inventoryRessources;
             break;
         default:
-            targetInventory = inventoryAll;
+            targetInventory = window.inventoryAll;
             break;
+    }
+    
+    // Pour les ressources empilables, chercher d'abord un slot existant
+    if (item.stackable && item.maxStack) {
+        const existingSlot = targetInventory.findIndex(slot => 
+            slot.item && slot.item.id === itemId && 
+            (slot.item.quantity === undefined || slot.item.quantity < item.maxStack)
+        );
+        
+        if (existingSlot !== -1) {
+            // Ajouter à l'existant
+            if (targetInventory[existingSlot].item.quantity === undefined) {
+                targetInventory[existingSlot].item.quantity = 1;
+            }
+            targetInventory[existingSlot].item.quantity += 1;
+            
+            // Limiter à la quantité maximale
+            if (targetInventory[existingSlot].item.quantity > item.maxStack) {
+                targetInventory[existingSlot].item.quantity = item.maxStack;
+            }
+            
+            // Mettre à jour aussi l'inventaire principal - IMPORTANT: Synchroniser les objets
+            const mainExistingSlot = window.inventoryAll.findIndex(slot => 
+                slot.item && slot.item.id === itemId && 
+                (slot.item.quantity === undefined || slot.item.quantity < item.maxStack)
+            );
+            if (mainExistingSlot !== -1) {
+                if (window.inventoryAll[mainExistingSlot].item.quantity === undefined) {
+                    window.inventoryAll[mainExistingSlot].item.quantity = 1;
+                }
+                window.inventoryAll[mainExistingSlot].item.quantity += 1;
+                if (window.inventoryAll[mainExistingSlot].item.quantity > item.maxStack) {
+                    window.inventoryAll[mainExistingSlot].item.quantity = item.maxStack;
+                }
+            } else {
+                // Si l'item n'existe pas dans inventoryAll, l'ajouter
+                const mainEmptySlot = window.inventoryAll.findIndex(slot => slot.item === null);
+                if (mainEmptySlot !== -1) {
+                    const mainItemToAdd = { ...targetInventory[existingSlot].item };
+                    window.inventoryAll[mainEmptySlot] = {
+                        item: mainItemToAdd,
+                        category: category
+                    };
+                }
+            }
+            
+            console.log(`Item ${item.name} empilé dans l'inventaire ${category} (quantité: ${targetInventory[existingSlot].item.quantity})`);
+            
+            // Mettre à jour toutes les grilles
+            updateAllGrids();
+            
+            // Mettre à jour les établis si ils sont ouverts
+            if (typeof window.updateEtabliesInventory === 'function') {
+                window.updateEtabliesInventory();
+            }
+            
+            // Sauvegarde automatique après modification de l'inventaire
+            if (typeof window.autoSaveOnEvent === 'function') {
+                window.autoSaveOnEvent();
+            }
+            
+            return true;
+        }
     }
     
     // Trouver un slot vide dans l'inventaire cible
@@ -612,16 +670,22 @@ function addItemToInventory(itemId, category) {
     }
     
     // Ajouter l'item dans le bon inventaire
+    const itemToAdd = { ...item };
+    if (item.stackable) {
+        itemToAdd.quantity = 1;
+    }
+    
     targetInventory[emptySlot] = {
-        item: item,
+        item: itemToAdd,
         category: category
     };
     
     // Ajouter aussi dans l'inventaire principal pour compatibilité
-    const mainEmptySlot = inventoryAll.findIndex(slot => slot.item === null);
+    const mainEmptySlot = window.inventoryAll.findIndex(slot => slot.item === null);
     if (mainEmptySlot !== -1) {
-        inventoryAll[mainEmptySlot] = {
-            item: item,
+        const mainItemToAdd = { ...itemToAdd };
+        window.inventoryAll[mainEmptySlot] = {
+            item: mainItemToAdd,
             category: category
         };
     }
@@ -630,6 +694,17 @@ function addItemToInventory(itemId, category) {
     
     // Mettre à jour toutes les grilles
     updateAllGrids();
+    
+    // Mettre à jour les établis si ils sont ouverts
+    if (typeof window.updateEtabliesInventory === 'function') {
+        window.updateEtabliesInventory();
+    }
+    
+    // Sauvegarde automatique après modification de l'inventaire
+    if (typeof window.autoSaveOnEvent === 'function') {
+        window.autoSaveOnEvent();
+    }
+    
     return true;
 }
 
@@ -639,33 +714,89 @@ function updateAllGrids() {
     categories.forEach(category => {
         updateGridContent(category);
     });
+    
+    // Mettre à jour les établis si ils sont ouverts
+    if (typeof window.updateEtabliesInventory === 'function') {
+        window.updateEtabliesInventory();
+    }
 }
 
 // Fonction utilitaire pour retirer un item de tous les inventaires (par id)
 function removeItemFromAllInventories(itemId) {
-    // Retire de l'inventaire principal
-    const mainIndex = inventoryAll.findIndex(slot => slot.item && slot.item.id === itemId);
-    if (mainIndex !== -1) {
-        inventoryAll[mainIndex] = { item: null, category: null };
-        reorganizeInventory(inventoryAll);
-    }
-    // Retire de chaque catégorie
-    [inventoryEquipement, inventoryPotions, inventoryRessources].forEach(inv => {
-        const idx = inv.findIndex(slot => slot.item && slot.item.id === itemId);
-        if (idx !== -1) {
-            inv[idx] = { item: null, category: inv[idx].category };
-            reorganizeInventory(inv);
+    console.log(`🔍 Tentative de suppression de l'item ${itemId} de tous les inventaires`);
+    
+    // Debug: Afficher le contenu de inventoryAll avant suppression
+    console.log(`🔍 Contenu de inventoryAll avant suppression:`);
+    window.inventoryAll.forEach((slot, index) => {
+        if (slot.item) {
+            console.log(`  Slot ${index}: ${slot.item.id} - ${slot.item.name}`);
         }
     });
+    
+    // Retire de l'inventaire principal
+    const mainIndex = window.inventoryAll.findIndex(slot => slot.item && slot.item.id === itemId);
+    if (mainIndex !== -1) {
+        console.log(`✅ Item trouvé dans inventoryAll à l'index ${mainIndex}`);
+        window.inventoryAll[mainIndex] = { item: null, category: null };
+        reorganizeInventory(window.inventoryAll);
+    } else {
+        console.log(`❌ Item non trouvé dans inventoryAll`);
+        // Essayer de trouver par nom si l'id ne correspond pas
+        const item = equipmentDatabase[itemId];
+        if (item) {
+            const nameIndex = window.inventoryAll.findIndex(slot => slot.item && slot.item.name === item.name);
+            if (nameIndex !== -1) {
+                console.log(`✅ Item trouvé dans inventoryAll par nom à l'index ${nameIndex}`);
+                window.inventoryAll[nameIndex] = { item: null, category: null };
+                reorganizeInventory(window.inventoryAll);
+            } else {
+                console.log(`❌ Item non trouvé dans inventoryAll même par nom`);
+            }
+        }
+    }
+    
+    // Retire de chaque catégorie
+    [window.inventoryEquipement, window.inventoryPotions, window.inventoryRessources].forEach((inv, index) => {
+        const invName = ['inventoryEquipement', 'inventoryPotions', 'inventoryRessources'][index];
+        const idx = inv.findIndex(slot => slot.item && slot.item.id === itemId);
+        if (idx !== -1) {
+            console.log(`✅ Item trouvé dans ${invName} à l'index ${idx}`);
+            inv[idx] = { item: null, category: inv[idx].category };
+            reorganizeInventory(inv);
+        } else {
+            console.log(`❌ Item non trouvé dans ${invName}`);
+        }
+    });
+    
+    console.log(`📊 État des inventaires après suppression:`);
+    console.log(`inventoryAll: ${window.inventoryAll.filter(slot => slot.item).length} items`);
+    console.log(`inventoryEquipement: ${window.inventoryEquipement.filter(slot => slot.item).length} items`);
+    
     // Forcer la synchro visuelle
     if (typeof updateAllGrids === 'function') updateAllGrids();
+    
+    // Mettre à jour les établis si ils sont ouverts
+    if (typeof window.updateEtabliesInventory === 'function') {
+        window.updateEtabliesInventory();
+    }
+    
+    // Sauvegarde automatique après modification de l'inventaire
+    if (typeof window.autoSaveOnEvent === 'function') {
+        window.autoSaveOnEvent();
+    }
 }
 
 // Modifie handleItemClick pour synchroniser les retraits
 function handleItemClick(item, slotIndex, category) {
     console.log(`Clic sur ${item.name} dans la catégorie ${category}`);
+    console.log('Type:', item.type, 'Slot:', item.slot);
     
-    if (item.type === 'coiffe' || item.type === 'cape' || item.type === 'amulette' || item.type === 'anneau' || item.type === 'ceinture' || item.type === 'bottes') {
+    // Vérifier si l'item est équipable (utiliser type ou slot)
+    const isEquippable = (item.type === 'coiffe' || item.type === 'cape' || item.type === 'amulette' || item.type === 'anneau' || item.type === 'ceinture' || item.type === 'bottes') ||
+                        (item.slot === 'coiffe' || item.slot === 'cape' || item.slot === 'amulette' || item.slot === 'anneau' || item.slot === 'ceinture' || item.slot === 'bottes');
+    
+    if (isEquippable) {
+        console.log('Item équipable détecté, tentative d\'équipement...');
         // Équiper l'item
         if (equipItem(item.id)) {
             // Retirer l'item de tous les inventaires
@@ -674,7 +805,16 @@ function handleItemClick(item, slotIndex, category) {
             updateEquipmentDisplay();
             updateStatsDisplay();
             console.log(`${item.name} équipé !`);
+            
+            // Sauvegarde automatique après équipement
+            if (typeof window.autoSaveOnEvent === 'function') {
+                window.autoSaveOnEvent();
+            }
+        } else {
+            console.log('Échec de l\'équipement de', item.name);
         }
+    } else {
+        console.log('Item non équipable:', item.name);
     }
 }
 
@@ -708,16 +848,26 @@ function handleEquipmentSlotClick(slotType) {
             updateEquipmentDisplay();
             updateStatsDisplay();
             console.log(`${equippedItem.name} déséquipé !`);
+            
+            // Sauvegarde automatique après déséquipement
+            if (typeof window.autoSaveOnEvent === 'function') {
+                window.autoSaveOnEvent();
+            }
         }
     }
 }
 
 // Fonction pour mettre à jour l'affichage de l'équipement
 function updateEquipmentDisplay() {
+    console.log('🔄 Mise à jour de l\'affichage de l\'équipement...');
+    console.log('📦 Équipement actuel:', window.equippedItems);
+    
     // Mettre à jour les slots d'équipement
     document.querySelectorAll('.equip-slot').forEach(slot => {
         const slotType = slot.dataset.slot;
         const equippedItem = getItemInSlot(slotType);
+        
+        console.log(`Slot ${slotType}:`, equippedItem ? equippedItem.name : 'vide');
         
         if (equippedItem) {
             slot.innerHTML = `<img src="${equippedItem.icon}" alt="${equippedItem.name}" style="width:32px;height:32px;">`;
@@ -727,6 +877,8 @@ function updateEquipmentDisplay() {
             slot.title = slotType;
         }
     });
+    
+    console.log('✅ Affichage de l\'équipement mis à jour');
 }
 
 // Initialiser l'affichage de l'équipement au démarrage
@@ -985,7 +1137,8 @@ function closeEquipmentDetailModal() {
 
 // Fonction pour vérifier si un item est équipé
 function isItemEquipped(item) {
-    return Object.values(playerEquipment).some(equippedItem => 
+    if (!window.equippedItems) return false;
+    return Object.values(window.equippedItems).some(equippedItem => 
         equippedItem && equippedItem.id === item.id
     );
 }
