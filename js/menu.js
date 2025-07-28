@@ -184,22 +184,28 @@ window.addEventListener('DOMContentLoaded', function() {
   // Confirmation suppression : Oui
   if(deleteConfirmYes) {
     deleteConfirmYes.addEventListener('click', function() {
-      // Supprimer la sauvegarde du personnage
-      if (typeof deleteSave === 'function') {
-        deleteSave();
-        console.log('🗑️ Sauvegarde supprimée lors de la suppression du personnage');
-      }
-      
-      // Réinitialiser l'inventaire et l'équipement
-      if (typeof resetInventory === 'function') {
-        resetInventory();
-        console.log('🗑️ Inventaire réinitialisé lors de la suppression du personnage');
-      }
-      
-      // Réinitialiser le joueur
-      if (typeof resetPlayer === 'function') {
-        resetPlayer();
-        console.log('🗑️ Joueur réinitialisé lors de la suppression du personnage');
+      // Supprimer TOUTES les données du personnage et du jeu
+      if (typeof window.clearAllGameData === 'function') {
+        window.clearAllGameData();
+        console.log('🗑️ TOUTES les données du personnage ont été supprimées');
+      } else {
+        // Fallback vers l'ancienne méthode si la nouvelle fonction n'existe pas
+        if (typeof deleteSave === 'function') {
+          deleteSave();
+          console.log('🗑️ Sauvegarde supprimée lors de la suppression du personnage');
+        }
+        
+        // Réinitialiser l'inventaire et l'équipement
+        if (typeof resetInventory === 'function') {
+          resetInventory();
+          console.log('🗑️ Inventaire réinitialisé lors de la suppression du personnage');
+        }
+        
+        // Réinitialiser le joueur
+        if (typeof resetPlayer === 'function') {
+          resetPlayer();
+          console.log('🗑️ Joueur réinitialisé lors de la suppression du personnage');
+        }
       }
       
       // Réinitialiser les infos du personnage

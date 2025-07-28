@@ -28,7 +28,7 @@ const equipmentDatabase = {
         rarity: 'rare',
         stats: {
             agilite: 8,
-            defense: 5
+            defense: 2
         }
     },
     
@@ -42,7 +42,7 @@ const equipmentDatabase = {
         description: 'Une amulette mystique qui renforce votre connexion avec les corbeaux.',
         rarity: 'rare',
         stats: {
-            intelligence: 10,
+            intelligence: 5,
             chance: 5
         }
     },
@@ -57,7 +57,7 @@ const equipmentDatabase = {
         description: 'Un anneau enchanté qui vous donne la vision perçante d\'un corbeau.',
         rarity: 'rare',
         stats: {
-            chance: 8,
+            force: 3,
             agilite: 3
         }
     },
@@ -72,8 +72,8 @@ const equipmentDatabase = {
         description: 'Une ceinture robuste qui renforce votre endurance.',
         rarity: 'rare',
         stats: {
-            defense: 8,
-            vie: 20
+            defense: 2,
+            vie: 10
         }
     },
     

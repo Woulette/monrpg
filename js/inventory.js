@@ -827,18 +827,18 @@ function handleEquipmentSlotClick(slotType) {
         // Déséquiper l'item
         if (unequipItem(slotType)) {
             // Remettre l'item dans l'inventaire d'équipement
-            const emptySlot = inventoryEquipement.findIndex(slot => slot.item === null);
+            const emptySlot = window.inventoryEquipement.findIndex(slot => slot.item === null);
             if (emptySlot !== -1) {
-                inventoryEquipement[emptySlot] = {
+                window.inventoryEquipement[emptySlot] = {
                     item: equippedItem,
                     category: 'equipement'
                 };
             }
             
             // Remettre aussi dans l'inventaire principal
-            const mainEmptySlot = inventoryAll.findIndex(slot => slot.item === null);
+            const mainEmptySlot = window.inventoryAll.findIndex(slot => slot.item === null);
             if (mainEmptySlot !== -1) {
-                inventoryAll[mainEmptySlot] = {
+                window.inventoryAll[mainEmptySlot] = {
                     item: equippedItem,
                     category: 'equipement'
                 };

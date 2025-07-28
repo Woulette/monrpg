@@ -361,6 +361,12 @@ class SaveSystem {
             }
 
             console.log('🎮 Partie chargée avec succès');
+            
+            // Mettre à jour l'affichage des pecka
+            if (typeof window.updatePeckaDisplay === 'function') {
+                window.updatePeckaDisplay();
+            }
+            
             this.showLoadSuccess();
             
             // Afficher le dialogue de bienvenue de Papi si c'est une nouvelle partie
@@ -416,8 +422,23 @@ class SaveSystem {
 
     // Supprimer la sauvegarde
     deleteSave() {
+        // Supprimer la sauvegarde principale
         localStorage.removeItem(this.saveKey);
-        console.log('🗑️ Sauvegarde supprimée');
+        
+        // Supprimer toutes les données de monstres
+        localStorage.removeItem('monsterSaves');
+        
+        // Supprimer les compteurs de corbeaux tués
+        localStorage.removeItem('crowKillCounts');
+        
+        // Supprimer toutes les autres données potentielles du jeu
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('monrpg_')) {
+                localStorage.removeItem(key);
+            }
+        });
+        
+        console.log('🗑️ TOUTES les données du jeu ont été supprimées');
     }
 
     // Obtenir le texte pour le bouton "Continuer"
@@ -522,4 +543,40 @@ window.testInventorySave = function() {
         potions: window.inventoryPotions,
         ressources: window.inventoryRessources
     });
+};
+
+// Fonction pour supprimer TOUTES les données du localStorage
+window.clearAllGameData = function() {
+    console.log('🗑️ Suppression de TOUTES les données du jeu...');
+    
+    // Supprimer toutes les données du localStorage
+    localStorage.clear();
+    
+    // Réinitialiser les variables globales du jeu
+    if (typeof window.resetInventory === 'function') {
+        window.resetInventory();
+    }
+    
+    if (typeof window.resetEquipment === 'function') {
+        window.resetEquipment();
+    }
+    
+    if (typeof window.resetPlayer === 'function') {
+        window.resetPlayer();
+    }
+    
+    // Réinitialiser les données de monstres
+    if (typeof window.clearAllMonsterData === 'function') {
+        window.clearAllMonsterData();
+    }
+    
+    // Réinitialiser les variables globales
+    window.playerName = undefined;
+    window.playerAvatar = undefined;
+    window.crowKillCounts = { map1: 0, map2: 0, map3: 0 };
+    window.monsters = [];
+    window.occupiedPositions = new Set();
+    
+    console.log('✅ TOUTES les données du jeu ont été supprimées et réinitialisées');
+    console.log('🔄 Le jeu est maintenant dans un état complètement neuf');
 }; 
