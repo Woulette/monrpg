@@ -435,10 +435,10 @@ function openWorkshopModal({
         let equipId = '';
         switch (recipe.name) {
           case 'Corbacape': equipId = 'cape_corbeau'; break;
-          case 'Corbacoiffe': equipId = 'coiffe_simple'; break;
+          case 'Corbacoiffe': equipId = 'coiffe_corbeau'; break;
           case 'Corbobotte': equipId = 'bottes_corbeau'; break;
           case 'Corbature': equipId = 'ceinture_corbeau'; break;
-          case 'Corbolier': equipId = 'collier_corbeau'; break;
+          case 'Corbolier': equipId = 'amulette_corbeau'; break;
           case 'Corbaneau': equipId = 'anneau_corbeau'; break;
           default: equipId = ''; break;
         }
