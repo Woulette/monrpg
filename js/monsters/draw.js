@@ -60,6 +60,19 @@ slimeImg.onerror = () => {
     console.error("Erreur lors du chargement de l'image slime.png");
 };
 
+// Chargement de l'image du SlimeBoss
+const slimeBossImg = new Image();
+slimeBossImg.src = "assets/personnages/slimeboss.png";
+slimeBossImg.onload = () => {
+    console.log("Image SlimeBoss chargée avec succès");
+    if (typeof assignMonsterImages === "function") {
+        assignMonsterImages();
+    }
+};
+slimeBossImg.onerror = () => {
+    console.error("Erreur lors du chargement de l'image slimeboss.png");
+};
+
 // Fonction pour assigner l'image aux monstres (appelée après création des monstres)
 function assignMonsterImages() {
     if (window.monsters) {
@@ -70,6 +83,8 @@ function assignMonsterImages() {
                 m.img = corbeauEliteImg;
             } else if (m.type === "slime") {
                 m.img = slimeImg;
+            } else if (m.type === "slimeboss") {
+                m.img = slimeBossImg;
             } else if (m.type === "crow") {
                 m.img = corbeauImg;
             } else {

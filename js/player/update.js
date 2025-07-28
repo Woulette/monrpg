@@ -54,8 +54,8 @@ function updatePlayer(ts) {
             const levelSpeedBonus = (player.level - 1) * 0.01;
             currentMoveSpeed += levelSpeedBonus;
             
-            // Ralentir le joueur sur la carte du donjon slime pour compenser la petite taille
-            if (window.currentMap && window.currentMap.includes('mapdonjonslime')) {
+            // Ralentir le joueur sur les cartes du donjon slime pour compenser la petite taille
+            if (window.currentMap && (window.currentMap.includes('mapdonjonslime'))) {
                 currentMoveSpeed *= 0.5; // Ralentir de 50%
             }
             if (dx !== 0) player.px += currentMoveSpeed * Math.sign(dx);
@@ -272,23 +272,23 @@ function updatePlayer(ts) {
         }
     }
     
-    // Vérification de téléportation automatique
-    if (window.mapData && window.mapData.layers && window.mapData.layers.length > 0) {
-        // Chercher tous les portails (ID 1, 2, 3, 4) dans tous les calques
-        let portalFound = false;
-        let portalGid = null;
-        
-        for (let layerIndex = 0; layerIndex < window.mapData.layers.length; layerIndex++) {
-            const layer = window.mapData.layers[layerIndex];
-            const tileIndex = player.y * layer.width + player.x;
-            const tileId = layer.data[tileIndex];
+            // Vérification de téléportation automatique
+        if (window.mapData && window.mapData.layers && window.mapData.layers.length > 0) {
+            // Chercher tous les portails (ID 1, 2, 3, 4, 12008, 12208) dans tous les calques
+            let portalFound = false;
+            let portalGid = null;
             
-            if (tileId === 1 || tileId === 2 || tileId === 3 || tileId === 4) {
-                portalFound = true;
-                portalGid = tileId;
-                break;
+            for (let layerIndex = 0; layerIndex < window.mapData.layers.length; layerIndex++) {
+                const layer = window.mapData.layers[layerIndex];
+                const tileIndex = player.y * layer.width + player.x;
+                const tileId = layer.data[tileIndex];
+                
+                if (tileId === 1 || tileId === 2 || tileId === 3 || tileId === 4 || tileId === 12008 || tileId === 12208) {
+                    portalFound = true;
+                    portalGid = tileId;
+                    break;
+                }
             }
-        }
 
         // Portail détecté
         if (portalFound) {
@@ -326,7 +326,14 @@ function updatePlayer(ts) {
                     // Portail ID 2 → Map 3
                     destinationMap = "map3";
                     targetPortalId = 1;
+                } else if (portalGid === 12008) {
+                    // Portail ID 12008 → Mapdonjonslime2 (sens unique)
+                    destinationMap = "mapdonjonslime2";
+                    targetPortalId = 12208;
                 }
+            } else if (window.currentMap === "mapdonjonslime2") {
+                // Pas de portail de retour - le joueur doit tuer le boss pour sortir
+                // Le portail 12208 n'est plus fonctionnel
             } else {
                 // Logique générale pour les autres maps
                 if (portalGid === 1) {

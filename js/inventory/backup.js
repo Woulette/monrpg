@@ -1,4 +1,4 @@
-console.log("Fichier js/inventory.js chargé");
+console.log("Fichier js/inventory/backup.js chargé - Version de sauvegarde");
 
 // INVENTAIRE : 80 slots vides dès le départ !
 let inventory = Array.from({ length: 80 }, () => ({ item: null, category: null }));
@@ -244,8 +244,6 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Ajouter les Corbobotte à l'inventaire pour test
     addItemToInventory('bottes_corbeau', 'equipement');
-    
-
     
     // Gestion des clics sur les slots d'inventaire
     document.querySelectorAll('.inventory-slot').forEach(slot => {

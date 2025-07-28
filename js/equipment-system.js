@@ -115,16 +115,7 @@ const equipmentDatabase = {
         maxStack: 99
     },
     
-    certificat_donjon_corbeau: {
-        id: 'certificat_donjon_corbeau',
-        name: 'Certificat Donjon Corbeau',
-        type: 'ressource',
-        icon: 'assets/objets/certificadonjoncorbeau.png',
-        description: 'Un certificat prouvant votre valeur auprès des corbeaux mais vous donnant aussi accès au donjon slime.',
-        rarity: 'rare',
-        stackable: true,
-        maxStack: 99
-    }
+
 };
 
 // Fonction pour équiper un item

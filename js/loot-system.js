@@ -5,7 +5,9 @@ function preloadLootImages() {
     const imagesToPreload = [
         'assets/objets/pattedecorbeau.png',
         'assets/objets/plumedecorbeau.png',
-        'assets/objets/certificadonjoncorbeau.png'
+        'assets/objets/certificadonjoncorbeau.png',
+        'assets/objets/nouveau_sort.png',
+        'assets/objets/orbe_speciale.png'
     ];
     
     imagesToPreload.forEach(src => {
@@ -47,12 +49,34 @@ const resourceDatabase = {
         id: 'certificat_corbeau',
         name: 'Certificat de Rang Corbeau',
         type: 'objet spécial',
-        category: 'certificat',
+        category: 'ressource',
         icon: 'assets/objets/certificadonjoncorbeau.png',
         description: 'Un certificat prouvant votre valeur auprès des corbeaux mais vous donnant aussi accès au donjon slime.',
         rarity: 'rare',
         stackable: true,
         maxStack: 99
+    },
+    'nouveau_sort': {
+        id: 'nouveau_sort',
+        name: 'Nouveau Sort',
+        type: 'sort',
+        category: 'ressource',
+        icon: 'assets/objets/nouveau_sort.png',
+        description: 'Un sort puissant obtenu après avoir vaincu le boss terrifiant du donjon.',
+        rarity: 'legendary',
+        stackable: false,
+        maxStack: 1
+    },
+    'orbe_speciale': {
+        id: 'orbe_speciale',
+        name: 'Orbe Spéciale',
+        type: 'objet spécial',
+        category: 'ressource',
+        icon: 'assets/objets/orbe_speciale.png',
+        description: 'Une orbe mystérieuse contenant un pouvoir immense.',
+        rarity: 'legendary',
+        stackable: false,
+        maxStack: 1
     }
 };
 
@@ -98,26 +122,48 @@ const lootTables = {
 
 // Fonction pour générer le loot d'un monstre
 function generateLoot(monsterType) {
+    console.log(`🔍 Génération de loot pour: ${monsterType}`);
     const loot = {
         resources: [],
         pecka: 0
     };
     
     const lootTable = lootTables[monsterType];
-    if (!lootTable) return loot;
+    if (!lootTable) {
+        console.log(`❌ Pas de table de loot pour: ${monsterType}`);
+        return loot;
+    }
+    
+    console.log(`📋 Table de loot trouvée:`, lootTable);
+    
+    // Vérifier que le certificat est bien dans la base de données
+    if (monsterType === 'corbeauelite') {
+        console.log(`🔍 Vérification du certificat dans resourceDatabase:`, resourceDatabase['certificat_corbeau']);
+    }
     
     // Générer les ressources (1 par type maximum)
     const foundTypes = new Set();
     
     lootTable.resources.forEach(resource => {
-        if (Math.random() * 100 < resource.chance && !foundTypes.has(resource.category)) {
+        const chance = Math.random() * 100;
+        console.log(`🎲 Test de chance pour ${resource.id}: ${chance} < ${resource.chance} ? ${chance < resource.chance}`);
+        
+        // Log spécial pour le certificat
+        if (resource.id === 'certificat_corbeau') {
+            console.log(`🔍 CERTIFICAT DÉTECTÉ - Chance: ${chance}, Seuil: ${resource.chance}, Déjà trouvé: ${foundTypes.has(resource.id)}`);
+        }
+        
+        if (chance < resource.chance && !foundTypes.has(resource.id)) {
             const quantity = Math.floor(Math.random() * (resource.maxQuantity - resource.minQuantity + 1)) + resource.minQuantity;
+            console.log(`✅ Ajout de ${resource.id} x${quantity}`);
             loot.resources.push({
                 id: resource.id,
                 quantity: quantity,
                 item: resourceDatabase[resource.id]
             });
-            foundTypes.add(resource.category);
+            foundTypes.add(resource.id);
+        } else {
+            console.log(`❌ ${resource.id} non ajouté (chance: ${chance >= resource.chance}, déjà trouvé: ${foundTypes.has(resource.id)})`);
         }
     });
     
@@ -444,22 +490,40 @@ function addResourceToInventory(resourceId, quantity) {
         }
     }
     
+    // Vérifier le progrès de la quête slimeBoss si le certificat a été obtenu
+    if (success && resourceId === 'certificat_corbeau' && typeof window.checkSlimeBossQuestProgress === 'function') {
+        console.log("📜 Certificat obtenu, vérification du progrès de la quête slimeBoss...");
+        window.checkSlimeBossQuestProgress();
+    }
+    
     return success;
 }
 
 // Fonction pour déclencher le loot quand un monstre meurt
 function triggerLoot(monster) {
-    console.log(`Trigger loot pour monstre: ${monster.type}`);
+    console.log(`🎯 Trigger loot pour monstre: ${monster.type} (ID: ${monster.id})`);
     const loot = generateLoot(monster.type);
-    console.log('Loot généré:', loot);
+    console.log('📦 Loot généré:', loot);
     
     // Afficher la fenêtre de loot seulement s'il y a quelque chose
     if (loot.resources.length > 0 || loot.pecka > 0) {
-        console.log('Affichage de la fenêtre de loot');
+        console.log('🪟 Affichage de la fenêtre de loot');
         showLootWindow(loot);
     } else {
-        console.log('Aucun loot à afficher');
+        console.log('❌ Aucun loot à afficher');
     }
+}
+
+// Fonction de test pour le certificat
+function testCertificatLoot() {
+    console.log("🧪 Test du système de loot pour le certificat");
+    console.log("📋 resourceDatabase['certificat_corbeau']:", resourceDatabase['certificat_corbeau']);
+    console.log("📋 lootTables['corbeauelite']:", lootTables['corbeauelite']);
+    
+    const testLoot = generateLoot('corbeauelite');
+    console.log("📦 Loot de test généré:", testLoot);
+    
+    return testLoot;
 }
 
 // Rendre les fonctions accessibles globalement
@@ -467,4 +531,6 @@ window.generateLoot = generateLoot;
 window.showLootWindow = showLootWindow;
 window.addResourceToInventory = addResourceToInventory;
 window.triggerLoot = triggerLoot;
-window.resourceDatabase = resourceDatabase; 
+window.resourceDatabase = resourceDatabase;
+window.lootTables = lootTables;
+window.testCertificatLoot = testCertificatLoot; 

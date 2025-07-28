@@ -27,11 +27,11 @@ function calculateMapCentering() {
     const mapWidth = window.mapData.width * TILE_SIZE;
     const mapHeight = window.mapData.height * TILE_SIZE;
     
-    // Centrer la map donjon slime spécifiquement
-    if (window.currentMap === "mapdonjonslime") {
+    // Centrer les maps donjon slime spécifiquement
+    if (window.currentMap === "mapdonjonslime" || window.currentMap === "mapdonjonslime2") {
         window.mapOffsetX = Math.max(0, (canvas.width - mapWidth) / 2);
         window.mapOffsetY = Math.max(0, (canvas.height - mapHeight) / 2);
-        console.log(`🎯 Centrage de mapdonjonslime: offsetX=${window.mapOffsetX}, offsetY=${window.mapOffsetY}`);
+        console.log(`🎯 Centrage de ${window.currentMap}: offsetX=${window.mapOffsetX}, offsetY=${window.mapOffsetY}`);
     } else {
         // Pour les autres maps, pas de centrage
         window.mapOffsetX = 0;

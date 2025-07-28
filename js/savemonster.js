@@ -12,7 +12,7 @@ function saveMonstersForMap(mapName) {
     // Filtrer les monstres selon le type de map
     let monstersToSave;
     
-    if (mapName === "mapdonjonslime" || mapName.includes("slime")) {
+    if (mapName === "mapdonjonslime" || mapName === "mapdonjonslime2" || mapName.includes("slime")) {
         // Sur les maps slime, sauvegarder UNIQUEMENT les slimes
         monstersToSave = window.monsters.filter(m => m.type === "slime" && !m.isDead);
         console.log(`🔵 ${monstersToSave.length} slimes sauvegardés pour ${mapName}`);
@@ -117,7 +117,7 @@ function loadMonstersForMap(mapName) {
         // Filtrer les monstres selon le type de map
         let validMonsters;
         
-        if (mapName === "mapdonjonslime" || mapName.includes("slime")) {
+        if (mapName === "mapdonjonslime" || mapName === "mapdonjonslime2" || mapName.includes("slime")) {
             // Sur les maps slime, charger UNIQUEMENT les slimes
             validMonsters = mapSaves.filter(m => m.type === "slime");
             console.log(`🔵 ${validMonsters.length} slimes chargés pour ${mapName}`);
@@ -139,7 +139,7 @@ function loadMonstersForMap(mapName) {
         }
         
         // Vérifier s'il y a assez de monstres vivants
-        const expectedCount = (mapName === "mapdonjonslime" || mapName.includes("slime")) ? 8 : 10;
+        const expectedCount = (mapName === "mapdonjonslime" || mapName === "mapdonjonslime2" || mapName.includes("slime")) ? 8 : 10;
         if (aliveMonsters.length < expectedCount) {
             console.log(`⚠️ Pas assez de monstres vivants sur ${mapName} (${aliveMonsters.length}/${expectedCount}), pas de chargement`);
             return false; // Ne pas charger si pas assez de monstres vivants
@@ -204,7 +204,7 @@ function cleanCorruptedSaveData() {
         Object.keys(allSaves).forEach(mapName => {
             const mapSaves = allSaves[mapName];
             
-            if (mapName === "mapdonjonslime" || mapName.includes("slime")) {
+            if (mapName === "mapdonjonslime" || mapName === "mapdonjonslime2" || mapName.includes("slime")) {
                 // Sur les maps slime, supprimer TOUS les corbeaux et ne garder que les slimes
                 const invalidMonsters = mapSaves.filter(m => m.type !== "slime");
                 if (invalidMonsters.length > 0) {
@@ -301,7 +301,7 @@ function loadCrowKillCounts() {
     // Charger les compteurs de corbeaux tués
     loadCrowKillCounts();
     
-    // Forcer le nettoyage des données de mapdonjonslime au démarrage
+    // Forcer le nettoyage des données des maps donjon slime au démarrage
     try {
         const savedData = localStorage.getItem('monsterSaves');
         if (savedData) {
@@ -309,6 +309,11 @@ function loadCrowKillCounts() {
             if (allSaves.mapdonjonslime) {
                 console.log("🗑️ Suppression forcée des données de mapdonjonslime au démarrage");
                 delete allSaves.mapdonjonslime;
+                localStorage.setItem('monsterSaves', JSON.stringify(allSaves));
+            }
+            if (allSaves.mapdonjonslime2) {
+                console.log("🗑️ Suppression forcée des données de mapdonjonslime2 au démarrage");
+                delete allSaves.mapdonjonslime2;
                 localStorage.setItem('monsterSaves', JSON.stringify(allSaves));
             }
         }

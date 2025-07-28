@@ -147,6 +147,14 @@ class SaveSystem {
                 currentMap: window.currentMap,
                 lastSaveTime: Date.now()
             },
+            // Sauvegarde des quêtes
+            quests: window.quests || {},
+            // Sauvegarde de l'état des PNJs
+            pnjs: {
+                papi3: {
+                    hasMoved: window.pnjs ? (window.pnjs.find(p => p.id === 'papi3')?.hasMoved || false) : false
+                }
+            },
             character: {
                 name: window.playerName || 'Mon Personnage',
                 avatar: window.playerAvatar || 'assets/personnages/player.png'
@@ -352,9 +360,45 @@ class SaveSystem {
                     loadMap(data.gameState.currentMap);
                 }
             }
+
+            // Restaurer les quêtes
+            if (data.quests && typeof window.quests !== 'undefined') {
+                Object.keys(data.quests).forEach(questId => {
+                    if (window.quests[questId]) {
+                        // Restaurer les propriétés importantes des quêtes
+                        window.quests[questId].completed = data.quests[questId].completed || false;
+                        window.quests[questId].accepted = data.quests[questId].accepted || false;
+                        window.quests[questId].current = data.quests[questId].current || 0;
+                        window.quests[questId].readyToComplete = data.quests[questId].readyToComplete || false;
+                    }
+                });
+                console.log('📋 Quêtes restaurées avec succès');
+            }
+
+            // Restaurer l'état des PNJs
+            if (data.pnjs && window.pnjs) {
+                if (data.pnjs.papi3 && data.pnjs.papi3.hasMoved) {
+                    const papi3 = window.pnjs.find(p => p.id === 'papi3');
+                    if (papi3) {
+                        papi3.hasMoved = true;
+                        papi3.x += 1; // Se déplace d'une case vers la droite
+                        papi3.px = papi3.x * TILE_SIZE;
+                        
+                        // Libérer l'ancienne position et occuper la nouvelle
+                        if (typeof release === "function") {
+                            release(papi3.x - 1, papi3.y);
+                        }
+                        if (typeof occupy === "function") {
+                            occupy(papi3.x, papi3.y);
+                        }
+                        
+                        console.log('👴 Papi3 position restaurée (déplacé)');
+                    }
+                }
+            }
             
             // Nettoyer les données de monstres si on charge une map slime
-            if (data.gameState && data.gameState.currentMap === "mapdonjonslime") {
+            if (data.gameState && (data.gameState.currentMap === "mapdonjonslime" || data.gameState.currentMap === "mapdonjonslime2")) {
                 if (typeof window.clearAllMonsterData === "function") {
                     window.clearAllMonsterData();
                 }

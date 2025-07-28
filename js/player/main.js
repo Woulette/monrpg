@@ -15,7 +15,7 @@ const player = {
     maxLife: 50,
     life: 50,
     // Statistiques de base (modifiables avec points de caractéristiques)
-    baseForce: 1,
+    baseForce: 100,
     baseIntelligence: 1,
     baseAgilite: 1,
     baseDefense: 1,
@@ -126,7 +126,7 @@ function resetPlayer() {
     player.life = 50;
     
     // Réinitialiser les statistiques de base
-    player.baseForce = 1;
+    player.baseForce = 100;
     player.baseIntelligence = 1;
     player.baseAgilite = 1;
     player.baseDefense = 1;

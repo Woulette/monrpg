@@ -48,10 +48,13 @@ function initMonsters() {
         // Si pas de sauvegarde, créer de nouveaux monstres
         console.log("Aucune sauvegarde trouvée, création de nouveaux monstres...");
         
-        // Gestion spéciale pour la map slime - AUCUN corbeau ici
-        if (currentMap && (currentMap === "mapdonjonslime" || currentMap.includes("slime"))) {
+        // Gestion spéciale pour les maps slime - AUCUN corbeau ici
+        if (currentMap && (currentMap === "mapdonjonslime" || currentMap === "mapdonjonslime2" || currentMap.includes("slime"))) {
             console.log("Map slime détectée, création de slimes uniquement...");
             createSlimes(5); // 5 slimes de niveau 7 sur la map slime
+        } else if (currentMap && currentMap === "map4") {
+            console.log("Map 4 (donjon slime) détectée, création du SlimeBoss...");
+            spawnSlimeBoss(); // Créer le SlimeBoss sur la map 4
         } else if (currentMap && (currentMap === "map1" || currentMap === "map2" || currentMap === "map3")) {
                          // Créer les corbeaux UNIQUEMENT pour les maps 1, 2 et 3
              console.log("Map normale détectée (map1/2/3), création de corbeaux...");
@@ -157,7 +160,22 @@ function createSlimes(count = 5) {
     // Zone de patrouille adaptée à la map slime (25x20)
     const slimePatrolZone = { x: 0, y: 0, width: 25, height: 20 };
     
-    for (let i = 0; i < count; i++) {
+    // Déterminer le nombre de slimes et leurs niveaux selon la map
+    const currentMap = window.currentMap;
+    let slimeCount, slimeLevels;
+    
+    if (currentMap === "mapdonjonslime") {
+        slimeCount = 5; // 5 slimes sur mapdonjonslime
+        slimeLevels = [7, 7, 7, 7, 7]; // Tous niveau 7
+    } else if (currentMap === "mapdonjonslime2") {
+        slimeCount = 7; // 7 slimes sur mapdonjonslime2
+        slimeLevels = [8, 8, 8, 9, 9, 9, 9]; // Niveaux 8 et 9
+    } else {
+        slimeCount = count; // Fallback
+        slimeLevels = Array(slimeCount).fill(7);
+    }
+    
+    for (let i = 0; i < slimeCount; i++) {
         // Générer une position aléatoire sur toute la map
         let sx, sy;
         let attempts = 0;
@@ -178,8 +196,8 @@ function createSlimes(count = 5) {
             sy = Math.floor(Math.random() * slimePatrolZone.height);
         }
         
-        // Niveau fixe à 7 pour le donjon slime
-        const level = 7; // Niveau 7 uniquement
+        // Niveau selon la map
+        const level = slimeLevels[i] || 7;
         
         // Stats du slime (niveaux plus élevés)
         const baseHp = 30; // Plus de PV de base pour les niveaux 7-9
@@ -226,7 +244,8 @@ function createSlimes(count = 5) {
             xpValue: Math.floor(baseXp * xpMultiplier),
             isDead: false,
             deathTime: 0,
-            respawnTime: RESPAWN_DELAY,
+            respawnTime: 0, // Pas de respawn pour les slimes du donjon
+            permanentDeath: true, // Marquer pour mort permanente
             // Nouvelles statistiques de force et défense
             force: Math.floor(baseForce * forceMultiplier),
             defense: Math.floor(baseDefense * defenseMultiplier),
@@ -417,6 +436,95 @@ function spawnCorbeauElite() {
     }
 }
 
+function spawnSlimeBoss() {
+    const currentMap = window.currentMap;
+    if (!currentMap) return;
+    
+    // Le SlimeBoss ne peut spawner que sur la map 4 (donjon slime)
+    if (currentMap !== "map4") {
+        console.log(`SlimeBoss ne peut pas spawner sur la map ${currentMap}`);
+        return;
+    }
+    
+    let sx, sy;
+    let attempts = 0;
+    const maxAttempts = 100;
+    do {
+        sx = Math.floor(Math.random() * PATROL_ZONE.width);
+        sy = Math.floor(Math.random() * PATROL_ZONE.height);
+        attempts++;
+    } while (
+        attempts < maxAttempts && 
+        (window.isBlocked && window.isBlocked(sx, sy))
+    );
+    if (attempts >= maxAttempts) {
+        sx = Math.floor(Math.random() * PATROL_ZONE.width);
+        sy = Math.floor(Math.random() * PATROL_ZONE.height);
+    }
+    
+    const level = 10; // Niveau élevé pour un boss
+    const baseHp = 200; // 200 de vie pour un boss puissant
+    const baseXp = 500; // 500 XP pour un boss
+    const baseForce = 25; // 25 de force
+    const baseDefense = 20; // 20 de défense
+    const TILE_SIZE = window.TILE_SIZE || 32;
+    
+    monsters.push({
+        id: 'SB' + Date.now(),
+        name: "SlimeBoss",
+        type: "slimeboss",
+        level: level,
+        x: sx, y: sy,
+        px: sx * TILE_SIZE, py: sy * TILE_SIZE,
+        spawnX: sx, spawnY: sy,
+        frame: 0,
+        direction: 0,
+        img: null, // Sera assignée dans draw.js
+        animDelay: 150, // Animation un peu plus lente que les autres
+        idleAnimDelay: 300, // Animation idle lente
+        walkAnimDelay: 150, // Animation walk normale
+        lastAnim: 0,
+        state: "idle",
+        stateTime: 0,
+        movePath: [],
+        moving: false,
+        moveTarget: { x: sx, y: sy },
+        moveSpeed: 0.6, // Plus lent que les autres monstres
+        moveCooldown: 0,
+        patrolZone: PATROL_ZONE,
+        hp: baseHp,
+        maxHp: baseHp,
+        aggro: false,
+        aggroTarget: null,
+        lastAttack: 0,
+        lastCombat: 0,
+        stuckSince: 0,
+        returningHome: false,
+        lastPatrol: null,
+        xpValue: baseXp,
+        isDead: false,
+        deathTime: 0,
+        respawnTime: 60000, // 1 minute de respawn pour un boss
+        damage: 15, // Dégâts élevés du SlimeBoss
+        force: baseForce,
+        agilite: 12,
+        intelligence: 15,
+        defense: baseDefense
+    });
+    
+    // Ajouter les propriétés d'animation séparées pour le SlimeBoss
+    const newMonster = monsters[monsters.length - 1];
+    newMonster.idleFrame = 0;
+    newMonster.walkFrame = 0;
+    newMonster.lastIdleAnim = 0;
+    newMonster.lastWalkAnim = 0;
+    
+    console.log(`SlimeBoss apparu sur ${currentMap} à la position (${sx}, ${sy}) !`);
+    if (typeof assignMonsterImages === "function") {
+        assignMonsterImages();
+    }
+}
+
 // Fonction pour gérer le respawn des monstres
 function updateMonsterRespawn() {
     const currentTime = Date.now();
@@ -458,10 +566,16 @@ function updateMonsterRespawn() {
         if (monster.isDead && currentTime - monster.deathTime >= monster.respawnTime) {
             
             // VÉRIFICATION CRUCIALE : Ne respawn que les monstres du bon type selon la map
-            if (currentMap === "mapdonjonslime" || (currentMap && currentMap.includes("slime"))) {
-                // Sur mapdonjonslime, seuls les slimes peuvent respawn
+            if (currentMap === "mapdonjonslime" || currentMap === "mapdonjonslime2" || (currentMap && currentMap.includes("slime"))) {
+                // Sur les maps slime, seuls les slimes peuvent respawn, mais pas ceux marqués pour mort permanente
                 if (monster.type !== "slime") {
                     console.log(`🚫 ${monster.type} ${monster.id} supprimé de la map slime - respawn interdit`);
+                    monstersToRemove.push(monster);
+                    return;
+                }
+                // Vérifier si le slime est marqué pour mort permanente
+                if (monster.permanentDeath) {
+                    console.log(`🚫 Slime ${monster.id} supprimé - mort permanente`);
                     monstersToRemove.push(monster);
                     return;
                 }
@@ -670,7 +784,29 @@ function killMonster(monster) {
             if (typeof release === "function") {
                 release(monster.x, monster.y);
             }
-            console.log(`Slime ${monster.id} tué sur ${window.currentMap}, respawn dans 30 secondes`);
+            
+            // Marquer le slime pour mort permanente
+            monster.permanentDeath = true;
+            monster.respawnTime = 0;
+            
+            // Vérifier la progression du donjon
+            if (typeof window.checkDungeonProgression === "function") {
+                window.checkDungeonProgression();
+            }
+            
+            console.log(`Slime ${monster.id} tué sur ${window.currentMap}, mort permanente`);
+        } else if (monster.type === "slimeboss") {
+            // Libérer la position occupée
+            if (typeof release === "function") {
+                release(monster.x, monster.y);
+            }
+            
+            // Déclencher la progression de la quête slimeBossFinal
+            if (typeof window.checkSlimeBossFinalQuestProgress === "function") {
+                window.checkSlimeBossFinalQuestProgress();
+            }
+            
+            console.log(`SlimeBoss ${monster.id} tué sur ${window.currentMap}, respawn dans 1 minute`);
         } else {
             // Type de monstre non reconnu
             console.warn(`Type de monstre non reconnu: ${monster.type}`);
@@ -722,6 +858,7 @@ function updateMonsterAlignment(monster) {
 
 // Export global
 window.monsters = monsters;
+window.spawnSlimeBoss = spawnSlimeBoss;
 window.crowKillCounts = crowKillCounts;
 window.updateMonsterRespawn = updateMonsterRespawn;
 window.killMonster = killMonster;
