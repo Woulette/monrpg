@@ -82,6 +82,107 @@ function resetEquipment() {
     console.log("Équipement réinitialisé avec succès");
 }
 
+// ===== SYSTÈME DE SAUVEGARDE/CHARGEMENT MULTI-PERSONNAGES =====
+
+// Sauvegarder l'inventaire pour un personnage spécifique
+function saveInventoryForCharacter(characterId) {
+    if (!characterId) {
+        console.warn('❌ Impossible de sauvegarder l\'inventaire: characterId manquant');
+        return;
+    }
+    
+    try {
+        const inventoryData = {
+            inventoryAll: window.inventoryAll || [],
+            inventoryEquipement: window.inventoryEquipement || [],
+            inventoryPotions: window.inventoryPotions || [],
+            inventoryRessources: window.inventoryRessources || [],
+            equippedItems: window.equippedItems || {
+                coiffe: null,
+                cape: null,
+                amulette: null,
+                anneau: null,
+                ceinture: null,
+                bottes: null
+            }
+        };
+        
+        localStorage.setItem(`monrpg_inventory_${characterId}`, JSON.stringify(inventoryData));
+        console.log(`💾 Inventaire sauvegardé pour le personnage ${characterId}`);
+    } catch (error) {
+        console.error('❌ Erreur lors de la sauvegarde de l\'inventaire:', error);
+    }
+}
+
+// Charger l'inventaire pour un personnage spécifique
+function loadInventoryForCharacter(characterId) {
+    if (!characterId) {
+        console.warn('❌ Impossible de charger l\'inventaire: characterId manquant');
+        return false;
+    }
+    
+    try {
+        const saveKey = `monrpg_inventory_${characterId}`;
+        const savedData = localStorage.getItem(saveKey);
+        
+        if (!savedData) {
+            console.log(`📭 Aucun inventaire sauvegardé trouvé pour le personnage ${characterId}`);
+            return false;
+        }
+        
+        const inventoryData = JSON.parse(savedData);
+        
+        // Restaurer les inventaires
+        if (inventoryData.inventoryAll) {
+            window.inventoryAll = inventoryData.inventoryAll;
+        }
+        if (inventoryData.inventoryEquipement) {
+            window.inventoryEquipement = inventoryData.inventoryEquipement;
+        }
+        if (inventoryData.inventoryPotions) {
+            window.inventoryPotions = inventoryData.inventoryPotions;
+        }
+        if (inventoryData.inventoryRessources) {
+            window.inventoryRessources = inventoryData.inventoryRessources;
+        }
+        
+        // Restaurer l'équipement
+        if (inventoryData.equippedItems) {
+            window.equippedItems = inventoryData.equippedItems;
+        }
+        
+        // Mettre à jour la référence principale
+        window.inventory = window.inventoryAll;
+        
+        // Mettre à jour l'affichage
+        if (typeof updateAllGrids === 'function') {
+            updateAllGrids();
+        }
+        if (typeof updateEquipmentDisplay === 'function') {
+            updateEquipmentDisplay();
+        }
+        
+        console.log(`✅ Inventaire chargé pour le personnage ${characterId}`);
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Erreur lors du chargement de l\'inventaire:', error);
+        return false;
+    }
+}
+
+// Supprimer l'inventaire d'un personnage spécifique
+function deleteInventoryForCharacter(characterId) {
+    if (!characterId) return;
+    
+    try {
+        localStorage.removeItem(`monrpg_inventory_${characterId}`);
+        console.log(`🗑️ Inventaire supprimé pour le personnage ${characterId}`);
+    } catch (error) {
+        console.error('❌ Erreur lors de la suppression de l\'inventaire:', error);
+    }
+}
+
 function initStats() {
     console.log("Initialisation des statistiques...");
     
@@ -100,35 +201,37 @@ function getInventoryByCategory(category) {
             return window.inventoryPotions;
         case 'ressources':
             return window.inventoryRessources;
-        case 'all':
         default:
             return window.inventoryAll;
     }
 }
 
-// Fonction pour réorganiser l'inventaire en décalant vers la gauche
+// Fonction pour réorganiser l'inventaire (supprimer les espaces vides)
 function reorganizeInventory(inventory) {
-    // Créer un nouvel inventaire temporaire
-    const newInventory = [];
+    if (!inventory || !Array.isArray(inventory)) {
+        console.warn('Inventaire invalide pour réorganisation');
+        return;
+    }
     
-    // Copier tous les items non-null vers le début
-    for (let i = 0; i < inventory.length; i++) {
-        if (inventory[i] && inventory[i].item !== null) {
-            newInventory.push(inventory[i]);
+    // Filtrer les slots non vides
+    const nonEmptySlots = inventory.filter(slot => slot.item !== null);
+    
+    // Créer un nouvel inventaire avec les slots non vides en premier
+    const reorganized = Array.from({ length: 80 }, (_, index) => {
+        if (index < nonEmptySlots.length) {
+            return nonEmptySlots[index];
+        } else {
+            return { item: null, category: inventory[0]?.category || null };
         }
-    }
-    
-    // Remplir le reste avec des slots vides
-    while (newInventory.length < inventory.length) {
-        newInventory.push({ item: null, category: inventory[0] ? inventory[0].category : 'all' });
-    }
+    });
     
     // Remplacer l'inventaire original
-    for (let i = 0; i < inventory.length; i++) {
-        inventory[i] = newInventory[i];
-    }
+    Object.assign(inventory, reorganized);
+    
+    console.log(`Inventaire réorganisé: ${nonEmptySlots.length} items conservés`);
 }
 
-// Exporter les fonctions
-window.getInventoryByCategory = getInventoryByCategory;
-window.reorganizeInventory = reorganizeInventory; 
+// Exporter les nouvelles fonctions
+window.saveInventoryForCharacter = saveInventoryForCharacter;
+window.loadInventoryForCharacter = loadInventoryForCharacter;
+window.deleteInventoryForCharacter = deleteInventoryForCharacter; 

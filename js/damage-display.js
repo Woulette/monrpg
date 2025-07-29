@@ -4,6 +4,10 @@
 const damageNumbers = [];
 const damageEffects = [];
 
+// Limites pour éviter l'accumulation excessive
+const MAX_DAMAGE_EFFECTS = 50; // Limite maximale d'effets simultanés
+const CLEANUP_INTERVAL = 5000; // Nettoyage forcé toutes les 5 secondes
+
 // Configuration des dégâts
 const DAMAGE_CONFIG = {
     playerDamage: {
@@ -32,8 +36,41 @@ const DAMAGE_CONFIG = {
     }
 };
 
+// Fonction de nettoyage forcé
+function forceCleanupDamageEffects() {
+    const currentTime = Date.now();
+    let removedCount = 0;
+    
+    // Supprimer les effets expirés
+    for (let i = damageEffects.length - 1; i >= 0; i--) {
+        const effect = damageEffects[i];
+        const elapsed = currentTime - effect.startTime;
+        
+        if (elapsed > effect.duration + 1000) { // +1 seconde de marge
+            damageEffects.splice(i, 1);
+            removedCount++;
+        }
+    }
+    
+    // Si on a encore trop d'effets, supprimer les plus anciens
+    if (damageEffects.length > MAX_DAMAGE_EFFECTS) {
+        const toRemove = damageEffects.length - MAX_DAMAGE_EFFECTS;
+        damageEffects.splice(0, toRemove);
+        removedCount += toRemove;
+    }
+    
+    if (removedCount > 0) {
+        console.log(`🧹 Nettoyage forcé: ${removedCount} effets de dégâts supprimés`);
+    }
+}
+
 // Créer un effet de dégâts
 function createDamageEffect(x, y, damage, type = 'damage', isPlayer = false, isCrit = false) {
+    // Nettoyage préventif si on a trop d'effets
+    if (damageEffects.length >= MAX_DAMAGE_EFFECTS) {
+        forceCleanupDamageEffects();
+    }
+    
     let config;
     
     if (type === 'xp') {
@@ -132,6 +169,12 @@ function displayDamage(x, y, damage, type = 'damage', isPlayer = false) {
 // Mettre à jour les effets de dégâts
 function updateDamageEffects() {
     const currentTime = Date.now();
+    let removedCount = 0;
+    
+    // Nettoyage périodique forcé
+    if (currentTime % CLEANUP_INTERVAL < 16) { // Toutes les ~5 secondes
+        forceCleanupDamageEffects();
+    }
     
     for (let i = damageEffects.length - 1; i >= 0; i--) {
         const effect = damageEffects[i];
@@ -141,6 +184,7 @@ function updateDamageEffects() {
         if (progress >= 1) {
             // Supprimer l'effet terminé
             damageEffects.splice(i, 1);
+            removedCount++;
             continue;
         }
         
@@ -155,6 +199,17 @@ function updateDamageEffects() {
         if (effect.alpha !== undefined) {
             effect.alpha = 1 - progress;
         }
+    }
+    
+    // Log de débogage si on a beaucoup d'effets
+    if (damageEffects.length > 20) {
+        console.log(`⚠️ Nombre d'effets de dégâts actifs: ${damageEffects.length}`);
+    }
+    
+    // Nettoyage d'urgence si on dépasse la limite
+    if (damageEffects.length > MAX_DAMAGE_EFFECTS * 1.5) {
+        console.warn(`🚨 Trop d'effets de dégâts (${damageEffects.length}), nettoyage d'urgence`);
+        damageEffects.length = 0; // Vider complètement
     }
 }
 
@@ -272,7 +327,15 @@ function drawDamageEffects(ctx) {
     ctx.restore();
 }
 
+// Fonction pour nettoyer complètement tous les effets (appelée lors du retour au menu)
+function clearAllDamageEffects() {
+    damageEffects.length = 0;
+    damageNumbers.length = 0;
+    console.log('🧹 Tous les effets de dégâts nettoyés');
+}
+
 // Fonctions d'export
 window.displayDamage = displayDamage;
 window.updateDamageEffects = updateDamageEffects;
-window.drawDamageEffects = drawDamageEffects; 
+window.drawDamageEffects = drawDamageEffects;
+window.clearAllDamageEffects = clearAllDamageEffects; 

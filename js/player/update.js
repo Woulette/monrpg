@@ -538,7 +538,6 @@ function updatePlayer(ts) {
             if (layer4) {
                 const idx = player.y * window.mapData.width + player.x;
                 const gid = layer4.data[idx];
-                console.log('[DEBUG portail map2]', 'x:', player.x, 'y:', player.y, 'gid:', gid);
                 if (gid === 1) {
                     teleportPlayer('map3', Math.floor(window.mapData.width/2), Math.floor(window.mapData.height/2));
                     return;

@@ -1,143 +1,164 @@
 // js/quetes.js - Système de quêtes
 
-// Système de quêtes
-const quests = {
-    crowHunt: {
-        id: 'crowHunt',
-        name: 'Chasse aux Corbeaux',
-        description: 'Chasse 5 corbeaux pour prouver ta valeur, puis va voir Papi sur la map 2 pour valider ta quête',
-        target: 5,
-        current: 0,
-        completed: false,
-        accepted: false,
-        readyToComplete: false, // Nouveau statut : prêt à être validé
-        // Informations sur la disponibilité de la quête
-        availableOn: {
-            map: 1, // Carte où le PNJ propose la quête
-            pnjId: 'papi', // ID du PNJ qui propose la quête
-            pnjPosition: { x: 30, y: 1 } // Position du PNJ sur la carte
+// Fonction pour créer une nouvelle instance de quêtes (isolée par personnage)
+function createQuestsInstance() {
+    return {
+        crowHunt: {
+            id: 'crowHunt',
+            name: 'Chasse aux Corbeaux',
+            description: 'Chasse 5 corbeaux pour prouver ta valeur, puis va voir Papi sur la map 2 pour valider ta quête',
+            target: 5,
+            current: 0,
+            completed: false,
+            accepted: false,
+            readyToComplete: false, // Nouveau statut : prêt à être validé
+            // Informations sur la disponibilité de la quête
+            availableOn: {
+                map: 1, // Carte où le PNJ propose la quête
+                pnjId: 'papi', // ID du PNJ qui propose la quête
+                pnjPosition: { x: 30, y: 1 } // Position du PNJ sur la carte
+            },
+            // Informations pour la validation
+            validationOn: {
+                map: 2, // Carte où valider la quête
+                pnjId: 'papi2', // ID du PNJ qui valide la quête
+                pnjPosition: { x: 15, y: 10 } // Position du PNJ sur la map 2
+            },
+            reward: {
+                xp: 50,
+                pecka: 100,
+                items: [
+                    { id: 'patte_corbeau', name: 'Patte de Corbeau', quantity: 10 },
+                    { id: 'plume_corbeau', name: 'Plume de Corbeau', quantity: 10 }
+                ]
+            }
         },
-        // Informations pour la validation
-        validationOn: {
-            map: 2, // Carte où valider la quête
-            pnjId: 'papi2', // ID du PNJ qui valide la quête
-            pnjPosition: { x: 15, y: 10 } // Position du PNJ sur la map 2
+        
+        // Nouvelle quête de craft après la validation de la quête corbeau
+        crowCraft: {
+            id: 'crowCraft',
+            name: 'Équipement du Corbeau',
+            description: 'Craft 1 coiffe, 1 cape, 1 anneau, 1 amulette, 1 botte et 1 ceinture corbeau pour compléter ton équipement',
+            target: 6, // 6 objets à crafter
+            current: 0,
+            completed: false,
+            accepted: false,
+            readyToComplete: false,
+            // Cette quête est disponible après avoir validé la quête corbeau
+            availableOn: {
+                map: 2, // Carte où le PNJ propose la quête
+                pnjId: 'papi2', // ID du PNJ qui propose la quête
+                pnjPosition: { x: 22, y: 16 } // Position du PNJ sur la carte
+            },
+            // Informations pour la validation
+            validationOn: {
+                map: 3, // Carte où valider la quête
+                pnjId: 'papi3', // ID du PNJ qui valide la quête
+                pnjPosition: { x: 23, y: 24 } // Position du PNJ sur la map 3
+            },
+            // Objets requis pour la quête
+            requiredItems: [
+                { id: 'coiffe_corbeau', name: 'Coiffe de Corbeau', quantity: 1 },
+                { id: 'cape_corbeau', name: 'Cape de Corbeau', quantity: 1 },
+                { id: 'anneau_corbeau', name: 'Anneau de Corbeau', quantity: 1 },
+                { id: 'amulette_corbeau', name: 'Amulette de Corbeau', quantity: 1 },
+                { id: 'bottes_corbeau', name: 'Bottes de Corbeau', quantity: 1 },
+                { id: 'ceinture_corbeau', name: 'Ceinture de Corbeau', quantity: 1 }
+            ],
+            reward: {
+                xp: 100,
+                pecka: 200
+            }
         },
-        reward: {
-            xp: 50,
-            pecka: 100,
-            items: [
-                { id: 'patte_corbeau', name: 'Patte de Corbeau', quantity: 10 },
-                { id: 'plume_corbeau', name: 'Plume de Corbeau', quantity: 10 }
-            ]
+        
+        // Nouvelle quête pour obtenir le certificat du donjon slime
+        slimeBoss: {
+            id: 'slimeBoss',
+            name: 'Maître des Lieux',
+            description: 'Tu souhaites accéder au donjon slime ? Mais tu es trop faible ! Prouve-moi ta valeur en tuant le maître des lieux. Une fois fait, reviens me voir avec le certificat.',
+            target: 1, // 1 certificat à obtenir
+            current: 0,
+            completed: false,
+            accepted: false,
+            readyToComplete: false,
+            // Cette quête est disponible après avoir validé la quête de craft
+            availableOn: {
+                map: 3, // Carte où le PNJ propose la quête
+                pnjId: 'papi3', // ID du PNJ qui propose la quête
+                pnjPosition: { x: 23, y: 24 } // Position du PNJ sur la carte
+            },
+            // Informations pour la validation
+            validationOn: {
+                map: 3, // Carte où valider la quête
+                pnjId: 'papi3', // ID du PNJ qui valide la quête
+                pnjPosition: { x: 23, y: 24 } // Position du PNJ sur la map 3
+            },
+            // Objet requis pour la quête
+            requiredItems: [
+                { id: 'certificat_corbeau', name: 'Certificat de Rang Corbeau', quantity: 1 }
+            ],
+            reward: {
+                xp: 150,
+                pecka: 300
+            }
+        },
+        
+        // Quête finale pour vaincre le SlimeBoss du donjon
+        slimeBossFinal: {
+            id: 'slimeBossFinal',
+            name: 'Le Boss du Donjon',
+            description: 'Un boss terrifiant d\'un autre univers est scellé dans ce donjon. Les forces du donjon s\'affaiblissent, il faut l\'éliminer pour rétablir la sécurité des lieux.',
+            target: 1, // 1 boss à tuer
+            current: 0,
+            completed: false,
+            accepted: false,
+            readyToComplete: false,
+            // Cette quête est disponible après avoir validé la quête slimeBoss
+            availableOn: {
+                map: 3, // Carte où le PNJ propose la quête
+                pnjId: 'papi3', // ID du PNJ qui propose la quête
+                pnjPosition: { x: 23, y: 24 } // Position du PNJ sur la carte
+            },
+            // Informations pour la validation
+            validationOn: {
+                map: 4, // Carte où valider la quête (donjon slime)
+                pnjId: 'papi4', // ID du PNJ qui valide la quête
+                pnjPosition: { x: 15, y: 15 } // Position du PNJ sur la map 4 (à définir)
+            },
+            reward: {
+                xp: 300,
+                pecka: 500,
+                items: [
+                    { id: 'nouveau_sort', name: 'Nouveau Sort', quantity: 1 },
+                    { id: 'orbe_speciale', name: 'Orbe Spéciale', quantity: 1 }
+                ]
+            }
         }
-    },
-    
-    // Nouvelle quête de craft après la validation de la quête corbeau
-    crowCraft: {
-        id: 'crowCraft',
-        name: 'Équipement du Corbeau',
-        description: 'Craft 1 coiffe, 1 cape, 1 anneau, 1 amulette, 1 botte et 1 ceinture corbeau pour compléter ton équipement',
-        target: 6, // 6 objets à crafter
-        current: 0,
-        completed: false,
-        accepted: false,
-        readyToComplete: false,
-        // Cette quête est disponible après avoir validé la quête corbeau
-        availableOn: {
-            map: 2, // Carte où le PNJ propose la quête
-            pnjId: 'papi2', // ID du PNJ qui propose la quête
-            pnjPosition: { x: 22, y: 16 } // Position du PNJ sur la carte
-        },
-        // Informations pour la validation
-        validationOn: {
-            map: 3, // Carte où valider la quête
-            pnjId: 'papi3', // ID du PNJ qui valide la quête
-            pnjPosition: { x: 23, y: 24 } // Position du PNJ sur la map 3
-        },
-        // Objets requis pour la quête
-        requiredItems: [
-            { id: 'coiffe_corbeau', name: 'Coiffe de Corbeau', quantity: 1 },
-            { id: 'cape_corbeau', name: 'Cape de Corbeau', quantity: 1 },
-            { id: 'anneau_corbeau', name: 'Anneau de Corbeau', quantity: 1 },
-            { id: 'amulette_corbeau', name: 'Amulette de Corbeau', quantity: 1 },
-            { id: 'bottes_corbeau', name: 'Bottes de Corbeau', quantity: 1 },
-            { id: 'ceinture_corbeau', name: 'Ceinture de Corbeau', quantity: 1 }
-        ],
-        reward: {
-            xp: 100,
-            pecka: 200
-        }
-    },
-    
-    // Nouvelle quête pour obtenir le certificat du donjon slime
-    slimeBoss: {
-        id: 'slimeBoss',
-        name: 'Maître des Lieux',
-        description: 'Tu souhaites accéder au donjon slime ? Mais tu es trop faible ! Prouve-moi ta valeur en tuant le maître des lieux. Une fois fait, reviens me voir avec le certificat.',
-        target: 1, // 1 certificat à obtenir
-        current: 0,
-        completed: false,
-        accepted: false,
-        readyToComplete: false,
-        // Cette quête est disponible après avoir validé la quête de craft
-        availableOn: {
-            map: 3, // Carte où le PNJ propose la quête
-            pnjId: 'papi3', // ID du PNJ qui propose la quête
-            pnjPosition: { x: 23, y: 24 } // Position du PNJ sur la carte
-        },
-        // Informations pour la validation
-        validationOn: {
-            map: 3, // Carte où valider la quête
-            pnjId: 'papi3', // ID du PNJ qui valide la quête
-            pnjPosition: { x: 23, y: 24 } // Position du PNJ sur la map 3
-        },
-        // Objet requis pour la quête
-        requiredItems: [
-            { id: 'certificat_corbeau', name: 'Certificat de Rang Corbeau', quantity: 1 }
-        ],
-        reward: {
-            xp: 150,
-            pecka: 300
-        }
-    },
-    
-    // Quête finale pour vaincre le SlimeBoss du donjon
-    slimeBossFinal: {
-        id: 'slimeBossFinal',
-        name: 'Le Boss du Donjon',
-        description: 'Un boss terrifiant d\'un autre univers est scellé dans ce donjon. Les forces du donjon s\'affaiblissent, il faut l\'éliminer pour rétablir la sécurité des lieux.',
-        target: 1, // 1 boss à tuer
-        current: 0,
-        completed: false,
-        accepted: false,
-        readyToComplete: false,
-        // Cette quête est disponible après avoir validé la quête slimeBoss
-        availableOn: {
-            map: 3, // Carte où le PNJ propose la quête
-            pnjId: 'papi3', // ID du PNJ qui propose la quête
-            pnjPosition: { x: 23, y: 24 } // Position du PNJ sur la carte
-        },
-        // Informations pour la validation
-        validationOn: {
-            map: 4, // Carte où valider la quête (donjon slime)
-            pnjId: 'papi4', // ID du PNJ qui valide la quête
-            pnjPosition: { x: 15, y: 15 } // Position du PNJ sur la map 4 (à définir)
-        },
-        reward: {
-            xp: 300,
-            pecka: 500,
-            items: [
-                { id: 'nouveau_sort', name: 'Nouveau Sort', quantity: 1 },
-                { id: 'orbe_speciale', name: 'Orbe Spéciale', quantity: 1 }
-            ]
-        }
+    };
+}
+
+// Instance globale par défaut (pour compatibilité)
+let quests = createQuestsInstance();
+
+// Fonction pour obtenir les quêtes du personnage actuel
+function getCurrentQuests() {
+    if (!window.quests) {
+        // Si pas d'instance, en créer une nouvelle
+        window.quests = createQuestsInstance();
     }
-};
+    return window.quests;
+}
+
+// Fonction pour réinitialiser les quêtes du personnage actuel
+function resetCurrentQuests() {
+    window.quests = createQuestsInstance();
+    console.log('🔄 Quêtes réinitialisées pour le personnage actuel');
+    return window.quests;
+}
 
 // Vérifier si une quête est disponible selon la position du joueur
 function isQuestAvailable(questId) {
-    const quest = quests[questId];
+    const quest = getCurrentQuests()[questId];
     if (!quest || quest.accepted || quest.completed) return false;
     
     // Vérifier si le joueur est sur la bonne carte
@@ -148,21 +169,21 @@ function isQuestAvailable(questId) {
     // Vérifications spéciales pour certaines quêtes
     if (questId === 'crowCraft') {
         // La quête de craft n'est disponible que si la quête corbeau est terminée
-        if (!quests.crowHunt.completed) {
+        if (!getCurrentQuests().crowHunt.completed) {
             return false;
         }
     }
     
     if (questId === 'slimeBoss') {
         // La quête du boss slime n'est disponible que si la quête de craft est terminée
-        if (!quests.crowCraft.completed) {
+        if (!getCurrentQuests().crowCraft.completed) {
             return false;
         }
     }
     
     if (questId === 'slimeBossFinal') {
         // La quête finale du slime boss n'est disponible que si la quête slimeBoss est terminée
-        if (!quests.slimeBoss.completed) {
+        if (!getCurrentQuests().slimeBoss.completed) {
             return false;
         }
     }
@@ -173,7 +194,14 @@ function isQuestAvailable(questId) {
 
 // Afficher l'offre de quête du boss slime
 function showSlimeBossQuestOffer() {
-    const quest = quests.slimeBoss;
+    const quest = getCurrentQuests().slimeBoss;
+    
+    if (!quest) {
+        console.error('❌ Quête slimeBoss non trouvée');
+        return;
+    }
+    
+    console.log('🎯 Affichage de l\'offre de quête slimeBoss:', quest);
     
     // Créer la fenêtre de quête
     let questModal = document.getElementById('slime-boss-quest-offer-modal');
@@ -270,7 +298,7 @@ function showSlimeBossQuestOffer() {
 
 // Afficher l'offre de quête de craft
 function showCraftQuestOffer() {
-    const quest = quests.crowCraft;
+    const quest = getCurrentQuests().crowCraft;
     
     // Créer la fenêtre de quête
     let questModal = document.getElementById('craft-quest-offer-modal');
@@ -375,7 +403,7 @@ function showCraftQuestOffer() {
 
 // Afficher l'offre de quête finale du SlimeBoss
 function showSlimeBossFinalQuestOffer() {
-    const quest = quests.slimeBossFinal;
+    const quest = getCurrentQuests().slimeBossFinal;
     
     // Créer la fenêtre de quête
     let questModal = document.getElementById('slime-boss-final-quest-offer-modal');
@@ -506,7 +534,7 @@ function getQuestItemImagePath(itemId) {
 
 // Afficher l'offre de quête
 function showQuestOffer() {
-    const quest = quests.crowHunt;
+    const quest = getCurrentQuests().crowHunt;
     
     // Créer la fenêtre de quête
     let questModal = document.getElementById('quest-offer-modal');
@@ -598,7 +626,7 @@ function showQuestOffer() {
 
 // Accepter une quête
 function acceptQuest(questId) {
-    const quest = quests[questId];
+    const quest = getCurrentQuests()[questId];
     if (quest && !quest.accepted) {
         quest.accepted = true;
         quest.current = 0;
@@ -674,7 +702,7 @@ function getItemQuantity(itemId) {
 
 // Vérifier si le joueur a tous les objets requis pour la quête de craft
 function checkCraftQuestProgress() {
-    const quest = quests.crowCraft;
+    const quest = getCurrentQuests().crowCraft;
     if (!quest || !quest.accepted || quest.completed) return;
     
     let completedItems = 0;
@@ -708,7 +736,7 @@ function checkCraftQuestProgress() {
 
 // Mettre à jour le progrès d'une quête
 function updateQuestProgress(questId, amount = 1) {
-    const quest = quests[questId];
+    const quest = getCurrentQuests()[questId];
     if (quest && quest.accepted && !quest.completed) {
         quest.current += amount;
         
@@ -727,7 +755,7 @@ function updateQuestProgress(questId, amount = 1) {
 
 // Terminer une quête
 function completeQuest(questId) {
-    const quest = quests[questId];
+    const quest = getCurrentQuests()[questId];
     if (quest && quest.accepted && !quest.completed) {
         quest.completed = true;
         quest.current = quest.target;
@@ -818,7 +846,7 @@ function onSlimeBossKilled() {
 
 // Fonction pour vérifier le progrès de la quête du boss slime (basée sur l'obtention du certificat)
 function checkSlimeBossQuestProgress() {
-    const quest = quests.slimeBoss;
+    const quest = getCurrentQuests().slimeBoss;
     if (!quest || !quest.accepted || quest.completed) {
         return;
     }
@@ -850,7 +878,7 @@ function checkSlimeBossQuestProgress() {
 
 // Fonction pour vérifier le progrès de la quête finale du SlimeBoss (basée sur la mort du boss)
 function checkSlimeBossFinalQuestProgress() {
-    const quest = quests.slimeBossFinal;
+    const quest = getCurrentQuests().slimeBossFinal;
     if (!quest || !quest.accepted || quest.completed) {
         return;
     }
@@ -875,7 +903,7 @@ function checkSlimeBossFinalQuestProgress() {
 // Vérifier si une quête peut être validée par le PNJ actuel
 function canValidateQuestWithPNJ(pnjId) {
     console.log("canValidateQuestWithPNJ appelé avec pnjId:", pnjId);
-    const questsArray = Object.values(quests);
+    const questsArray = Object.values(getCurrentQuests());
     console.log("Toutes les quêtes:", questsArray);
     
     const validQuest = questsArray.find(q => {
@@ -1015,7 +1043,7 @@ function refreshQuestsOnPlayerMove() {
 
 // Mettre à jour les compteurs d'onglets
 function updateQuestCounts() {
-    const questsArray = Object.values(quests);
+    const questsArray = Object.values(getCurrentQuests());
     
     const counts = {
         all: questsArray.filter(q => q.accepted).length, // Seulement les quêtes acceptées
@@ -1040,7 +1068,7 @@ function renderQuestsList() {
     
     questsList.innerHTML = '';
     
-    const questsArray = Object.values(quests);
+    const questsArray = Object.values(getCurrentQuests());
     let filteredQuests = questsArray;
     
     // Filtrer selon l'onglet actif
@@ -1244,7 +1272,7 @@ function getRewardLabel(type) {
 
 // Abandonner une quête
 function abandonQuest(questId) {
-    const quest = quests[questId];
+    const quest = getCurrentQuests()[questId];
     if (quest && quest.accepted && !quest.completed) {
         if (confirm(`Êtes-vous sûr de vouloir abandonner la quête "${quest.name}" ?`)) {
             quest.accepted = false;
@@ -1295,3 +1323,471 @@ window.canValidateQuestWithPNJ = canValidateQuestWithPNJ;
 window.validateQuestWithPNJ = validateQuestWithPNJ;
 window.getItemQuantity = getItemQuantity;
 window.testCraftQuestProgress = testCraftQuestProgress;
+
+// ===== SYSTÈME DE SAUVEGARDE/CHARGEMENT MULTI-PERSONNAGES =====
+
+// Sauvegarder les quêtes pour un personnage spécifique
+function saveQuestsForCharacter(characterId) {
+    if (!characterId) {
+        console.warn('❌ Impossible de sauvegarder les quêtes: characterId manquant');
+        return;
+    }
+    
+    try {
+        const questsData = {
+            quests: getCurrentQuests(),
+            timestamp: Date.now(),
+            characterId: characterId, // Ajouter l'ID du personnage pour validation
+            version: '1.0' // Version pour compatibilité future
+        };
+        
+        localStorage.setItem(`monrpg_quests_${characterId}`, JSON.stringify(questsData));
+        console.log(`💾 Quêtes sauvegardées pour le personnage ${characterId}`);
+    } catch (error) {
+        console.error('❌ Erreur lors de la sauvegarde des quêtes:', error);
+    }
+}
+
+// Charger les quêtes pour un personnage spécifique
+function loadQuestsForCharacter(characterId) {
+    if (!characterId) {
+        console.warn('❌ Impossible de charger les quêtes: characterId manquant');
+        return false;
+    }
+    
+    try {
+        const saveKey = `monrpg_quests_${characterId}`;
+        const savedData = localStorage.getItem(saveKey);
+        
+        if (!savedData) {
+            console.log(`📭 Aucune quête sauvegardée trouvée pour le personnage ${characterId}`);
+            // Réinitialiser les quêtes pour ce nouveau personnage
+            resetCurrentQuests();
+            return false;
+        }
+        
+        const questsData = JSON.parse(savedData);
+        
+        // Vérifier que les données correspondent au bon personnage
+        if (questsData.characterId && questsData.characterId !== characterId) {
+            console.warn(`⚠️ Données de quêtes corrompues pour ${characterId}, réinitialisation...`);
+            resetCurrentQuests();
+            return false;
+        }
+        
+        // Restaurer les quêtes
+        if (questsData.quests) {
+            // Fusionner avec les quêtes de base pour s'assurer que toutes les propriétés sont présentes
+            const baseQuests = createQuestsInstance();
+            window.quests = mergeQuestsWithBase(questsData.quests, baseQuests);
+            console.log(`✅ Quêtes chargées pour le personnage ${characterId}`);
+            return true;
+        }
+        
+        return false;
+        
+    } catch (error) {
+        console.error('❌ Erreur lors du chargement des quêtes:', error);
+        // En cas d'erreur, réinitialiser les quêtes
+        resetCurrentQuests();
+        return false;
+    }
+}
+
+// Fusionner les quêtes sauvegardées avec les quêtes de base
+function mergeQuestsWithBase(savedQuests, baseQuests) {
+    const mergedQuests = {};
+    
+    // Pour chaque quête de base
+    Object.keys(baseQuests).forEach(questId => {
+        const baseQuest = baseQuests[questId];
+        const savedQuest = savedQuests[questId];
+        
+        if (savedQuest) {
+            // Fusionner les propriétés sauvegardées avec les propriétés de base
+            mergedQuests[questId] = {
+                ...baseQuest, // Propriétés de base
+                ...savedQuest, // Propriétés sauvegardées (écrase les propriétés de base)
+                // S'assurer que les propriétés critiques sont présentes
+                id: questId,
+                name: baseQuest.name,
+                description: baseQuest.description,
+                target: baseQuest.target,
+                reward: baseQuest.reward,
+                availableOn: baseQuest.availableOn,
+                validationOn: baseQuest.validationOn
+            };
+        } else {
+            // Quête non sauvegardée, utiliser la base
+            mergedQuests[questId] = { ...baseQuest };
+        }
+    });
+    
+    return mergedQuests;
+}
+
+// Obtenir les quêtes de base (état initial)
+function getInitialQuests() {
+    return {
+        crowHunt: {
+            id: 'crowHunt',
+            name: 'Chasse aux Corbeaux',
+            description: 'Chasse 5 corbeaux pour prouver ta valeur, puis va voir Papi sur la map 2 pour valider ta quête',
+            target: 5,
+            current: 0,
+            completed: false,
+            accepted: false,
+            readyToComplete: false,
+            availableOn: {
+                map: 1,
+                pnjId: 'papi',
+                pnjPosition: { x: 30, y: 1 }
+            },
+            validationOn: {
+                map: 2,
+                pnjId: 'papi2',
+                pnjPosition: { x: 15, y: 10 }
+            },
+            reward: {
+                xp: 50,
+                pecka: 100,
+                items: [
+                    { id: 'patte_corbeau', name: 'Patte de Corbeau', quantity: 10 },
+                    { id: 'plume_corbeau', name: 'Plume de Corbeau', quantity: 10 }
+                ]
+            }
+        },
+        
+        crowCraft: {
+            id: 'crowCraft',
+            name: 'Équipement du Corbeau',
+            description: 'Craft 1 coiffe, 1 cape, 1 anneau, 1 amulette, 1 botte et 1 ceinture corbeau pour compléter ton équipement',
+            target: 6,
+            current: 0,
+            completed: false,
+            accepted: false,
+            readyToComplete: false,
+            availableOn: {
+                map: 2,
+                pnjId: 'papi2',
+                pnjPosition: { x: 22, y: 16 }
+            },
+            validationOn: {
+                map: 3,
+                pnjId: 'papi3',
+                pnjPosition: { x: 23, y: 24 }
+            },
+            requiredItems: [
+                { id: 'coiffe_corbeau', name: 'Coiffe de Corbeau', quantity: 1 },
+                { id: 'cape_corbeau', name: 'Cape de Corbeau', quantity: 1 },
+                { id: 'anneau_corbeau', name: 'Anneau de Corbeau', quantity: 1 },
+                { id: 'amulette_corbeau', name: 'Amulette de Corbeau', quantity: 1 },
+                { id: 'bottes_corbeau', name: 'Bottes de Corbeau', quantity: 1 },
+                { id: 'ceinture_corbeau', name: 'Ceinture de Corbeau', quantity: 1 }
+            ],
+            reward: {
+                xp: 100,
+                pecka: 200
+            }
+        },
+        
+        slimeBoss: {
+            id: 'slimeBoss',
+            name: 'Maître des Lieux',
+            description: 'Tu souhaites accéder au donjon slime ? Mais tu es trop faible ! Prouve-moi ta valeur en tuant le maître des lieux. Une fois fait, reviens me voir avec le certificat.',
+            target: 1,
+            current: 0,
+            completed: false,
+            accepted: false,
+            readyToComplete: false,
+            availableOn: {
+                map: 3,
+                pnjId: 'papi3',
+                pnjPosition: { x: 23, y: 24 }
+            },
+            validationOn: {
+                map: 3,
+                pnjId: 'papi3',
+                pnjPosition: { x: 23, y: 24 }
+            },
+            requiredItems: [
+                { id: 'certificat_corbeau', name: 'Certificat de Rang Corbeau', quantity: 1 }
+            ],
+            reward: {
+                xp: 150,
+                pecka: 300
+            }
+        },
+        
+        slimeBossFinal: {
+            id: 'slimeBossFinal',
+            name: 'Le Boss du Donjon',
+            description: 'Un boss terrifiant d\'un autre univers est scellé dans ce donjon. Les forces du donjon s\'affaiblissent, il faut l\'éliminer pour rétablir la sécurité des lieux.',
+            target: 1,
+            current: 0,
+            completed: false,
+            accepted: false,
+            readyToComplete: false,
+            availableOn: {
+                map: 3,
+                pnjId: 'papi3',
+                pnjPosition: { x: 23, y: 24 }
+            },
+            validationOn: {
+                map: 4,
+                pnjId: 'papi4',
+                pnjPosition: { x: 15, y: 15 }
+            },
+            reward: {
+                xp: 300,
+                pecka: 500,
+                items: [
+                    { id: 'nouveau_sort', name: 'Nouveau Sort', quantity: 1 },
+                    { id: 'orbe_speciale', name: 'Orbe Spéciale', quantity: 1 }
+                ]
+            }
+        }
+    };
+}
+
+// Supprimer les quêtes d'un personnage spécifique
+function deleteQuestsForCharacter(characterId) {
+    if (!characterId) return;
+    
+    try {
+        localStorage.removeItem(`monrpg_quests_${characterId}`);
+        console.log(`🗑️ Quêtes supprimées pour le personnage ${characterId}`);
+    } catch (error) {
+        console.error('❌ Erreur lors de la suppression des quêtes:', error);
+    }
+}
+
+// Réinitialiser les quêtes à leur état initial
+function resetQuestsToInitial() {
+    console.log('🔄 Réinitialisation des quêtes à l\'état initial...');
+    window.quests = createQuestsInstance();
+    
+    // Réinitialiser les états des PNJ si nécessaire
+    if (typeof window.resetPNJStates === 'function') {
+        window.resetPNJStates();
+    }
+    
+    console.log('✅ Quêtes réinitialisées');
+}
+
+// Fonction pour changer de personnage (nouvelle fonction)
+function switchCharacterQuests(characterId) {
+    console.log(`🔄 Changement de personnage pour ${characterId} - Réinitialisation des quêtes...`);
+    
+    // Réinitialiser complètement les quêtes
+    window.quests = createQuestsInstance();
+    
+    // Réinitialiser les états des PNJ
+    if (typeof window.resetPNJStates === 'function') {
+        window.resetPNJStates();
+    }
+    
+    // Charger les quêtes sauvegardées pour ce personnage
+    if (typeof window.loadQuestsForCharacter === 'function') {
+        window.loadQuestsForCharacter(characterId);
+    }
+    
+    console.log(`✅ Quêtes réinitialisées pour le personnage ${characterId}`);
+}
+
+// Fonction de diagnostic pour l'icône des quêtes
+window.debugQuestsIcon = function() {
+    console.log('🔍 Diagnostic de l\'icône des quêtes...');
+    
+    const quetesIcon = document.getElementById('quetes-icon');
+    const questsModal = document.getElementById('quests-main-modal');
+    
+    console.log('📋 Éléments DOM:', {
+        quetesIcon: !!quetesIcon,
+        questsModal: !!questsModal,
+        quetesIconDisplay: quetesIcon ? quetesIcon.style.display : 'undefined',
+        questsModalDisplay: questsModal ? questsModal.style.display : 'undefined'
+    });
+    
+    if (quetesIcon) {
+        console.log('✅ Icône des quêtes trouvée');
+        
+        // Vérifier si l'événement de clic est attaché
+        const events = quetesIcon.onclick;
+        console.log('🎯 Événement onclick:', !!events);
+        
+        // Tester le clic
+        console.log('🧪 Test du clic sur l\'icône...');
+        quetesIcon.click();
+        
+        setTimeout(() => {
+            console.log('📋 État après clic:', {
+                questsModalDisplay: questsModal ? questsModal.style.display : 'undefined'
+            });
+        }, 100);
+        
+    } else {
+        console.log('❌ Icône des quêtes non trouvée');
+    }
+    
+    console.log('🔍 Diagnostic terminé');
+};
+
+// Fonction pour forcer la réinitialisation complète de toutes les données de quêtes
+window.forceResetAllQuests = function() {
+    console.log('🧹 Réinitialisation forcée de toutes les données de quêtes...');
+    
+    // Supprimer toutes les données de quêtes de tous les personnages
+    const keys = Object.keys(localStorage);
+    const questKeys = keys.filter(key => key.startsWith('monrpg_quests_'));
+    
+    questKeys.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`🗑️ Supprimé: ${key}`);
+    });
+    
+    // Réinitialiser window.quests
+    resetQuestsToInitial();
+    
+    console.log('✅ Toutes les données de quêtes ont été réinitialisées');
+};
+// Exporter les nouvelles fonctions
+window.saveQuestsForCharacter = saveQuestsForCharacter;
+window.loadQuestsForCharacter = loadQuestsForCharacter;
+window.deleteQuestsForCharacter = deleteQuestsForCharacter;
+window.resetQuestsToInitial = resetQuestsToInitial;
+window.switchCharacterQuests = switchCharacterQuests;
+
+// Fonction de test pour diagnostiquer les problèmes de quêtes
+function diagnoseQuestsSystem() {
+    console.log('🔍 === DIAGNOSTIC DU SYSTÈME DE QUÊTES ===');
+    
+    // Vérifier l'état actuel des quêtes
+    console.log('📊 État actuel des quêtes:');
+    if (window.quests) {
+        Object.entries(window.quests).forEach(([questId, quest]) => {
+            console.log(`  ${questId}:`, {
+                accepted: quest.accepted,
+                completed: quest.completed,
+                readyToComplete: quest.readyToComplete,
+                current: quest.current,
+                target: quest.target
+            });
+        });
+    } else {
+        console.log('  ❌ window.quests non défini');
+    }
+    
+    // Vérifier le personnage actuel
+    console.log('👤 Personnage actuel:', {
+        characterId: window.currentCharacterId,
+        playerName: window.playerName
+    });
+    
+    // Vérifier les sauvegardes dans localStorage
+    console.log('💾 Sauvegardes dans localStorage:');
+    const questsKey = `monrpg_quests_${window.currentCharacterId}`;
+    const savedData = localStorage.getItem(questsKey);
+    if (savedData) {
+        try {
+            const data = JSON.parse(savedData);
+            console.log('  ✅ Sauvegarde trouvée:', {
+                characterId: data.characterId,
+                timestamp: new Date(data.timestamp).toLocaleString(),
+                questsCount: Object.keys(data.quests || {}).length
+            });
+        } catch (error) {
+            console.log('  ❌ Erreur lors de la lecture de la sauvegarde:', error);
+        }
+    } else {
+        console.log('  ❌ Aucune sauvegarde trouvée');
+    }
+    
+    // Vérifier les états des PNJ
+    console.log('🤖 États des PNJ:');
+    if (typeof window.pnjs !== 'undefined') {
+        window.pnjs.forEach(pnj => {
+            if (pnj && pnj.id) {
+                console.log(`  ${pnj.id}:`, {
+                    currentDialogue: pnj.currentDialogue,
+                    isTalking: pnj.isTalking,
+                    slimeBossQuestOffered: pnj.slimeBossQuestOffered
+                });
+            }
+        });
+    } else {
+        console.log('  ❌ window.pnjs non défini');
+    }
+    
+    console.log('🔍 === FIN DU DIAGNOSTIC ===');
+}
+
+// Fonction pour forcer la réinitialisation complète des quêtes
+function forceResetQuests() {
+    console.log('🔄 Réinitialisation forcée des quêtes...');
+    
+    // Réinitialiser les quêtes
+    resetQuestsToInitial();
+    
+    // Réinitialiser les états des PNJ
+    if (typeof window.resetPNJStates === 'function') {
+        window.resetPNJStates();
+    }
+    
+    // Sauvegarder l'état réinitialisé
+    if (window.currentCharacterId && typeof window.saveQuestsForCharacter === 'function') {
+        window.saveQuestsForCharacter(window.currentCharacterId);
+    }
+    
+    console.log('✅ Réinitialisation forcée terminée');
+}
+
+// Exporter les fonctions de diagnostic
+window.diagnoseQuestsSystem = diagnoseQuestsSystem;
+window.forceResetQuests = forceResetQuests;
+
+// Fonction de test pour vérifier l'isolation des quêtes
+function testQuestsIsolation() {
+    console.log('🧪 === TEST D\'ISOLATION DES QUÊTES ===');
+    
+    // Sauvegarder l'état actuel
+    const currentCharacterId = window.currentCharacterId;
+    const currentQuests = JSON.parse(JSON.stringify(window.quests || {}));
+    
+    console.log('📊 État actuel:', {
+        characterId: currentCharacterId,
+        quests: Object.keys(currentQuests).map(id => ({
+            id,
+            accepted: currentQuests[id]?.accepted,
+            completed: currentQuests[id]?.completed
+        }))
+    });
+    
+    // Simuler un changement de personnage
+    console.log('🔄 Simulation d\'un changement de personnage...');
+    const testCharacterId = 'test_character_' + Date.now();
+    window.currentCharacterId = testCharacterId;
+    
+    // Réinitialiser les quêtes
+    window.quests = createQuestsInstance();
+    
+    console.log('📊 État après réinitialisation:', {
+        characterId: window.currentCharacterId,
+        quests: Object.keys(window.quests).map(id => ({
+            id,
+            accepted: window.quests[id]?.accepted,
+            completed: window.quests[id]?.completed
+        }))
+    });
+    
+    // Restaurer l'état original
+    window.currentCharacterId = currentCharacterId;
+    window.quests = currentQuests;
+    
+    console.log('✅ Test d\'isolation terminé');
+    console.log('🧪 === FIN DU TEST ===');
+}
+
+// Exporter la fonction de test
+window.testQuestsIsolation = testQuestsIsolation;
+

@@ -213,15 +213,27 @@ window.attackTarget = attackTarget;
 
 // Fonction de dessin du joueur
 function drawPlayer(ctx) {
-    if (!window.playerImg || player.isDead) return;
-    ctx.drawImage(
-        window.playerImg,
-        player.frame * PLAYER_WIDTH,
-        player.direction * PLAYER_HEIGHT,
-        PLAYER_WIDTH, PLAYER_HEIGHT,
-        player.px + (window.mapOffsetX || 0), player.py + (window.mapOffsetY || 0),
-        TILE_SIZE, TILE_SIZE
-    );
+    if (!window.playerImg || !window.playerImg.complete || player.isDead) {
+        console.log('⚠️ drawPlayer: image non disponible ou joueur mort', {
+            playerImg: !!window.playerImg,
+            complete: window.playerImg ? window.playerImg.complete : false,
+            isDead: player.isDead
+        });
+        return;
+    }
+    
+    try {
+        ctx.drawImage(
+            window.playerImg,
+            player.frame * PLAYER_WIDTH,
+            player.direction * PLAYER_HEIGHT,
+            PLAYER_WIDTH, PLAYER_HEIGHT,
+            player.px + (window.mapOffsetX || 0), player.py + (window.mapOffsetY || 0),
+            TILE_SIZE, TILE_SIZE
+        );
+    } catch (error) {
+        console.error('❌ Erreur lors du dessin du joueur:', error);
+    }
 }
 
 // Export des fonctions principales

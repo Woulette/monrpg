@@ -79,6 +79,40 @@ async function loadMap(mapName) {
             window.initMonsters();
         }
         
+        // Charger les monstres pour cette map
+        if (typeof loadMonstersForMap === "function") {
+            const monstersLoaded = loadMonstersForMap(mapName);
+            if (!monstersLoaded) {
+                console.log("Création de nouveaux monstres pour", mapName);
+                if (typeof initMonsters === "function") {
+                    initMonsters();
+                }
+            }
+            
+            // Forcer la réassignation des images des monstres
+            if (typeof window.assignMonsterImages === "function") {
+                window.assignMonsterImages();
+            }
+            
+            // Forcer une deuxième réassignation après un délai pour s'assurer que les images sont chargées
+            setTimeout(() => {
+                if (typeof window.assignMonsterImages === "function") {
+                    console.log("🔄 Réassignation différée des images des monstres...");
+                    window.assignMonsterImages();
+                }
+                
+                // Diagnostic des monstres après chargement
+                if (window.monsters) {
+                    console.log(`📊 Diagnostic des monstres sur ${mapName}: ${window.monsters.length} monstres trouvés`);
+                    window.monsters.forEach((monster, index) => {
+                        console.log(`👹 Monstre ${index}: type=${monster.type}, hasImg=${!!monster.img}, imgComplete=${monster.img ? monster.img.complete : false}`);
+                    });
+                } else {
+                    console.log(`❌ Aucun monstre trouvé sur ${mapName}`);
+                }
+            }, 500);
+        }
+        
         // Nettoyage spécial pour mapdonjonslimeboss - supprimer tous les slimes existants
         if (mapName === "mapdonjonslimeboss" && typeof window.forceCleanSlimesOnBossMap === "function") {
             console.log("🏰 Map boss détectée - nettoyage FORCÉ des slimes...");
@@ -137,7 +171,11 @@ async function loadMap(mapName) {
 function teleportPlayer(mapName, spawnX, spawnY) {
     console.log(`🏠 Téléportation vers ${mapName} à la position (${spawnX}, ${spawnY})`);
     
-    // Plus de sauvegarde des monstres - système supprimé
+    // Sauvegarder les monstres de la map actuelle avant de partir
+    if (typeof window.saveMonstersForMap === "function" && window.currentMap) {
+        console.log(`💾 Sauvegarde des monstres de ${window.currentMap} avant téléportation`);
+        window.saveMonstersForMap(window.currentMap);
+    }
     
     // Libérer l'ancienne position
     if (typeof release === "function") {

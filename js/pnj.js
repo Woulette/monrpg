@@ -521,6 +521,33 @@ window.loadPapi2Image = loadPapi2Image;
 window.loadPapi3Image = loadPapi3Image;
 window.loadPapi4Image = loadPapi4Image;
 
+// Réinitialiser les états des PNJ lors du changement de personnage
+function resetPNJStates() {
+    console.log('🔄 Réinitialisation des états des PNJ...');
+    
+    // Réinitialiser Papi3
+    const papi3 = pnjs.find(p => p.id === 'papi3');
+    if (papi3) {
+        papi3.slimeBossQuestOffered = false;
+        papi3.currentDialogue = 0;
+        papi3.isTalking = false;
+        console.log('✅ État de Papi3 réinitialisé');
+    }
+    
+    // Réinitialiser les autres PNJ si nécessaire
+    pnjs.forEach(pnj => {
+        if (pnj) {
+            pnj.currentDialogue = 0;
+            pnj.isTalking = false;
+        }
+    });
+    
+    console.log('✅ États des PNJ réinitialisés');
+}
+
+// Exporter la fonction de réinitialisation
+window.resetPNJStates = resetPNJStates;
+
 // Vérifier si le joueur est à portée d'interaction avec un PNJ
 function checkPNJInteraction() {
     if (!player) return;
@@ -858,13 +885,30 @@ function showPNJDialogModal(pnjName, dialogue, customCallback = null, pnj = null
                                 const slimeBossAccepted = window.quests.slimeBoss && window.quests.slimeBoss.accepted;
                                 const slimeBossCompleted = window.quests.slimeBoss && window.quests.slimeBoss.completed;
                                 
+                                console.log('🔍 Diagnostic Papi3 - État des quêtes:', {
+                                    crowCraftCompleted,
+                                    slimeBossAccepted,
+                                    slimeBossCompleted,
+                                    currentMap: window.currentMap,
+                                    isQuestAvailable: typeof isQuestAvailable === 'function' ? isQuestAvailable('slimeBoss') : 'fonction non disponible'
+                                });
+                                
                                 if (crowCraftCompleted && !slimeBossAccepted && !slimeBossCompleted && 
                                     typeof isQuestAvailable === 'function' && isQuestAvailable('slimeBoss')) {
                                     // Proposer la quête slimeBoss si elle n'a pas encore été proposée
-                                    console.log("Proposition de la quête slimeBoss après dialogue");
+                                    console.log("🎯 Proposition de la quête slimeBoss après dialogue");
                                     if (typeof showSlimeBossQuestOffer === 'function') {
                                         showSlimeBossQuestOffer();
+                                    } else {
+                                        console.error('❌ Fonction showSlimeBossQuestOffer non disponible');
                                     }
+                                } else {
+                                    console.log('❌ Conditions non remplies pour proposer slimeBoss:', {
+                                        crowCraftCompleted,
+                                        slimeBossAccepted,
+                                        slimeBossCompleted,
+                                        isQuestAvailable: typeof isQuestAvailable === 'function' ? isQuestAvailable('slimeBoss') : false
+                                    });
                                 }
                             }
                         }
@@ -979,6 +1023,28 @@ function resetCharacterCreationDialog() {
     console.log("🎮 Flag du dialogue de création de personnage réinitialisé");
 }
 
+// Fonction pour réinitialiser les propriétés des PNJ
+function resetPNJProperties() {
+    console.log('🔄 Réinitialisation des propriétés des PNJ...');
+    
+    // Réinitialiser les propriétés de Papi3
+    const papi3 = pnjs.find(p => p.id === 'papi3');
+    if (papi3) {
+        papi3.slimeBossQuestOffered = false;
+        papi3.hasMoved = false;
+        console.log('✅ Propriétés de Papi3 réinitialisées');
+    }
+    
+    // Réinitialiser les propriétés de Papi4
+    const papi4 = pnjs.find(p => p.id === 'papi4');
+    if (papi4) {
+        papi4.slimeBossFinalQuestOffered = false;
+        console.log('✅ Propriétés de Papi4 réinitialisées');
+    }
+    
+    console.log('✅ Toutes les propriétés des PNJ réinitialisées');
+}
+
 // Export global
 window.pnjs = pnjs;
 window.initPNJs = initPNJs;
@@ -989,3 +1055,4 @@ window.showPNJDialogModal = showPNJDialogModal;
 window.hidePNJDialogModal = hidePNJDialogModal;
 window.showCharacterCreationDialog = showCharacterCreationDialog;
 window.resetCharacterCreationDialog = resetCharacterCreationDialog; 
+window.resetPNJProperties = resetPNJProperties; 

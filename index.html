@@ -31,53 +31,102 @@
     <script src="js/monsters/ai.js"></script>
     <!-- Charger la logique de progression du donjon -->
     <script src="js/dungeon-progression.js"></script>
+    <!-- Charger le système de sauvegarde -->
+    <script src="js/save-system.js"></script>
+    <script src="js/save/loader.js"></script>
+    <!-- Charger le système de sauvegarde des monstres -->
+    <script src="js/savemonster.js"></script>
+    <!-- Charger le système de menu multi-personnages -->
+    <script src="js/menu.js"></script>
 </head>
 <body>
-    <!-- Menu de création de personnage -->
-    <div id="game-menu" style="display:none;">
-      <div class="menu-box">
-        <button id="to-profile-btn" title="Retour au menu de sélection" style="position:absolute;top:18px;left:22px;font-size:2.2rem;color:#4e9cff;background:none;border:none;cursor:pointer;z-index:10;display:none;">&#128682;</button>
-        <div class="menu-title">Création du personnage</div>
-        <div id="menu-player-visual" style="display:flex;flex-direction:column;align-items:center;gap:18px;margin:18px 0 0 0;">
-          <div id="menu-avatar-select" style="display:flex;gap:24px;justify-content:center;">
-            <img class="menu-avatar-option" src="assets/ui/playerinventaire.png" alt="Avatar 1" data-avatar="assets/ui/playerinventaire.png" style="width:144px;height:144px;image-rendering:pixelated;cursor:pointer;border:4px solid transparent;border-radius:16px;transition:border-color 0.2s;" />
-            <img class="menu-avatar-option" src="assets/personnages/player.png" alt="Avatar 2" data-avatar="assets/personnages/player.png" style="width:144px;height:144px;image-rendering:pixelated;cursor:pointer;border:4px solid transparent;border-radius:16px;transition:border-color 0.2s;" />
-            <img class="menu-avatar-option" src="assets/personnages/corbeau.png" alt="Avatar 3" data-avatar="assets/personnages/corbeau.png" style="width:144px;height:144px;image-rendering:pixelated;cursor:pointer;border:4px solid transparent;border-radius:16px;transition:border-color 0.2s;" />
+    <!-- Menu principal de sélection de personnages -->
+    <div id="character-selection-menu" style="display:none;">
+      <div class="menu-box character-selection-box">
+        <div class="menu-title">Sélection du personnage</div>
+        <div class="character-slots">
+          <div class="character-slot" data-slot="0">
+            <div class="slot-content empty-slot">
+              <div class="slot-icon">+</div>
+              <div class="slot-text">Créer un personnage</div>
+            </div>
           </div>
-          <div id="menu-player-name" style="color:#ffd952;font-size:1.2rem;font-weight:bold;text-shadow:0 2px 8px #0008;">&nbsp;</div>
-        </div>
-        <div id="menu-name-form" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%;">
-          <label class="menu-label" for="player-name-input">Nom du personnage</label>
-          <input id="player-name-input" type="text" maxlength="16" autocomplete="off" placeholder="Entrez votre nom..." />
-          <button id="play-btn">Créer</button>
+          <div class="character-slot" data-slot="1">
+            <div class="slot-content empty-slot">
+              <div class="slot-icon">+</div>
+              <div class="slot-text">Créer un personnage</div>
+            </div>
+          </div>
+          <div class="character-slot" data-slot="2">
+            <div class="slot-content empty-slot">
+              <div class="slot-icon">+</div>
+              <div class="slot-text">Créer un personnage</div>
+            </div>
+          </div>
+          <div class="character-slot" data-slot="3">
+            <div class="slot-content empty-slot">
+              <div class="slot-icon">+</div>
+              <div class="slot-text">Créer un personnage</div>
+            </div>
+          </div>
+          <div class="character-slot" data-slot="4">
+            <div class="slot-content empty-slot">
+              <div class="slot-icon">+</div>
+              <div class="slot-text">Créer un personnage</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Menu de jeu/profil après création du personnage -->
-    <div id="profile-menu" style="display:none;">
-      <div class="menu-box">
-        <button id="delete-character-x" title="Supprimer le personnage">&#10006;</button>
-        <div class="menu-title">Mon personnage</div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:18px;margin:18px 0 0 0;">
-          <img id="profile-avatar" src="" alt="Avatar" tabindex="0" style="width:144px;height:144px;image-rendering:pixelated;border-radius:16px;box-shadow:0 2px 8px #0008;" />
-          <div id="profile-name" style="color:#ffd952;font-size:1.3rem;font-weight:bold;text-shadow:0 2px 8px #0008;">&nbsp;</div>
-          <div id="profile-level" style="color:#4e9cff;font-size:1.1rem;font-weight:bold;">Niveau : <span id="profile-level-value">1</span></div>
-        </div>
-        <div class="profile-actions" style="display:flex;flex-direction:row;justify-content:center;align-items:center;gap:32px;margin-top:36px;">
-          <button id="profile-play-btn">Continuer</button>
-          <button id="to-creation-btn" title="Retour à la création de personnage">&#128682;</button>
-        </div>
-      </div>
-      <!-- Overlay de confirmation suppression -->
-      <div id="delete-confirm-overlay" style="display:none;">
-        <div id="delete-confirm-box">
-          <p>Voulez-vous vraiment supprimer votre personnage&nbsp;?</p>
-          <div id="delete-confirm-actions">
-            <button id="delete-confirm-yes">Oui</button>
-            <button id="delete-confirm-no">Non</button>
+    <!-- Menu de création de personnage -->
+    <div id="character-creation-menu" style="display:none;">
+      <div class="menu-box character-creation-box">
+        <button id="back-to-selection-btn" class="back-btn" title="Retour à la sélection">&#128682;</button>
+        <div class="menu-title">Création du personnage</div>
+        <div class="creation-content">
+          <div class="avatar-selection">
+            <div class="avatar-options">
+              <img class="avatar-option" src="assets/ui/playerinventaire.png" alt="Avatar 1" data-avatar="assets/ui/playerinventaire.png" />
+              <img class="avatar-option" src="assets/personnages/player.png" alt="Avatar 2" data-avatar="assets/personnages/player.png" />
+              <img class="avatar-option" src="assets/personnages/corbeau.png" alt="Avatar 3" data-avatar="assets/personnages/corbeau.png" />
+            </div>
+            <div id="preview-name" class="preview-name">&nbsp;</div>
+          </div>
+          <div class="name-form">
+            <label class="form-label" for="character-name-input">Nom du personnage</label>
+            <input id="character-name-input" type="text" maxlength="16" autocomplete="off" placeholder="Entrez votre nom..." />
+            <button id="create-character-btn" disabled>Créer le personnage</button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Menu de confirmation de suppression -->
+    <div id="delete-confirm-menu" style="display:none;">
+      <div class="menu-box delete-confirm-box">
+        <div class="menu-title">Confirmation</div>
+        <div class="confirm-content">
+          <div class="confirm-icon">⚠️</div>
+          <div class="confirm-text">Voulez-vous vraiment supprimer ce personnage ?</div>
+          <div class="confirm-character-info">
+            <img id="confirm-avatar" src="" alt="Avatar" />
+            <div id="confirm-name"></div>
+            <div id="confirm-level"></div>
+          </div>
+          <div class="confirm-actions">
+            <button id="confirm-delete-btn" class="delete-btn">Supprimer</button>
+            <button id="cancel-delete-btn" class="cancel-btn">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Écran de chargement -->
+    <div id="loading-screen" style="display:none;">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Chargement en cours...</div>
       </div>
     </div>
 
@@ -555,27 +604,21 @@
 <script src="js/collision.js"></script>
 <script src="js/tileset.js"></script>
 <script src="js/map.js"></script>
-    <script src="js/save-system.js"></script>
-    <script src="js/savemonster.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/inventory/loader.js"></script>
-    <script src="js/inventory/core.js"></script>
-    <script src="js/inventory/grid.js"></script>
-    <script src="js/inventory/items.js"></script>
-    <script src="js/inventory/modals.js"></script>
-    <script src="js/inventory/tooltips.js"></script>
-    <script src="js/inventory/equipment-display.js"></script>
-    <script src="js/inventory/stats-display.js"></script>
-    <script src="js/inventory/main.js"></script>
+<script src="js/main.js"></script>
+<script src="js/inventory/loader.js"></script>
+<script src="js/inventory/grid.js"></script>
+<script src="js/inventory/items.js"></script>
+<script src="js/inventory/tooltips.js"></script>
+<script src="js/inventory/equipment-display.js"></script>
+<script src="js/inventory/stats-display.js"></script>
+<script src="js/inventory/main.js"></script>
 <script src="js/chat.js"></script>
 <script src="js/floating-chat.js"></script>
 <script src="js/damage-display.js"></script>
 <script src="js/equipment-system.js"></script>
 <script src="js/loot-system.js"></script>
-    <script src="js/metier/etablie.js"></script>
-    <script src="js/metier/niveaudemetier.js"></script>
-    <script src="js/menu.js"></script>
-
+<script src="js/metier/etablie.js"></script>
+<script src="js/metier/niveaudemetier.js"></script>
 
 
 </body>

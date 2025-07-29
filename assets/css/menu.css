@@ -1,252 +1,527 @@
+/* ===== GÉNÉRAL ===== */
 body.menu-active {
   overflow: hidden;
 }
 
-#game-menu {
+/* ===== MENU DE SÉLECTION DE PERSONNAGES ===== */
+#character-selection-menu {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(120deg, #23272e 60%, #181b20 100%);
+  background: linear-gradient(135deg, #1a1d24 0%, #2d3748 50%, #1a1d24 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
 }
 
-.menu-box {
-  background: #23272e;
-  border-radius: 18px;
-  box-shadow: 0 8px 32px #000a;
-  padding: 40px 32px 32px 32px;
-  min-width: 320px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
+.character-selection-box {
+  background: rgba(45, 55, 72, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 40px;
+  min-width: 800px;
+  max-width: 1000px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.menu-title {
-  font-size: 2.2rem;
-  color: #ffd952;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  font-weight: bold;
-  margin-bottom: 10px;
-  letter-spacing: 2px;
-  text-shadow: 0 2px 8px #0008;
+/* ===== SLOTS DE PERSONNAGES ===== */
+
+.character-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
 }
 
-.menu-label {
-  color: #e0e0e0;
-  font-size: 1.1rem;
-  margin-bottom: 6px;
-  font-family: 'Segoe UI', Arial, sans-serif;
+.character-slot {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border: 2px solid #3498db;
+    border-radius: 15px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-#player-name-input {
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: 1.5px solid #444a55;
-  font-size: 1.1rem;
-  width: 220px;
-  background: #181b20;
-  color: #ffd952;
-  outline: none;
-  margin-bottom: 10px;
-  transition: border-color 0.2s;
-}
-#player-name-input:focus {
-  border-color: #4e9cff;
+.character-slot:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+    border-color: #2980b9;
 }
 
-#play-btn {
-  background: linear-gradient(90deg, #ffd952 60%, #ffb347 100%);
-  color: #23272e;
-  font-size: 1.2rem;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 36px;
-  cursor: pointer;
-  box-shadow: 0 2px 8px #0005;
-  transition: background 0.2s, color 0.2s, transform 0.1s;
-}
-#play-btn:hover {
-  background: linear-gradient(90deg, #ffb347 60%, #ffd952 100%);
-  color: #181b20;
-  transform: scale(1.04);
+.character-slot.has-character {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    border-color: #27ae60;
 }
 
-#profile-menu {
+.character-slot.has-character:hover {
+    box-shadow: 0 10px 25px rgba(39, 174, 96, 0.3);
+    border-color: #229954;
+}
+
+.character-slot.has-character::after {
+    content: "Double-clic pour jouer";
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 4px 8px;
+    border-radius: 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.character-slot.has-character:hover::after {
+    opacity: 1;
+}
+
+.slot-content {
+    text-align: center;
+    width: 100%;
+}
+
+.empty-slot {
+    color: #bdc3c7;
+}
+
+.slot-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    color: #3498db;
+}
+
+.slot-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* ===== INFORMATIONS DU PERSONNAGE ===== */
+
+.character-info {
+    position: relative;
+    text-align: center;
+}
+
+.character-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.character-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 5px;
+}
+
+.character-level {
+    font-size: 0.9rem;
+    color: #f39c12;
+    margin-bottom: 5px;
+}
+
+.character-playtime {
+    font-size: 0.8rem;
+    color: #bdc3c7;
+}
+
+.delete-character-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    opacity: 0.8;
+}
+
+.delete-character-btn:hover {
+    background: #c0392b;
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+.delete-character-btn::after {
+    content: "Clic pour supprimer";
+    position: absolute;
+    top: 35px;
+    right: 0;
+    font-size: 0.7rem;
+    color: #e74c3c;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 4px 6px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.delete-character-btn:hover::after {
+    opacity: 1;
+}
+
+/* ===== MENU DE CRÉATION ===== */
+#character-creation-menu {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(120deg, #23272e 60%, #181b20 100%);
+  background: linear-gradient(135deg, #1a1d24 0%, #2d3748 50%, #1a1d24 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
 }
-#profile-menu .menu-box {
-  min-width: 320px;
-  padding-bottom: 36px;
+
+.character-creation-box {
+  background: rgba(45, 55, 72, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 40px;
+  min-width: 600px;
+  max-width: 700px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
 }
-#profile-menu .profile-actions {
-  display: flex;
-  flex-direction: row;
-  gap: 24px;
-  margin-top: 32px;
-  justify-content: center;
-}
-#delete-character-btn {
-  background: linear-gradient(90deg, #ff4e4e 60%, #ffb347 100%);
-  color: #fff;
-  font-size: 1.1rem;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 28px;
-  cursor: pointer;
-  box-shadow: 0 2px 8px #0005;
-  transition: background 0.2s, color 0.2s, transform 0.1s;
-}
-#delete-character-btn:hover {
-  background: linear-gradient(90deg, #ffb347 60%, #ff4e4e 100%);
-  color: #23272e;
-  transform: scale(1.04);
-}
-#delete-character-x {
+
+.back-btn {
   position: absolute;
-  top: 18px;
-  right: 22px;
-  font-size: 2.2rem;
-  color: #ff4e4e;
+  top: 20px;
+  left: 20px;
+  font-size: 2rem;
+  color: #60a5fa;
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 10;
-  transition: color 0.2s, transform 0.1s;
+  transition: all 0.3s ease;
 }
-#delete-character-x:hover {
-  color: #ff2222;
-  transform: scale(1.15);
+
+.back-btn:hover {
+  color: #fbbf24;
+  transform: scale(1.1);
 }
-#profile-play-btn {
-  display: block;
-  margin: 36px auto 0 auto;
-  background: linear-gradient(90deg, #4e9cff 60%, #4ecf7a 100%);
-  color: #fff;
-  font-size: 1.3rem;
+
+.creation-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.avatar-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.avatar-options {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.avatar-option {
+  width: 120px;
+  height: 120px;
+  border-radius: 15px;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: all 0.3s ease;
+  image-rendering: pixelated;
+}
+
+.avatar-option:hover {
+  transform: scale(1.05);
+  border-color: rgba(96, 165, 250, 0.5);
+}
+
+.avatar-option.selected {
+  border-color: #fbbf24;
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+}
+
+.preview-name {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fbbf24;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  min-height: 2rem;
+}
+
+.name-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+.form-label {
+  color: #e5e7eb;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+#character-name-input {
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 2px solid rgba(107, 114, 128, 0.3);
+  font-size: 1.1rem;
+  width: 300px;
+  background: rgba(31, 41, 55, 0.8);
+  color: #fbbf24;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+#character-name-input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
+}
+
+#create-character-btn {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #1f2937;
+  font-size: 1.1rem;
   font-weight: bold;
   border: none;
-  border-radius: 12px;
-  padding: 18px 54px;
+  border-radius: 10px;
+  padding: 12px 30px;
   cursor: pointer;
-  box-shadow: 0 2px 8px #0005;
-  transition: background 0.2s, color 0.2s, transform 0.1s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
 }
-#profile-play-btn:hover {
-  background: linear-gradient(90deg, #4ecf7a 60%, #4e9cff 100%);
-  color: #23272e;
-  transform: scale(1.04);
+
+#create-character-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
 }
-#profile-play-btn:disabled {
+
+#create-character-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  filter: grayscale(0.5);
+  transform: none;
 }
-#profile-avatar {
-  cursor: pointer;
-  border: 4px solid transparent;
-  transition: border-color 0.2s;
-}
-#profile-avatar.selected {
-  border-color: #4e9cff;
-}
-#delete-confirm-overlay {
+
+/* ===== MENU DE CONFIRMATION ===== */
+#delete-confirm-menu {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(30,32,38,0.82);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 3000;
+  backdrop-filter: blur(5px);
 }
-#delete-confirm-box {
-  background: #23272e;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px #000a;
-  padding: 38px 32px 32px 32px;
-  min-width: 320px;
+
+.delete-confirm-box {
+  background: rgba(45, 55, 72, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 40px;
+  min-width: 400px;
+  max-width: 500px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.confirm-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-}
-#delete-confirm-box p {
-  color: #ffd952;
-  font-size: 1.15rem;
-  text-align: center;
-  margin-bottom: 18px;
-}
-#delete-confirm-actions {
-  display: flex;
-  flex-direction: row;
-  gap: 32px;
-  justify-content: center;
-}
-#delete-confirm-yes {
-  background: linear-gradient(90deg, #ff4e4e 60%, #ffb347 100%);
-  color: #fff;
-  font-size: 1.1rem;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 32px;
-  cursor: pointer;
-  box-shadow: 0 2px 8px #0005;
-  transition: background 0.2s, color 0.2s, transform 0.1s;
-}
-#delete-confirm-yes:hover {
-  background: linear-gradient(90deg, #ffb347 60%, #ff4e4e 100%);
-  color: #23272e;
-  transform: scale(1.04);
-}
-#delete-confirm-no {
-  background: linear-gradient(90deg, #4e9cff 60%, #23272e 100%);
-  color: #fff;
-  font-size: 1.1rem;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 32px;
-  cursor: pointer;
-  box-shadow: 0 2px 8px #0005;
-  transition: background 0.2s, color 0.2s, transform 0.1s;
-}
-#delete-confirm-no:hover {
-  background: linear-gradient(90deg, #23272e 60%, #4e9cff 100%);
-  color: #ffd952;
-  transform: scale(1.04);
+  gap: 20px;
+  margin-top: 20px;
 }
 
-#to-creation-btn, #to-profile-btn {
-  font-size: 2.2rem;
-  color: #4e9cff;
-  background: none;
+.confirm-icon {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.confirm-text {
+  font-size: 1.2rem;
+  color: #e5e7eb;
+  text-align: center;
+  font-weight: 500;
+}
+
+.confirm-character-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  background: rgba(31, 41, 55, 0.5);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#confirm-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  image-rendering: pixelated;
+}
+
+#confirm-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #fbbf24;
+}
+
+#confirm-level {
+  font-size: 0.9rem;
+  color: #60a5fa;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.delete-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
   border: none;
+  border-radius: 10px;
+  padding: 12px 25px;
   cursor: pointer;
-  z-index: 10;
-  transition: color 0.2s, transform 0.1s;
+  transition: all 0.3s ease;
 }
-#to-creation-btn:hover, #to-profile-btn:hover {
-  color: #ffd952;
-  transform: scale(1.12);
+
+.delete-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
 }
-#to-creation-btn {
-  margin-top: 28px;
+
+.cancel-btn {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+}
+
+/* ===== ÉCRAN DE CHARGEMENT ===== */
+#loading-screen {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #1a1d24 0%, #2d3748 50%, #1a1d24 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4000;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(96, 165, 250, 0.2);
+  border-top: 4px solid #60a5fa;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 1.2rem;
+  color: #e5e7eb;
+  font-weight: 500;
+}
+
+/* ===== TITRES ET ÉLÉMENTS GÉNÉRAUX ===== */
+.menu-title {
+  font-size: 2.5rem;
+  color: #fbbf24;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 2px;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  margin-bottom: 20px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .character-selection-box {
+    min-width: 90vw;
+    padding: 20px;
+  }
+  
+  .character-slots {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  
+  .character-creation-box {
+    min-width: 90vw;
+    padding: 20px;
+  }
+  
+  .avatar-options {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .avatar-option {
+    width: 100px;
+    height: 100px;
+  }
 }

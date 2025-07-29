@@ -4,14 +4,76 @@
 const PATROL_ZONE = { x: 0, y: 0, width: 48, height: 25 };
 const RESPAWN_DELAY = 30000; // 30 secondes en millisecondes
 
-const monsters = [];
+// Fonction pour obtenir le compteur de corbeaux tués pour le personnage actuel
+function getCrowKillCounts() {
+    if (!window.currentCharacterId) {
+        console.warn('⚠️ Aucun personnage actif, compteur initialisé à zéro');
+        return { map1: 0, map2: 0, map3: 0 };
+    }
+    
+    // Charger depuis localStorage
+    const saveKey = `monrpg_crowKillCounts_${window.currentCharacterId}`;
+    const savedData = localStorage.getItem(saveKey);
+    
+    if (savedData) {
+        try {
+            return JSON.parse(savedData);
+        } catch (error) {
+            console.error('❌ Erreur lors du chargement du compteur de corbeaux:', error);
+        }
+    }
+    
+    // Retourner un compteur vide si pas de sauvegarde
+    return { map1: 0, map2: 0, map3: 0 };
+}
 
-// Compteur global de corbeaux tués par map (ne se remet jamais à zéro)
-const crowKillCounts = {
-    map1: 0,
-    map2: 0,
-    map3: 0
-};
+// Fonction pour sauvegarder le compteur de corbeaux tués
+function saveCrowKillCounts(counts) {
+    if (!window.currentCharacterId) {
+        console.warn('⚠️ Aucun personnage actif, impossible de sauvegarder le compteur');
+        return;
+    }
+    
+    try {
+        const saveKey = `monrpg_crowKillCounts_${window.currentCharacterId}`;
+        localStorage.setItem(saveKey, JSON.stringify(counts));
+        console.log(`💾 Compteur de corbeaux sauvegardé pour ${window.currentCharacterId}:`, counts);
+    } catch (error) {
+        console.error('❌ Erreur lors de la sauvegarde du compteur de corbeaux:', error);
+    }
+}
+
+// Fonction pour incrémenter le compteur de corbeaux tués
+function incrementCrowKillCount(mapName) {
+    if (!mapName || !window.currentCharacterId) {
+        console.warn('⚠️ Impossible d\'incrémenter le compteur: mapName ou characterId manquant');
+        return 0;
+    }
+    
+    const counts = getCrowKillCounts();
+    counts[mapName] = (counts[mapName] || 0) + 1;
+    saveCrowKillCounts(counts);
+    
+    console.log(`📊 Corbeaux tués sur ${mapName}: ${counts[mapName]} (personnage ${window.currentCharacterId})`);
+    return counts[mapName];
+}
+
+// Fonction pour réinitialiser le compteur de corbeaux tués
+function resetCrowKillCounts() {
+    if (!window.currentCharacterId) {
+        console.warn('⚠️ Aucun personnage actif, impossible de réinitialiser le compteur');
+        return;
+    }
+    
+    const counts = { map1: 0, map2: 0, map3: 0 };
+    saveCrowKillCounts(counts);
+    console.log(`🔄 Compteur de corbeaux réinitialisé pour ${window.currentCharacterId}`);
+}
+
+// Fonction pour obtenir le compteur actuel (pour compatibilité)
+function getCurrentCrowKillCounts() {
+    return getCrowKillCounts();
+}
 
 // Le système de sauvegarde est maintenant dans savemonster.js
 // Nettoyage automatique au démarrage
@@ -19,18 +81,25 @@ const crowKillCounts = {
 function initMonsters() {
     console.log("Initialisation des monstres...");
     
+    // S'assurer que window.monsters est initialisé
+    if (!window.monsters) {
+        window.monsters = [];
+    }
+    
     // Attendre que la map soit complètement chargée
     setTimeout(() => {
         const currentMap = window.currentMap;
         console.log(`Map actuelle détectée: ${currentMap}`);
         
         // Nettoyer les monstres existants
-        monsters.forEach(monster => {
-            if (typeof release === "function") {
-                release(monster.x, monster.y);
-            }
-        });
-        monsters.length = 0;
+        if (window.monsters && window.monsters.length > 0) {
+            window.monsters.forEach(monster => {
+                if (typeof release === "function") {
+                    release(monster.x, monster.y);
+                }
+            });
+            window.monsters.length = 0;
+        }
         
         // ESSAYER DE CHARGER LES MONSTRES SAUVEGARDÉS D'ABORD
         if (currentMap && typeof window.loadMonstersForMap === "function") {
@@ -83,9 +152,7 @@ function initMonsters() {
             }
             
             // Créer le SlimeBoss
-            if (typeof window.spawnSlimeBossOnBossMap === "function") {
-                window.spawnSlimeBossOnBossMap();
-            }
+            spawnSlimeBossOnBossMap();
             
             // Les slimes pourront être invoqués par le boss plus tard avec spawnSlimeForBoss()
         } else if (currentMap && currentMap === "map4") {
@@ -169,7 +236,7 @@ function initMonsters() {
             defense: Math.floor(baseDefense * defenseMultiplier)
         };
         
-        monsters.push(newMonster);
+        window.monsters.push(newMonster);
         
         // Marquer la position comme occupée
         if (typeof occupy === "function") {
@@ -180,7 +247,7 @@ function initMonsters() {
         } // Fin de la boucle for
     } // Fin du else
         
-        console.log(`${monsters.length} monstres initialisés avec succès`);
+        console.log(`${window.monsters.length} monstres initialisés avec succès`);
         
         // Assigner l'image aux monstres si elle est déjà chargée
         if (typeof assignMonsterImages === "function") {
@@ -289,7 +356,7 @@ function createSlimes(count = 5) {
             damage: 6 // Dégâts de base pour les slimes
         };
         
-        monsters.push(newSlime);
+        window.monsters.push(newSlime);
         
         // Marquer la position comme occupée
         if (typeof occupy === "function") {
@@ -341,7 +408,7 @@ function spawnMaitreCorbeau() {
     const baseXp = 500;
     const baseForce = 20; // Force élevée pour le boss
     const baseDefense = 15; // Défense élevée pour le boss
-    monsters.push({
+    window.monsters.push({
         id: 'MC' + Date.now(),
         name: "Maitrecorbeau",
         type: "maitrecorbeau",
@@ -421,7 +488,7 @@ function spawnCorbeauElite() {
     const baseDefense = 10; // 10 de défense comme demandé
     const TILE_SIZE = window.TILE_SIZE || 32; // Récupérer TILE_SIZE depuis window
     
-    monsters.push({
+    window.monsters.push({
         id: 'CE' + Date.now(),
         name: "Corbeau d'élite",
         type: "corbeauelite",
@@ -465,7 +532,7 @@ function spawnCorbeauElite() {
     });
     
     // Ajouter les propriétés d'animation séparées pour le Corbeau d'élite
-    const newMonster = monsters[monsters.length - 1];
+    const newMonster = window.monsters[window.monsters.length - 1];
     newMonster.idleFrame = 0;
     newMonster.walkFrame = 0;
     newMonster.lastIdleAnim = 0;
@@ -510,7 +577,7 @@ function spawnSlimeBoss() {
     const baseDefense = 20; // 20 de défense
     const TILE_SIZE = window.TILE_SIZE || 32;
     
-    monsters.push({
+    window.monsters.push({
         id: 'SB' + Date.now(),
         name: "SlimeBoss",
         type: "slimeboss",
@@ -554,7 +621,7 @@ function spawnSlimeBoss() {
     });
     
     // Ajouter les propriétés d'animation séparées pour le SlimeBoss
-    const newMonster = monsters[monsters.length - 1];
+    const newMonster = window.monsters[window.monsters.length - 1];
     newMonster.idleFrame = 0;
     newMonster.walkFrame = 0;
     newMonster.lastIdleAnim = 0;
@@ -588,9 +655,9 @@ function updateMonsterRespawn() {
     
     // Première passe : identifier les monstres à supprimer et ceux à respawn
     let processedCount = 0;
-    const maxProcessed = monsters.length; // Protection contre les boucles infinies
+    const maxProcessed = window.monsters.length; // Protection contre les boucles infinies
     
-    monsters.forEach(monster => {
+    window.monsters.forEach(monster => {
         if (!monster) return; // Protection contre les monstres invalides
         processedCount++;
         
@@ -755,9 +822,9 @@ function updateMonsterRespawn() {
     if (monstersToRemove.length > 0) {
         console.log(`🗑️ Suppression de ${monstersToRemove.length} monstres invalides`);
         monstersToRemove.forEach(monsterToRemove => {
-            const index = monsters.indexOf(monsterToRemove);
+            const index = window.monsters.indexOf(monsterToRemove);
             if (index > -1) {
-                monsters.splice(index, 1);
+                window.monsters.splice(index, 1);
                 console.log(`✅ Monstre ${monsterToRemove.type} ${monsterToRemove.id} supprimé avec succès`);
             }
         });
@@ -799,17 +866,19 @@ function killMonster(monster) {
             // UNIQUEMENT sur les maps 1, 2 et 3
             const currentMap = window.currentMap;
             if (currentMap && (currentMap === "map1" || currentMap === "map2" || currentMap === "map3")) {
-                // Incrémenter le compteur global pour cette map
-                crowKillCounts[currentMap]++;
-                console.log(`Corbeaux tués sur ${currentMap}: ${crowKillCounts[currentMap]}`);
+                // Incrémenter le compteur pour le personnage actuel
+                const newCount = incrementCrowKillCount(currentMap);
+                console.log(`📊 Corbeaux tués sur ${currentMap}: ${newCount} (personnage ${window.currentCharacterId})`);
                 
                 // Spawn Corbeau d'élite tous les 10 corbeaux tués
-                if (crowKillCounts[currentMap] % 10 === 0) {
+                if (newCount % 10 === 0) {
+                    console.log(`🎯 Spawn du Corbeau d'élite déclenché (${newCount} corbeaux tués)`);
                     spawnCorbeauElite();
                 }
                 
                 // Spawn Maitrecorbeau tous les 100 corbeaux tués
-                if (crowKillCounts[currentMap] % 100 === 0) {
+                if (newCount % 100 === 0) {
+                    console.log(`👑 Spawn du Maitrecorbeau déclenché (${newCount} corbeaux tués)`);
                     spawnMaitreCorbeau();
                 }
             }
@@ -869,6 +938,11 @@ function killMonster(monster) {
         // Sauvegarder l'état des monstres après la mort
         if (typeof window.saveMonstersForMap === "function" && window.currentMap) {
             window.saveMonstersForMap(window.currentMap);
+        }
+        
+        // Forcer la sauvegarde du personnage après avoir tué un monstre
+        if (typeof window.forceSaveOnEvent === "function") {
+            window.forceSaveOnEvent();
         }
     } catch (error) {
         console.error("Erreur lors de la mort du monstre:", error);
@@ -1077,101 +1151,6 @@ window.cleanAllSlimesOnBossMap = function() {
     }
 }; 
 
-// Fonction pour créer le SlimeBoss sur mapdonjonslimeboss
-window.spawnSlimeBossOnBossMap = function() {
-    if (window.currentMap !== "mapdonjonslimeboss") {
-        console.log("❌ Erreur: spawnSlimeBossOnBossMap ne peut être utilisé que sur mapdonjonslimeboss");
-        return null;
-    }
-    
-    console.log("🐉 Création du SlimeBoss sur mapdonjonslimeboss à la position (12, 3)...");
-    
-    const bossX = 12;
-    const bossY = 3;
-    
-    const slimeBoss = {
-        id: "slimeboss_001",
-        name: "SlimeBoss",
-        type: "slimeboss",
-        level: 15,
-        x: bossX, y: bossY,
-        px: bossX * TILE_SIZE, py: bossY * TILE_SIZE,
-        spawnX: bossX, spawnY: bossY,
-        frame: 0,
-        direction: 0,
-        img: null,
-        animDelay: 200, // Animation plus lente pour le boss
-        lastAnim: 0,
-        state: "idle",
-        stateTime: 0,
-        movePath: [],
-        moving: false,
-        moveTarget: { x: bossX, y: bossY },
-        moveSpeed: 0.2, // Plus lent que les slimes normaux
-        moveCooldown: 0,
-        patrolZone: { x: 8, y: 1, width: 8, height: 4 }, // Zone de patrouille limitée
-        hp: 500,
-        maxHp: 500,
-        aggro: false,
-        aggroTarget: null,
-        lastAttack: 0,
-        lastCombat: Date.now(),
-        stuckSince: 0,
-        returningHome: false,
-        lastPatrol: null,
-        xpValue: 200,
-        isDead: false,
-        deathTime: 0,
-        respawnTime: 0, // Pas de respawn automatique
-        permanentDeath: true,
-        force: 25,
-        defense: 15,
-        // Propriétés spéciales pour le boss
-        isBoss: true,
-        bossType: "slimeboss",
-        // Taille du boss (64x64)
-        width: 64,
-        height: 64,
-        // Animations du boss (4 frames)
-        animationFrames: 4,
-        currentAnimation: 0,
-        // Compétences du boss
-        canSummonSlimes: true,
-        lastSummonTime: 0,
-        summonCooldown: 10000, // 10 secondes entre les invocations
-        maxSummonedSlimes: 3
-    };
-    
-    window.monsters.push(slimeBoss);
-    
-    // Marquer la position comme occupée (zone 2x2 pour le boss 64x64)
-    if (typeof window.occupy === "function") {
-        window.occupy(bossX, bossY);
-        window.occupy(bossX + 1, bossY);
-        window.occupy(bossX, bossY + 1);
-        window.occupy(bossX + 1, bossY + 1);
-    }
-    
-    // Assigner l'image du boss
-    if (typeof window.assignMonsterImages === "function") {
-        window.assignMonsterImages();
-    } else {
-        // Charger l'image du boss manuellement
-        const bossImg = new Image();
-        bossImg.onload = function() {
-            slimeBoss.img = bossImg;
-            console.log("✅ Image du SlimeBoss chargée avec succès");
-        };
-        bossImg.onerror = function() {
-            console.error("❌ Erreur lors du chargement de l'image du SlimeBoss");
-        };
-        bossImg.src = "assets/personnages/slimeboss.png";
-    }
-    
-    console.log(`✅ SlimeBoss créé avec succès - ID: ${slimeBoss.id}, HP: ${slimeBoss.hp}/${slimeBoss.maxHp}`);
-    return slimeBoss;
-}; 
-
 // Fonction pour gérer la mort du SlimeBoss et les récompenses
 window.handleSlimeBossDeath = function() {
     console.log("🏆 SlimeBoss vaincu ! Système de récompense activé...");
@@ -1211,3 +1190,116 @@ window.openBossChest = function() {
         window.showBossChestWindow();
     }
 }; 
+
+// Fonction de diagnostic des monstres
+window.debugMonsters = function() {
+    console.log('🔍 Diagnostic complet des monstres...');
+    
+    console.log('📊 État global:', {
+        windowMonsters: !!window.monsters,
+        windowMonstersLength: window.monsters ? window.monsters.length : 'undefined',
+        currentMap: window.currentMap,
+        currentCharacterId: window.currentCharacterId
+    });
+    
+    if (window.monsters && window.monsters.length > 0) {
+        console.log(`👹 ${window.monsters.length} monstres trouvés:`);
+        window.monsters.forEach((monster, index) => {
+            console.log(`👹 Monstre ${index}:`, {
+                id: monster.id,
+                type: monster.type,
+                name: monster.name,
+                hasImg: !!monster.img,
+                imgComplete: monster.img ? monster.img.complete : false,
+                hp: monster.hp,
+                isDead: monster.isDead,
+                position: { x: monster.x, y: monster.y }
+            });
+        });
+    } else {
+        console.log('❌ Aucun monstre trouvé dans window.monsters');
+    }
+    
+    console.log('🔍 Diagnostic terminé');
+}; 
+
+// Exporter les fonctions pour utilisation globale
+window.getCrowKillCounts = getCrowKillCounts;
+window.saveCrowKillCounts = saveCrowKillCounts;
+window.incrementCrowKillCount = incrementCrowKillCount;
+window.resetCrowKillCounts = resetCrowKillCounts;
+window.getCurrentCrowKillCounts = getCurrentCrowKillCounts;
+window.spawnSlimeBossOnBossMap = spawnSlimeBossOnBossMap;
+
+// Fonction de diagnostic pour le compteur de corbeaux
+function diagnoseCrowKillCounts() {
+    console.log('🔍 === DIAGNOSTIC DU COMPTEUR DE CORBEAUX ===');
+    
+    if (!window.currentCharacterId) {
+        console.log('❌ Aucun personnage actif');
+        return;
+    }
+    
+    const counts = getCrowKillCounts();
+    console.log('📊 Compteur actuel:', {
+        characterId: window.currentCharacterId,
+        map1: counts.map1,
+        map2: counts.map2,
+        map3: counts.map3,
+        total: counts.map1 + counts.map2 + counts.map3
+    });
+    
+    // Vérifier les sauvegardes dans localStorage
+    const saveKey = `monrpg_crowKillCounts_${window.currentCharacterId}`;
+    const savedData = localStorage.getItem(saveKey);
+    
+    if (savedData) {
+        try {
+            const data = JSON.parse(savedData);
+            console.log('💾 Sauvegarde trouvée:', data);
+        } catch (error) {
+            console.log('❌ Erreur lors de la lecture de la sauvegarde:', error);
+        }
+    } else {
+        console.log('❌ Aucune sauvegarde trouvée');
+    }
+    
+    console.log('🔍 === FIN DU DIAGNOSTIC ===');
+}
+
+// Exporter la fonction de diagnostic
+window.diagnoseCrowKillCounts = diagnoseCrowKillCounts; 
+
+// Fonction de diagnostic pour le SlimeBoss
+function diagnoseSlimeBoss() {
+    console.log('🔍 === DIAGNOSTIC DU SLIMEBOSS ===');
+    
+    console.log('📊 Map actuelle:', window.currentMap);
+    console.log('📊 Nombre de monstres:', window.monsters ? window.monsters.length : 0);
+    
+    if (window.monsters && window.monsters.length > 0) {
+        const slimeBosses = window.monsters.filter(m => m.type === 'slimeboss');
+        console.log('🐉 SlimeBoss trouvés:', slimeBosses.length);
+        
+        slimeBosses.forEach((boss, index) => {
+            console.log(`🐉 SlimeBoss ${index + 1}:`, {
+                id: boss.id,
+                name: boss.name,
+                position: { x: boss.x, y: boss.y },
+                hp: `${boss.hp}/${boss.maxHp}`,
+                isDead: boss.isDead,
+                img: boss.img ? 'chargée' : 'non chargée'
+            });
+        });
+    } else {
+        console.log('❌ Aucun monstre trouvé');
+    }
+    
+    // Vérifier si la fonction de spawn existe
+    console.log('🔧 Fonction spawnSlimeBossOnBossMap disponible:', typeof spawnSlimeBossOnBossMap === 'function');
+    
+    console.log('🔍 === FIN DU DIAGNOSTIC ===');
+}
+
+// Exporter la fonction de diagnostic
+window.diagnoseSlimeBoss = diagnoseSlimeBoss; 

@@ -1,53 +1,282 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// Fonction de débogage simple pour identifier les erreurs
+window.debugError = function() {
+    console.log('🔍 Débogage d\'erreur...');
+    console.log('📊 État du jeu:', {
+        gameState: window.gameState,
+        currentMap: window.currentMap,
+        playerImg: window.playerImg ? 'défini' : 'non défini',
+        mapData: window.mapData ? 'défini' : 'non défini',
+        canvas: canvas ? 'défini' : 'non défini',
+        ctx: ctx ? 'défini' : 'non défini'
+    });
+    
+    if (window.playerImg) {
+        console.log('👤 playerImg:', {
+            complete: window.playerImg.complete,
+            width: window.playerImg.width,
+            height: window.playerImg.height,
+            src: window.playerImg.src
+        });
+    }
+    
+    if (window.mapData) {
+        console.log('🗺️ mapData:', {
+            layers: window.mapData.layers ? window.mapData.layers.length : 0,
+            tilesets: window.mapData.tilesets ? window.mapData.tilesets.length : 0
+        });
+    }
+    
+    console.log('🔍 Débogage terminé');
+};
+
+// Système d'affichage des dégâts - Mon RPG 2D
+
 // Attendre que tous les scripts soient chargés
 document.addEventListener('DOMContentLoaded', () => {
-    // Charger la map1 par défaut
-    loadMap('map1')
-        .then(success => {
-            if (!success) {
-                throw new Error("Impossible de charger map1 !");
-            }
-            return new Promise(resolve => {
-                if (playerImg.complete) resolve();
-                else playerImg.onload = resolve;
-            });
-        })
-        .then(() => {
-            // Plus de nettoyage des données de monstres - système supprimé
-            
-            // Initialize game systems
-            initMap();
-            initPlayer();
-            // initMonsters() est maintenant appelé automatiquement dans loadMap()
-            // Nettoyage des données corrompues au démarrage
-            if (typeof window.cleanCorruptedSaveData === "function") {
-                window.cleanCorruptedSaveData();
-            }
-            
-            // Initialiser l'inventaire AVANT de charger la sauvegarde
-            initInventory();
-            initStats();
-            
-            // Charger la sauvegarde si elle existe APRÈS l'initialisation
-            if (typeof window.loadGame === "function") {
-                window.loadGame();
-            }
-            initHUD();
-            initPathfinding();
-            initChat(); // Système de chat séparé
-            initFloatingChat(); // Système de chat flottant
-            initEquipmentSystem(); // Système d'équipement
-            initEtablies(); // Système d'établies
-            initQuestsWindow(); // Système de fenêtre des quêtes
-            
-            requestAnimationFrame(gameLoop);
-        })
-        .catch(e => {
-            alert("Erreur de chargement : " + e.message);
-        });
+    // Vérifier si le système de menu multi-personnages est actif
+    if (typeof window.gameState !== 'undefined' && window.gameState === "menu") {
+        console.log('🎮 Menu multi-personnages actif, main.js ne se lance PAS du tout');
+        // Ne rien initialiser, ne pas lancer la boucle de jeu
+        return;
+    }
+    
+    // Si pas de menu actif, démarrer le jeu directement (mode legacy)
+    console.log('🎮 Mode legacy : démarrage direct du jeu');
+    startGameDirectly();
+});
 
+// Fonction pour démarrer le jeu directement (fallback)
+function startGameDirectly() {
+    // Vérifier qu'on est bien en mode jeu
+    if (window.gameState !== "playing") {
+        console.log('⚠️ startGameDirectly appelée mais pas en mode jeu, annulation');
+        return;
+    }
+    
+    console.log('🎮 Démarrage complet du jeu en mode playing...');
+    
+    // S'assurer que le canvas est visible
+    if (canvas) {
+        canvas.style.display = 'block';
+        console.log('🎨 Canvas rendu visible');
+    }
+    
+    try {
+        // Charger la sauvegarde AVANT de charger la map pour connaître la map actuelle
+        let targetMap = 'map1'; // Map par défaut
+        
+        if (typeof window.loadGame === "function") {
+            console.log('📂 Chargement de la sauvegarde...');
+            const loadSuccess = window.loadGame();
+            if (loadSuccess && window.currentMap) {
+                targetMap = window.currentMap;
+                console.log('🗺️ Map de sauvegarde détectée:', targetMap);
+            }
+        }
+        
+        // Charger la map appropriée
+        loadMap(targetMap)
+            .then(success => {
+                if (!success) {
+                    throw new Error(`Impossible de charger ${targetMap} !`);
+                }
+                return new Promise(resolve => {
+                    // Attendre que toutes les images nécessaires soient chargées
+                    const checkImages = () => {
+                        // Vérifier que playerImg est défini et chargé
+                        if (window.playerImg && window.playerImg.complete && 
+                            window.mapData && window.mapData.layers) {
+                            console.log('✅ Toutes les images sont chargées');
+                            resolve();
+                        } else {
+                            console.log('⏳ Attente du chargement des images...', {
+                                playerImg: window.playerImg ? window.playerImg.complete : false,
+                                mapData: !!window.mapData,
+                                mapLayers: window.mapData ? window.mapData.layers : false
+                            });
+                            setTimeout(checkImages, 100);
+                        }
+                    };
+                    checkImages();
+                });
+            })
+            .then(() => {
+                console.log('🗺️ Map chargée, initialisation des systèmes...');
+                
+                // S'assurer que playerImg est initialisé
+                if (!window.playerImg) {
+                    console.log('🖼️ Initialisation de playerImg...');
+                    const playerImg = new Image();
+                    playerImg.onload = () => {
+                        console.log('✅ Image du joueur chargée');
+                    };
+                    playerImg.onerror = () => {
+                        console.error('❌ Erreur de chargement de l\'image du joueur');
+                    };
+                    playerImg.src = 'assets/personnages/player.png';
+                    window.playerImg = playerImg;
+                }
+                
+                // Initialize game systems
+                if (typeof initMap === "function") {
+                    initMap();
+                }
+                if (typeof initPlayer === "function") {
+                    initPlayer(); // Initialiser le joueur avec les valeurs par défaut
+                }
+                
+                // Mettre à jour les coordonnées pixel après l'initialisation
+                if (typeof player !== 'undefined') {
+                    player.px = player.x * TILE_SIZE;
+                    player.py = player.y * TILE_SIZE;
+                    console.log('📍 Position du joueur mise à jour:', { x: player.x, y: player.y, px: player.px, py: player.py });
+                }
+                
+                // Nettoyage des données corrompues au démarrage
+                if (typeof window.cleanCorruptedSaveData === "function") {
+                    window.cleanCorruptedSaveData();
+                }
+                
+                // Initialiser l'inventaire
+                if (typeof initInventory === "function") {
+                    initInventory();
+                }
+                if (typeof initStats === "function") {
+                    initStats();
+                }
+                if (typeof initHUD === "function") {
+                    initHUD();
+                }
+                
+                // Initialiser les établies
+                if (typeof initEtablies === "function") {
+                    initEtablies();
+                }
+                
+                // Initialiser les PNJs
+                if (typeof initPNJs === "function") {
+                    initPNJs();
+                }
+                
+                // Initialiser le chat
+                if (typeof initChat === "function") {
+                    initChat();
+                }
+                
+                // Initialiser la fenêtre des quêtes
+                if (typeof window.initQuestsWindow === "function") {
+                    window.initQuestsWindow();
+                }
+                
+                // Initialiser les gestionnaires d'événements UI
+                initUIEventHandlers();
+                
+                // Forcer un premier rendu
+                if (typeof drawGame === "function") {
+                    drawGame();
+                }
+                
+                console.log('🎮 Tous les systèmes initialisés, lancement de la boucle de jeu');
+                requestAnimationFrame(gameLoop);
+            })
+            .catch(e => {
+                console.error("❌ Erreur lors du chargement:", e);
+                alert("Erreur de chargement : " + e.message);
+            });
+    } catch (error) {
+        console.error("❌ Erreur critique dans startGameDirectly:", error);
+        alert("Erreur critique : " + error.message);
+    }
+}
+
+// Exporter la fonction pour qu'elle soit accessible depuis menu.js
+window.startGameDirectly = startGameDirectly;
+window.disableGameSystems = disableGameSystems;
+window.enableGameSystems = enableGameSystems;
+
+// Fonction pour désactiver les systèmes en mode menu
+function disableGameSystems() {
+    console.log('🔒 Désactivation des systèmes de jeu en mode menu');
+    
+    // Désactiver les touches du jeu
+    if (typeof window.disableGameInputs === 'function') {
+        window.disableGameInputs();
+    }
+    
+    // Masquer les éléments de jeu
+    const gameElements = [
+        'inventory-modal',
+        'stats-modal',
+        'quests-main-modal',
+        'chat-window',
+        'floating-chat'
+    ];
+    
+    gameElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.style.display = 'none';
+        }
+    });
+}
+
+// Fonction pour activer les systèmes en mode jeu
+function enableGameSystems() {
+    console.log('🔓 Activation des systèmes de jeu');
+    
+    // Activer les touches du jeu
+    if (typeof window.enableGameInputs === 'function') {
+        window.enableGameInputs();
+    }
+}
+
+// Fonction pour dessiner le jeu (séparée de la boucle)
+function drawGame() {
+    if (!canvas || !ctx) { 
+        console.error('❌ Canvas ou contexte non disponible'); 
+        return; 
+    }
+    
+    try {
+        // Dessiner la map (qui inclut déjà le joueur, monstres, PNJs et calque 3)
+        if (typeof drawMap === "function" && window.mapData && window.mapData.layers) { 
+            try { 
+                drawMap(); 
+            } catch (error) { 
+                console.error('❌ Erreur lors du dessin de la map:', error); 
+            } 
+        } else { 
+            console.log('⚠️ Map non disponible pour le rendu'); 
+        }
+        
+        // Dessiner les effets de dégâts (pas inclus dans drawMap)
+        if (typeof window.drawDamageEffects === "function") {
+            try {
+                window.drawDamageEffects(ctx);
+            } catch (error) {
+                console.error('❌ Erreur lors du dessin des effets de dégâts:', error);
+            }
+        }
+        
+        // Dessiner le HUD (pas inclus dans drawMap)
+        if (typeof drawHUD === "function") {
+            try {
+                drawHUD(ctx);
+            } catch (error) {
+                console.error('❌ Erreur lors du dessin du HUD:', error);
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Erreur critique dans drawGame:', error);
+    }
+}
+
+// Initialiser les gestionnaires d'événements UI
+function initUIEventHandlers() {
     // Gestion de la fenêtre des sorts (nouvelle version)
     const sortIcon = document.getElementById('sort-icon');
     const sortModal = document.getElementById('sort-modal');
@@ -83,10 +312,16 @@ document.addEventListener('DOMContentLoaded', () => {
             explosiveRow.classList.add('selected');
         });
     }
-});
+}
 
 // La boucle principale du jeu
 function gameLoop(ts) {
+    // Vérifier STRICTEMENT si nous sommes en mode jeu
+    if (window.gameState !== "playing") {
+        // En mode menu, arrêter complètement la boucle
+        console.log('⏸️ Boucle de jeu arrêtée - mode menu actif');
+        return;
+    }
    
     updatePlayer(ts);
 
@@ -99,50 +334,81 @@ function gameLoop(ts) {
     if (typeof updateMonsters === "function") {
         updateMonsters(ts);
     }
-    
-    if (typeof updatePNJs === "function") {
-        updatePNJs(ts);
+
+    // Mise à jour des respawns de monstres
+    if (typeof updateMonsterRespawn === "function") {
+        updateMonsterRespawn(ts);
+    }
+
+    // Mise à jour du système de combat
+    if (typeof updateCombat === "function") {
+        updateCombat(ts);
+    }
+
+    // Mise à jour du système de régénération
+    if (typeof updateRegeneration === "function") {
+        updateRegeneration(ts);
+    }
+
+    // Mise à jour du système de mort et respawn du joueur
+    if (typeof updatePlayerRespawn === "function") {
+        updatePlayerRespawn(ts);
+    }
+
+    // Mise à jour du système de suivi automatique
+    if (typeof updateAutoFollow === "function") {
+        updateAutoFollow(ts);
+    }
+
+    // Mise à jour du système de pathfinding
+    if (typeof updatePathfinding === "function") {
+        updatePathfinding(ts);
+    }
+
+    // Mise à jour du système de chat flottant
+    if (typeof updateFloatingChat === "function") {
+        updateFloatingChat(ts);
+    }
+
+    // Mise à jour du système d'affichage des dégâts
+    if (typeof updateDamageDisplay === "function") {
+        updateDamageDisplay(ts);
     }
 
     // Mise à jour des effets de dégâts
-    if (typeof updateDamageEffects === "function") {
-        updateDamageEffects();
+    if (typeof window.updateDamageEffects === "function") {
+        window.updateDamageEffects();
     }
 
-    // Gestion du respawn des monstres
-    if (typeof updateMonsterRespawn === "function") {
-        updateMonsterRespawn();
-    }
-    
-    // Système de respawn automatique du joueur
-    if (player.isDead) {
-        const currentTime = Date.now();
-        const elapsed = currentTime - player.deathTime;
-        console.log("Temps écoulé depuis la mort:", elapsed, "ms");
-        if (currentTime - player.deathTime >= player.respawnTime) {
-            console.log("Respawn automatique déclenché !");
-            respawnPlayer();
-        }
+    // Mise à jour du système de loot
+    if (typeof updateLootSystem === "function") {
+        updateLootSystem(ts);
     }
 
-    if (player.moving) {
-        if (!lastAnim || ts - lastAnim > animDelay) {
-            player.frame = (player.frame + 1) % 4;
-            lastAnim = ts;
-        }
+    // Mise à jour du système d'établies
+    if (typeof updateEtablies === "function") {
+        updateEtablies(ts);
+    }
+
+    // Mise à jour du système de quêtes
+    if (typeof updateQuests === "function") {
+        updateQuests(ts);
+    }
+
+    // Mise à jour du système de sauvegarde automatique
+    if (typeof window.saveSystem !== 'undefined' && window.saveSystem.autoSave) {
+        window.saveSystem.autoSave();
+    }
+
+    // Dessiner le jeu
+    drawGame();
+
+    // Continuer la boucle SEULEMENT si on est en mode jeu
+    if (window.gameState === "playing") {
+        requestAnimationFrame(gameLoop);
     } else {
-        player.frame = 0;
+        console.log('⏸️ Boucle de jeu arrêtée - gameState:', window.gameState);
     }
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawMap();
-    // drawMonsters(ctx); // Retiré car déjà appelé dans drawMap
-
-    if (typeof drawHUD === "function") {
-        drawHUD(ctx);
-    }
-
-    requestAnimationFrame(gameLoop);
 }
 
 // Chat System
@@ -642,5 +908,227 @@ window.giveBossReward = function() {
     if (typeof window.showBossChestWindow === "function") {
         window.showBossChestWindow();
     }
+};
+
+// Système de gestion des touches du jeu
+let gameInputsEnabled = false;
+
+// Fonction pour désactiver les touches du jeu
+function disableGameInputs() {
+    gameInputsEnabled = false;
+    console.log('🔒 Touches du jeu désactivées');
+}
+
+// Fonction pour activer les touches du jeu
+function enableGameInputs() {
+    gameInputsEnabled = true;
+    console.log('🔓 Touches du jeu activées');
+}
+
+// Gestionnaire global des touches
+window.addEventListener('keydown', (e) => {
+    // Vérifier si les touches du jeu sont activées
+    if (!gameInputsEnabled || window.gameState !== "playing") {
+        return;
+    }
+    
+    // Gestion des touches du jeu
+    switch(e.key.toLowerCase()) {
+        case 'i':
+            e.preventDefault();
+            if (typeof window.openInventoryModal === 'function') {
+                window.openInventoryModal();
+            }
+            break;
+        case 's':
+            e.preventDefault();
+            if (typeof window.openStatsModal === 'function') {
+                window.openStatsModal();
+            }
+            break;
+        case 'q':
+            e.preventDefault();
+            if (typeof window.openQuestsModal === 'function') {
+                window.openQuestsModal();
+            }
+            break;
+        case 'escape':
+            e.preventDefault();
+            if (typeof window.closeAllModals === 'function') {
+                window.closeAllModals();
+            }
+            break;
+    }
+});
+
+// Exporter les fonctions
+window.disableGameInputs = disableGameInputs;
+window.enableGameInputs = enableGameInputs;
+
+// Fonction de débogage pour forcer un rendu
+window.forceRender = function() {
+    console.log('🎨 Forçage du rendu du jeu...');
+    console.log('📊 État du jeu:', {
+        gameState: window.gameState,
+        currentMap: window.currentMap,
+        playerExists: typeof player !== 'undefined',
+        canvasExists: !!canvas,
+        ctxExists: !!ctx
+    });
+    
+    if (window.gameState === "playing" && canvas && ctx) {
+        drawGame();
+        console.log('✅ Rendu forcé effectué');
+    } else {
+        console.log('❌ Impossible de forcer le rendu - conditions non remplies');
+    }
+};
+
+// Fonction pour diagnostiquer les problèmes d'images
+window.debugImages = function() {
+    console.log('🖼️ Diagnostic des images...');
+    
+    const images = {
+        playerImg: window.playerImg,
+        mapData: window.mapData,
+        canvas: canvas,
+        ctx: ctx
+    };
+    
+    Object.entries(images).forEach(([name, img]) => {
+        if (img) {
+            if (name === 'playerImg') {
+                if (img.complete) {
+                    console.log(`✅ ${name}: chargée (${img.width}x${img.height})`);
+                } else {
+                    console.log(`⏳ ${name}: en cours de chargement`);
+                }
+            } else if (name === 'mapData') {
+                console.log(`✅ ${name}: disponible (${img.layers ? img.layers.length : 0} calques)`);
+            } else {
+                console.log(`✅ ${name}: disponible`);
+            }
+        } else {
+            console.log(`❌ ${name}: non définie`);
+        }
+    });
+    
+    // Vérifier les erreurs de chargement
+    if (window.playerImg && window.playerImg.naturalWidth === 0) {
+        console.log('❌ playerImg: erreur de chargement');
+    }
+    
+    // Vérifier les tilesets
+    if (window.mapData && window.mapData.tilesets) {
+        window.mapData.tilesets.forEach((tileset, index) => {
+            if (tileset.image) {
+                if (tileset.image.complete) {
+                    console.log(`✅ Tileset ${index}: chargé (${tileset.image.width}x${tileset.image.height})`);
+                } else {
+                    console.log(`⏳ Tileset ${index}: en cours de chargement`);
+                }
+            }
+        });
+    }
+};
+
+// Fonction pour forcer le rechargement des images
+window.reloadImages = function() {
+    console.log('🔄 Rechargement des images...');
+    
+    if (window.playerImg) {
+        window.playerImg.src = window.playerImg.src;
+    }
+    
+    // Recharger les tilesets si nécessaire
+    if (window.mapData && window.mapData.tilesets) {
+        window.mapData.tilesets.forEach((tileset, index) => {
+            if (tileset.image) {
+                tileset.image.src = tileset.image.src;
+                console.log(`🔄 Rechargement du tileset ${index}`);
+            }
+        });
+    }
+    
+    console.log('✅ Rechargement des images initié');
+};
+
+// Fonction pour identifier l'erreur drawImage
+window.debugDrawImageError = function() {
+    console.log('🔍 Diagnostic de l\'erreur drawImage...');
+    
+    // Vérifier le contexte
+    if (!ctx) {
+        console.error('❌ Contexte canvas non disponible');
+        return;
+    }
+    
+    // Vérifier les images principales
+    const images = {
+        playerImg: window.playerImg,
+        mapData: window.mapData,
+        monsters: window.monsters
+    };
+    
+    Object.entries(images).forEach(([name, img]) => {
+        if (img) {
+            if (name === 'playerImg') {
+                console.log(`✅ ${name}: ${img.complete ? 'chargée' : 'en cours'} (${img.width}x${img.height})`);
+            } else if (name === 'mapData') {
+                console.log(`✅ ${name}: disponible (${img.layers ? img.layers.length : 0} calques)`);
+                if (img.tilesets) {
+                    img.tilesets.forEach((tileset, index) => {
+                        if (tileset.image) {
+                            console.log(`  - Tileset ${index}: ${tileset.image.complete ? 'chargé' : 'en cours'} (${tileset.image.width}x${tileset.image.height})`);
+                        }
+                    });
+                }
+            } else if (name === 'monsters') {
+                console.log(`✅ ${name}: ${img.length} monstres`);
+                img.forEach((monster, index) => {
+                    if (monster.img) {
+                        console.log(`  - Monstre ${index}: ${monster.img.complete ? 'chargé' : 'en cours'} (${monster.img.width}x${monster.img.height})`);
+                    } else {
+                        console.log(`  - Monstre ${index}: pas d'image`);
+                    }
+                });
+            }
+        } else {
+            console.log(`❌ ${name}: non défini`);
+        }
+    });
+    
+    // Tester le dessin de chaque élément
+    console.log('🧪 Test de dessin...');
+    
+    try {
+        // Test du joueur
+        if (window.playerImg && window.playerImg.complete) {
+            ctx.drawImage(window.playerImg, 0, 0, 10, 10, 0, 0, 10, 10);
+            console.log('✅ Test drawImage joueur: OK');
+        } else {
+            console.log('❌ Test drawImage joueur: échec - image non chargée');
+        }
+    } catch (error) {
+        console.error('❌ Test drawImage joueur: erreur', error);
+    }
+    
+    // Test des tilesets
+    if (window.mapData && window.mapData.tilesets) {
+        window.mapData.tilesets.forEach((tileset, index) => {
+            try {
+                if (tileset.image && tileset.image.complete) {
+                    ctx.drawImage(tileset.image, 0, 0, 10, 10, 0, 0, 10, 10);
+                    console.log(`✅ Test drawImage tileset ${index}: OK`);
+                } else {
+                    console.log(`❌ Test drawImage tileset ${index}: échec - image non chargée`);
+                }
+            } catch (error) {
+                console.error(`❌ Test drawImage tileset ${index}: erreur`, error);
+            }
+        });
+    }
+    
+    console.log('🔍 Diagnostic terminé');
 };
 

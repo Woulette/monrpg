@@ -1,13 +1,13 @@
-// Système de sauvegarde des monstres avec filtrage intelligent
+// Système de sauvegarde des monstres avec filtrage intelligent pour multi-personnages
 // Évite les erreurs du passé tout en gardant la cohérence des positions
 
 const monsterSaves = {};
 
 // Sauvegarder les monstres pour une map spécifique
 function saveMonstersForMap(mapName) {
-    if (!mapName || !window.monsters) return;
+    if (!mapName || !window.monsters || !window.currentCharacterId) return;
     
-    console.log(`💾 Sauvegarde des monstres pour ${mapName}...`);
+    console.log(`💾 Sauvegarde des monstres pour ${mapName} (personnage ${window.currentCharacterId})...`);
     
     // Filtrer les monstres selon le type de map
     let monstersToSave;
@@ -77,16 +77,29 @@ function saveMonstersForMap(mapName) {
         intelligence: monster.intelligence
     }));
     
-    // Sauvegarder dans localStorage
+    // Sauvegarder dans localStorage avec l'ID du personnage
     try {
-        monsterSaves[mapName] = saveData;
-        localStorage.setItem('monsterSaves', JSON.stringify(monsterSaves));
+        const saveKey = `monrpg_monsters_${window.currentCharacterId}`;
+        const existingData = localStorage.getItem(saveKey);
+        let allMonsterData = {};
+        
+        if (existingData) {
+            try {
+                allMonsterData = JSON.parse(existingData);
+            } catch (e) {
+                console.warn('Données de monstres corrompues, réinitialisation...');
+                allMonsterData = {};
+            }
+        }
+        
+        allMonsterData[mapName] = saveData;
+        localStorage.setItem(saveKey, JSON.stringify(allMonsterData));
         
         // Sauvegarder aussi le compteur de corbeaux tués si c'est une map avec des corbeaux
         if (mapName === "map1" || mapName === "map2" || mapName === "map3") {
-            if (window.crowKillCounts && window.crowKillCounts[mapName] !== undefined) {
-                localStorage.setItem('crowKillCounts', JSON.stringify(window.crowKillCounts));
-                console.log(`📊 Compteur de corbeaux tués sauvegardé pour ${mapName}: ${window.crowKillCounts[mapName]}`);
+            if (typeof window.saveCrowKillCounts === 'function') {
+                const counts = window.getCrowKillCounts();
+                window.saveCrowKillCounts(counts);
             }
         }
         
@@ -98,275 +111,186 @@ function saveMonstersForMap(mapName) {
 
 // Charger les monstres pour une map spécifique
 function loadMonstersForMap(mapName) {
-    if (!mapName) return false;
+    if (!mapName || !window.currentCharacterId) {
+        console.log('❌ Impossible de charger les monstres: mapName ou currentCharacterId manquant');
+        return false;
+    }
     
-    console.log(`📂 Chargement des monstres pour ${mapName}...`);
+    console.log(`📂 Chargement des monstres pour ${mapName} (personnage ${window.currentCharacterId})...`);
     
     try {
-        // Récupérer les données sauvegardées
-        const savedData = localStorage.getItem('monsterSaves');
+        const saveKey = `monrpg_monsters_${window.currentCharacterId}`;
+        const savedData = localStorage.getItem(saveKey);
+        
         if (!savedData) {
-            console.log('Aucune sauvegarde de monstres trouvée');
+            console.log(`📭 Aucune sauvegarde de monstres trouvée pour ce personnage`);
             return false;
         }
         
-        const allSaves = JSON.parse(savedData);
-        const mapSaves = allSaves[mapName];
+        const allMonsterData = JSON.parse(savedData);
+        const mapMonsters = allMonsterData[mapName];
         
-        if (!mapSaves || mapSaves.length === 0) {
-            console.log(`Aucune sauvegarde trouvée pour ${mapName}`);
+        if (!mapMonsters || !Array.isArray(mapMonsters)) {
+            console.log(`📭 Aucun monstre sauvegardé pour ${mapName}`);
             return false;
         }
         
-        // Filtrer les monstres selon le type de map
-        let validMonsters;
-        
-        if (mapName === "mapdonjonslime" || mapName === "mapdonjonslime2" || mapName.includes("slime")) {
-            // Sur les maps slime, charger UNIQUEMENT les slimes
-            validMonsters = mapSaves.filter(m => m.type === "slime");
-            console.log(`🔵 ${validMonsters.length} slimes chargés pour ${mapName}`);
-        } else if (mapName === "mapdonjonslimeboss") {
-            // Sur mapdonjonslimeboss, charger UNIQUEMENT les maitrecorbeaux
-            validMonsters = mapSaves.filter(m => m.type === "maitrecorbeau");
-            console.log(`⚫ ${validMonsters.length} maitrecorbeaux chargés pour ${mapName}`);
+        // Vérifier le nombre de monstres selon le type de map
+        let expectedCount;
+        if (mapName === "mapdonjonslime" || mapName === "mapdonjonslime2") {
+            expectedCount = 3; // 3 slimes pour les maps slime
         } else if (mapName === "map1" || mapName === "map2" || mapName === "map3") {
-            // Sur les maps 1, 2 et 3, charger UNIQUEMENT les corbeaux et maitrecorbeaux
-            validMonsters = mapSaves.filter(m => m.type === "crow" || m.type === "maitrecorbeau");
-            console.log(`⚫ ${validMonsters.length} corbeaux/maitrecorbeaux chargés pour ${mapName}`);
+            expectedCount = 5; // 5 corbeaux pour les maps normales
         } else {
-            // Sur les autres maps (non reconnues), ne charger aucun monstre
-            validMonsters = [];
-            console.log(`🚫 Aucun monstre chargé pour la map non reconnue ${mapName}`);
+            expectedCount = 0; // Aucun monstre pour les autres maps
         }
         
-        // Vérifier si tous les monstres sont morts
-        const aliveMonsters = validMonsters.filter(m => !m.isDead);
-        if (aliveMonsters.length === 0 && validMonsters.length > 0) {
-            console.log(`⚠️ Tous les monstres sont morts sur ${mapName}, pas de chargement`);
-            return false; // Ne pas charger si tous sont morts
-        }
-        
-        // Vérifier s'il y a assez de monstres vivants
-        const expectedCount = (mapName === "mapdonjonslime" || mapName === "mapdonjonslime2" || mapName.includes("slime")) ? 8 : 10;
-        if (aliveMonsters.length < expectedCount) {
-            console.log(`⚠️ Pas assez de monstres vivants sur ${mapName} (${aliveMonsters.length}/${expectedCount}), pas de chargement`);
-            return false; // Ne pas charger si pas assez de monstres vivants
-        }
-        
-        if (validMonsters.length === 0) {
-            console.log(`Aucun monstre valide trouvé pour ${mapName}`);
+        if (mapMonsters.length < expectedCount) {
+            console.log(`⚠️ Nombre de monstres insuffisant pour ${mapName}: ${mapMonsters.length}/${expectedCount}`);
             return false;
         }
         
-        // Nettoyer les monstres existants
-        if (window.monsters) {
-            window.monsters.forEach(monster => {
-                if (typeof window.release === "function") {
-                    window.release(monster.x, monster.y);
-                }
-            });
-            window.monsters.length = 0;
-        }
-        
-        // Restaurer les monstres avec leurs positions exactes
-        validMonsters.forEach(monsterData => {
-            const restoredMonster = {
+        // Créer les monstres à partir des données sauvegardées
+        window.monsters = mapMonsters.map(monsterData => {
+            const monster = {
                 ...monsterData,
-                img: null // L'image sera assignée plus tard
+                // Réinitialiser les propriétés qui ne doivent pas être sauvegardées
+                img: null, // Utiliser 'img' au lieu de 'image'
+                lastMove: 0,
+                lastAttack: monsterData.lastAttack || 0,
+                lastCombat: monsterData.lastCombat || 0,
+                stuckSince: monsterData.stuckSince || 0,
+                lastPatrol: monsterData.lastPatrol || 0,
+                deathTime: monsterData.deathTime || 0
             };
             
-            window.monsters.push(restoredMonster);
-            
-            // Marquer la position comme occupée
-            if (typeof window.occupy === "function") {
-                window.occupy(monsterData.x, monsterData.y);
-            }
+            return monster;
         });
         
-        // Assigner les images aux monstres
-        if (typeof window.assignMonsterImages === "function") {
+        // Assigner les images après avoir créé tous les monstres
+        if (typeof window.assignMonsterImages === 'function') {
             window.assignMonsterImages();
+        } else {
+            console.warn('⚠️ Fonction assignMonsterImages non disponible');
         }
         
-        console.log(`✅ ${validMonsters.length} monstres restaurés pour ${mapName}`);
+        // Charger les compteurs de corbeaux tués
+        if (mapName === "map1" || mapName === "map2" || mapName === "map3") {
+            if (typeof window.getCrowKillCounts === 'function') {
+                const counts = window.getCrowKillCounts();
+                console.log(`📊 Compteurs de corbeaux chargés:`, counts);
+            }
+        }
+        
+        console.log(`✅ ${window.monsters.length} monstres chargés pour ${mapName}`);
         return true;
         
     } catch (error) {
-        console.error('Erreur lors du chargement des monstres:', error);
+        console.error('❌ Erreur lors du chargement des monstres:', error);
+        
+        // Nettoyer les données corrompues
+        cleanCorruptedSaveData();
         return false;
     }
 }
 
 // Nettoyer les données corrompues
 function cleanCorruptedSaveData() {
-    console.log("🧹 Nettoyage des données de sauvegarde corrompues...");
+    if (!window.currentCharacterId) return;
+    
+    console.log('🧹 Nettoyage des données corrompues...');
     
     try {
-        const savedData = localStorage.getItem('monsterSaves');
-        if (!savedData) return;
+        // Supprimer toutes les données de monstres pour ce personnage
+        localStorage.removeItem(`monrpg_monsters_${window.currentCharacterId}`);
+        localStorage.removeItem(`monrpg_crowKillCounts_${window.currentCharacterId}`);
         
-        const allSaves = JSON.parse(savedData);
-        let hasCorruption = false;
-        
-        // Vérifier chaque map
-        Object.keys(allSaves).forEach(mapName => {
-            const mapSaves = allSaves[mapName];
-            
-            if (mapName === "mapdonjonslime" || mapName === "mapdonjonslime2" || mapName.includes("slime")) {
-                // Sur les maps slime, supprimer TOUS les corbeaux et ne garder que les slimes
-                const invalidMonsters = mapSaves.filter(m => m.type !== "slime");
-                if (invalidMonsters.length > 0) {
-                    console.log(`🚫 Suppression de ${invalidMonsters.length} monstres invalides sur ${mapName}`);
-                    allSaves[mapName] = mapSaves.filter(m => m.type === "slime");
-                    hasCorruption = true;
-                }
-                
-                // Si aucun slime, supprimer complètement la sauvegarde pour cette map
-                if (allSaves[mapName].length === 0) {
-                    console.log(`🗑️ Suppression complète des données pour ${mapName} (aucun slime valide)`);
-                    delete allSaves[mapName];
-                    hasCorruption = true;
-                }
-            } else if (mapName === "mapdonjonslimeboss") {
-                // Sur mapdonjonslimeboss, supprimer tous les monstres
-                console.log(`🗑️ Suppression de tous les monstres sur mapdonjonslimeboss`);
-                delete allSaves[mapName];
-                hasCorruption = true;
-            } else if (mapName === "map1" || mapName === "map2" || mapName === "map3") {
-                // Sur les maps 1, 2 et 3, supprimer les slimes et ne garder que les corbeaux, corbeaux d'élite et maitrecorbeaux
-                const invalidMonsters = mapSaves.filter(m => m.type === "slime");
-                if (invalidMonsters.length > 0) {
-                    console.log(`🚫 Suppression de ${invalidMonsters.length} monstres invalides sur ${mapName}`);
-                    allSaves[mapName] = mapSaves.filter(m => m.type !== "slime");
-                    hasCorruption = true;
-                }
-            } else {
-                // Sur les autres maps (non reconnues), supprimer tous les monstres
-                console.log(`🗑️ Suppression de tous les monstres sur la map non reconnue ${mapName}`);
-                delete allSaves[mapName];
-                hasCorruption = true;
-            }
-        });
-        
-        if (hasCorruption) {
-            localStorage.setItem('monsterSaves', JSON.stringify(allSaves));
-            console.log("✅ Données corrompues nettoyées");
-        } else {
-            console.log("✅ Aucune corruption détectée");
-        }
-        
-    } catch (error) {
-        console.error('Erreur lors du nettoyage:', error);
-        // En cas d'erreur, supprimer complètement les données
+        // Supprimer aussi les anciennes clés sans ID de personnage (migration)
         localStorage.removeItem('monsterSaves');
-        console.log("🗑️ Toutes les données de monstres supprimées suite à une erreur");
+        localStorage.removeItem('crowKillCounts');
+        
+        console.log('✅ Données corrompues nettoyées');
+    } catch (error) {
+        console.error('❌ Erreur lors du nettoyage:', error);
     }
 }
 
-// Supprimer les données d'une map spécifique
+// Supprimer les données de monstres pour une map spécifique
 function clearMonsterDataForMap(mapName) {
-    if (!mapName) return;
+    if (!mapName || !window.currentCharacterId) return;
+    
+    console.log(`🗑️ Suppression des données de monstres pour ${mapName}...`);
     
     try {
-        const savedData = localStorage.getItem('monsterSaves');
-        if (savedData) {
-            const allSaves = JSON.parse(savedData);
-            delete allSaves[mapName];
-            localStorage.setItem('monsterSaves', JSON.stringify(allSaves));
-            console.log(`🗑️ Données de monstres supprimées pour ${mapName}`);
+        const saveKey = `monrpg_monsters_${window.currentCharacterId}`;
+        const existingData = localStorage.getItem(saveKey);
+        
+        if (existingData) {
+            const allMonsterData = JSON.parse(existingData);
+            delete allMonsterData[mapName];
+            localStorage.setItem(saveKey, JSON.stringify(allMonsterData));
         }
+        
+        console.log(`✅ Données supprimées pour ${mapName}`);
     } catch (error) {
-        console.error('Erreur lors de la suppression:', error);
+        console.error('❌ Erreur lors de la suppression:', error);
     }
 }
 
 // Supprimer toutes les données de monstres
 function clearAllMonsterData() {
+    if (!window.currentCharacterId) return;
+    
+    console.log('🗑️ Suppression de toutes les données de monstres...');
+    
     try {
-        localStorage.removeItem('monsterSaves');
-        console.log("🗑️ Toutes les données de monstres supprimées");
+        localStorage.removeItem(`monrpg_monsters_${window.currentCharacterId}`);
+        localStorage.removeItem(`monrpg_crowKillCounts_${window.currentCharacterId}`);
+        console.log('✅ Toutes les données de monstres supprimées');
     } catch (error) {
-        console.error('Erreur lors de la suppression complète:', error);
+        console.error('❌ Erreur lors de la suppression:', error);
     }
 }
 
-// Charger le compteur de corbeaux tués depuis localStorage
+// Charger les compteurs de corbeaux tués
 function loadCrowKillCounts() {
+    if (!window.currentCharacterId) return;
+    
     try {
-        const savedCounts = localStorage.getItem('crowKillCounts');
-        if (savedCounts) {
-            const counts = JSON.parse(savedCounts);
-            if (window.crowKillCounts) {
-                Object.assign(window.crowKillCounts, counts);
-                console.log("📊 Compteurs de corbeaux tués chargés:", window.crowKillCounts);
-            }
+        const crowKey = `monrpg_crowKillCounts_${window.currentCharacterId}`;
+        const crowData = localStorage.getItem(crowKey);
+        
+        if (crowData) {
+            window.crowKillCounts = JSON.parse(crowData);
+            console.log('📊 Compteurs de corbeaux chargés:', window.crowKillCounts);
+        } else {
+            window.crowKillCounts = { map1: 0, map2: 0, map3: 0 };
+            console.log('📊 Compteurs de corbeaux initialisés');
         }
     } catch (error) {
-        console.error('Erreur lors du chargement des compteurs de corbeaux:', error);
+        console.error('❌ Erreur lors du chargement des compteurs:', error);
+        window.crowKillCounts = { map1: 0, map2: 0, map3: 0 };
     }
 }
 
-// Nettoyage automatique au démarrage
-(function() {
-    console.log("🧹 Nettoyage automatique des données de monstres au démarrage");
-    cleanCorruptedSaveData();
+// Fonction pour forcer le nettoyage complet des données de monstres
+window.forceCleanMonsterData = function() {
+    console.log('🧹 Nettoyage forcé de toutes les données de monstres...');
     
-    // Charger les compteurs de corbeaux tués
-    loadCrowKillCounts();
-    
-    // Forcer le nettoyage des données des maps donjon slime au démarrage
-    try {
-        const savedData = localStorage.getItem('monsterSaves');
-        if (savedData) {
-            const allSaves = JSON.parse(savedData);
-            if (allSaves.mapdonjonslime) {
-                console.log("🗑️ Suppression forcée des données de mapdonjonslime au démarrage");
-                delete allSaves.mapdonjonslime;
-                localStorage.setItem('monsterSaves', JSON.stringify(allSaves));
-            }
-            if (allSaves.mapdonjonslime2) {
-                console.log("🗑️ Suppression forcée des données de mapdonjonslime2 au démarrage");
-                delete allSaves.mapdonjonslime2;
-                localStorage.setItem('monsterSaves', JSON.stringify(allSaves));
-            }
+    // Supprimer toutes les clés liées aux monstres
+    Object.keys(localStorage).forEach(key => {
+        if (key.includes('monster') || key.includes('crowKillCounts')) {
+            localStorage.removeItem(key);
+            console.log(`🗑️ Supprimé: ${key}`);
         }
-    } catch (error) {
-        console.error('Erreur lors du nettoyage forcé:', error);
-    }
-})();
+    });
+    
+    console.log('✅ Nettoyage forcé terminé');
+};
 
-// Export global
+// Exporter les fonctions
 window.saveMonstersForMap = saveMonstersForMap;
 window.loadMonstersForMap = loadMonstersForMap;
-window.cleanCorruptedSaveData = cleanCorruptedSaveData;
 window.clearMonsterDataForMap = clearMonsterDataForMap;
 window.clearAllMonsterData = clearAllMonsterData;
-
-// Fonction pour nettoyer les données de monstres de mapdonjonslimeboss
-window.clearBossMapMonsterData = function() {
-    console.log("🗑️ Nettoyage des données de monstres pour mapdonjonslimeboss...");
-    
-    try {
-        // Charger les données existantes
-        const existingData = localStorage.getItem('monsterSaves');
-        if (existingData) {
-            const monsterSaves = JSON.parse(existingData);
-            
-            // Supprimer les données de mapdonjonslimeboss
-            if (monsterSaves.mapdonjonslimeboss) {
-                delete monsterSaves.mapdonjonslimeboss;
-                console.log("✅ Données de monstres supprimées pour mapdonjonslimeboss");
-                
-                // Sauvegarder les données mises à jour
-                localStorage.setItem('monsterSaves', JSON.stringify(monsterSaves));
-                console.log("💾 localStorage mis à jour");
-            } else {
-                console.log("ℹ️ Aucune donnée de monstres trouvée pour mapdonjonslimeboss");
-            }
-        } else {
-            console.log("ℹ️ Aucune donnée de monstres trouvée dans localStorage");
-        }
-    } catch (error) {
-        console.error("❌ Erreur lors du nettoyage des données de monstres:", error);
-    }
-};
+window.loadCrowKillCounts = loadCrowKillCounts;
