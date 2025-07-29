@@ -155,6 +155,8 @@ class SaveSystem {
                     hasMoved: window.pnjs ? (window.pnjs.find(p => p.id === 'papi3')?.hasMoved || false) : false
                 }
             },
+            // Sauvegarde de la progression du donjon (NE PAS SAUVEGARDER - se réinitialise à chaque entrée)
+            // dungeonProgression: window.dungeonProgression || {},
             character: {
                 name: window.playerName || 'Mon Personnage',
                 avatar: window.playerAvatar || 'assets/personnages/player.png'
@@ -182,11 +184,34 @@ class SaveSystem {
             
             // Restaurer les données du joueur
             if (data.player && typeof player !== 'undefined') {
-                // Position et mouvement
-                player.x = data.player.x;
-                player.y = data.player.y;
-                player.px = data.player.px;
-                player.py = data.player.py;
+                // Vérifier si c'est un nouveau personnage
+                const isNewCharacter = !data.timestamp || data.timestamp < Date.now() - 60000;
+                
+                if (isNewCharacter) {
+                    // Forcer la position de départ pour un nouveau personnage
+                    console.log('🆕 Nouveau personnage - Position forcée à (25, 12)');
+                    player.x = 25;
+                    player.y = 12;
+                    player.px = 25 * TILE_SIZE;
+                    player.py = 12 * TILE_SIZE;
+                    player.spawnX = 25;
+                    player.spawnY = 12;
+                    
+                    // Réinitialiser complètement le joueur pour un nouveau personnage
+                    if (typeof window.resetPlayer === 'function') {
+                        console.log('🔄 Réinitialisation complète du nouveau personnage');
+                        window.resetPlayer();
+                    }
+                } else {
+                    // Restaurer la position sauvegardée pour un personnage existant
+                    player.x = data.player.x;
+                    player.y = data.player.y;
+                    player.px = data.player.px;
+                    player.py = data.player.py;
+                    player.spawnX = data.player.spawnX;
+                    player.spawnY = data.player.spawnY;
+                }
+                
                 player.direction = data.player.direction || 0;
                 player.frame = data.player.frame || 0;
                 player.moving = data.player.moving || false;
@@ -270,8 +295,6 @@ class SaveSystem {
                 player.isDead = data.player.isDead || false;
                 player.deathTime = data.player.deathTime || 0;
                 player.respawnTime = data.player.respawnTime || 3000;
-                player.spawnX = data.player.spawnX;
-                player.spawnY = data.player.spawnY;
                 
                 // Anciennes propriétés pour compatibilité
                 if (data.player.stats) {
@@ -356,8 +379,21 @@ class SaveSystem {
             // Charger la map si différente
             if (data.gameState && data.gameState.currentMap && 
                 data.gameState.currentMap !== window.currentMap) {
-                if (typeof loadMap === 'function') {
-                    loadMap(data.gameState.currentMap);
+                
+                // Vérifier si c'est un nouveau personnage (pas de timestamp ou sauvegarde ancienne)
+                const isNewCharacter = !data.timestamp || data.timestamp < Date.now() - 60000;
+                
+                if (isNewCharacter) {
+                    // Forcer map1 pour un nouveau personnage
+                    console.log('🆕 Nouveau personnage détecté - Forçage vers map1');
+                    if (typeof loadMap === 'function') {
+                        loadMap('map1');
+                    }
+                } else {
+                    // Charger la map sauvegardée pour un personnage existant
+                    if (typeof loadMap === 'function') {
+                        loadMap(data.gameState.currentMap);
+                    }
                 }
             }
 
@@ -403,6 +439,11 @@ class SaveSystem {
                     window.clearAllMonsterData();
                 }
             }
+            
+            // Charger la progression du donjon (NE PAS CHARGER - se réinitialise à chaque entrée)
+            // if (data.dungeonProgression && typeof window.loadDungeonProgression === "function") {
+            //     window.loadDungeonProgression(data.dungeonProgression);
+            // }
 
             console.log('🎮 Partie chargée avec succès');
             

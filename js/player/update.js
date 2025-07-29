@@ -283,7 +283,7 @@ function updatePlayer(ts) {
                 const tileIndex = player.y * layer.width + player.x;
                 const tileId = layer.data[tileIndex];
                 
-                if (tileId === 1 || tileId === 2 || tileId === 3 || tileId === 4 || tileId === 12008 || tileId === 12208) {
+                if (tileId === 1 || tileId === 2 || tileId === 3 || tileId === 4 || tileId === 12008 || tileId === 12208 || tileId === 15408 || tileId === 15608) {
                     portalFound = true;
                     portalGid = tileId;
                     break;
@@ -328,12 +328,39 @@ function updatePlayer(ts) {
                     targetPortalId = 1;
                 } else if (portalGid === 12008) {
                     // Portail ID 12008 → Mapdonjonslime2 (sens unique)
-                    destinationMap = "mapdonjonslime2";
-                    targetPortalId = 12208;
+                    // Vérifier si le portail est débloqué
+                    if (typeof window.isPortal12008Accessible === "function" && window.isPortal12008Accessible()) {
+                        destinationMap = "mapdonjonslime2";
+                        targetPortalId = 12208;
+                        console.log("🚪 Accès au portail 12008 autorisé");
+                    } else {
+                        console.log("🚫 Portail 12008 verrouillé - Tuez tous les slimes d'abord");
+                        portalFound = false; // Empêcher le téléportement
+                    }
                 }
             } else if (window.currentMap === "mapdonjonslime2") {
+                // Gestion spéciale pour mapdonjonslime2
+                if (portalGid === 15408 || portalGid === 15608) {
+                    // Portails 15408 et 15608 → Mapdonjonslimeboss (sens unique)
+                    // Vérifier si le décor a été retiré (les slimes tués)
+                    if (typeof window.dungeonProgression !== 'undefined' && 
+                        window.dungeonProgression.mapdonjonslime2 && 
+                        window.dungeonProgression.mapdonjonslime2.decorRemoved) {
+                        destinationMap = "mapdonjonslimeboss";
+                        targetPortalId = null; // Pas de portail à chercher, position fixe
+                        console.log("🚪 Accès au portail vers mapdonjonslimeboss autorisé");
+                    } else {
+                        console.log("🚫 Portails 15408/15608 verrouillés - Tuez tous les slimes d'abord");
+                        portalFound = false; // Empêcher le téléportement
+                    }
+                }
                 // Pas de portail de retour - le joueur doit tuer le boss pour sortir
                 // Le portail 12208 n'est plus fonctionnel
+            } else if (window.currentMap === "mapdonjonslimeboss") {
+                // Gestion spéciale pour mapdonjonslimeboss
+                // Pas de portail de sortie - le joueur doit tuer le SlimeBoss pour sortir
+                // Le boss sera implémenté plus tard
+                console.log("🏰 Vous êtes dans l'antre du SlimeBoss ! Tuez-le pour sortir.");
             } else {
                 // Logique générale pour les autres maps
                 if (portalGid === 1) {
@@ -377,6 +404,15 @@ function updatePlayer(ts) {
                 fetch(`assets/maps/${destinationMap}.json`)
                     .then(response => response.json())
                     .then(mapData => {
+                        // Gestion spéciale pour mapdonjonslimeboss - position fixe
+                        if (destinationMap === "mapdonjonslimeboss") {
+                            console.log("🏰 Téléportation vers l'antre du SlimeBoss à la position (12, 17)");
+                            if (typeof teleportPlayer === "function") {
+                                teleportPlayer(destinationMap, 12, 17);
+                            }
+                            return;
+                        }
+                        
                         // Chercher le portail de destination dans tous les calques
                         let targetPortal = null;
                         console.log(`Recherche du portail ID ${targetPortalId} sur ${destinationMap}...`);

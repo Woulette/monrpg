@@ -28,7 +28,7 @@ function calculateMapCentering() {
     const mapHeight = window.mapData.height * TILE_SIZE;
     
     // Centrer les maps donjon slime spécifiquement
-    if (window.currentMap === "mapdonjonslime" || window.currentMap === "mapdonjonslime2") {
+    if (window.currentMap === "mapdonjonslime" || window.currentMap === "mapdonjonslime2" || window.currentMap === "mapdonjonslimeboss") {
         window.mapOffsetX = Math.max(0, (canvas.width - mapWidth) / 2);
         window.mapOffsetY = Math.max(0, (canvas.height - mapHeight) / 2);
         console.log(`🎯 Centrage de ${window.currentMap}: offsetX=${window.mapOffsetX}, offsetY=${window.mapOffsetY}`);
@@ -74,9 +74,40 @@ async function loadMap(mapName) {
             window.initMonsters();
         }
         
+        // Nettoyage spécial pour mapdonjonslimeboss - supprimer tous les slimes existants
+        if (mapName === "mapdonjonslimeboss" && typeof window.forceCleanSlimesOnBossMap === "function") {
+            console.log("🏰 Map boss détectée - nettoyage FORCÉ des slimes...");
+            // Nettoyage immédiat
+            window.forceCleanSlimesOnBossMap();
+            // Nettoyage après un délai pour s'assurer que tout est chargé
+            setTimeout(() => {
+                window.forceCleanSlimesOnBossMap();
+            }, 500);
+            // Nettoyage après l'initialisation des monstres
+            setTimeout(() => {
+                window.forceCleanSlimesOnBossMap();
+            }, 1000);
+        }
+        
         // Initialiser les PNJ pour cette map
         if (typeof window.initPNJs === "function") {
             window.initPNJs();
+        }
+        
+        // Vérifier la progression du donjon après le chargement de la map
+        if (typeof window.checkDungeonProgressionOnMapLoad === "function") {
+            window.checkDungeonProgressionOnMapLoad();
+        }
+        
+        // Nettoyage spécial pour mapdonjonslimeboss - supprimer tous les slimes existants
+        if (mapName === "mapdonjonslimeboss" && typeof window.forceCleanSlimesOnBossMap === "function") {
+            console.log("🏰 Map boss détectée - nettoyage FORCÉ des slimes...");
+            // Nettoyage immédiat
+            window.forceCleanSlimesOnBossMap();
+            // Nettoyage après un délai pour s'assurer que tout est chargé
+            setTimeout(() => {
+                window.forceCleanSlimesOnBossMap();
+            }, 500);
         }
         
         // Démarrer l'écran noir de transition

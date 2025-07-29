@@ -1,13 +1,13 @@
 // Initialisation du joueur
 const player = {
-    x: 24,
-    y: 14,
+    x: 25,
+    y: 12,
     direction: 0,
     frame: 0,
-    px: 24 * TILE_SIZE,
-    py: 14 * TILE_SIZE,
+    px: 25 * TILE_SIZE,
+    py: 12 * TILE_SIZE,
     moving: false,
-    moveTarget: { x: 24, y: 14 },
+    moveTarget: { x: 25, y: 12 },
     path: [],
     level: 1,
     xp: 0,
@@ -15,10 +15,10 @@ const player = {
     maxLife: 50,
     life: 50,
     // Statistiques de base (modifiables avec points de caractéristiques)
-    baseForce: 100,
+    baseForce: 1000,
     baseIntelligence: 1,
     baseAgilite: 1,
-    baseDefense: 1,
+    baseDefense: 100,
     baseChance: 1,
     baseVitesse: 1,
     baseVie: 1, // Stat de vie de base
@@ -78,8 +78,8 @@ const player = {
     isDead: false,
     deathTime: 0,
     respawnTime: 3000, // 3 secondes pour le respawn
-    spawnX: 24, // Point de spawn
-    spawnY: 14
+    spawnX: 25, // Point de spawn modifié
+    spawnY: 12
 };
 
 // Initialiser les stats totales au démarrage
@@ -106,14 +106,14 @@ function resetPlayer() {
     console.log("Réinitialisation complète du joueur...");
     
     // Réinitialiser les propriétés de base
-    player.x = 24;
-    player.y = 14;
+    player.x = 25;
+    player.y = 12;
     player.direction = 0;
     player.frame = 0;
-    player.px = 24 * TILE_SIZE;
-    player.py = 14 * TILE_SIZE;
+    player.px = 25 * TILE_SIZE;
+    player.py = 12 * TILE_SIZE;
     player.moving = false;
-    player.moveTarget = { x: 24, y: 14 };
+    player.moveTarget = { x: 25, y: 12 };
     player.path = [];
     
     // Réinitialiser le niveau et l'XP
@@ -126,10 +126,10 @@ function resetPlayer() {
     player.life = 50;
     
     // Réinitialiser les statistiques de base
-    player.baseForce = 100;
+    player.baseForce = 1000;
     player.baseIntelligence = 1;
     player.baseAgilite = 1;
-    player.baseDefense = 1;
+    player.baseDefense = 100;
     player.baseChance = 1;
     player.baseVitesse = 1;
     player.baseVie = 1;
@@ -186,8 +186,8 @@ function resetPlayer() {
     player.isDead = false;
     player.deathTime = 0;
     player.respawnTime = 3000;
-    player.spawnX = 24;
-    player.spawnY = 14;
+    player.spawnX = 25;
+    player.spawnY = 12;
     
     // Recalculer les stats totales
     recalculateTotalStats();

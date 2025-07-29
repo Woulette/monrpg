@@ -16,6 +16,10 @@ function saveMonstersForMap(mapName) {
         // Sur les maps slime, sauvegarder UNIQUEMENT les slimes
         monstersToSave = window.monsters.filter(m => m.type === "slime" && !m.isDead);
         console.log(`🔵 ${monstersToSave.length} slimes sauvegardés pour ${mapName}`);
+    } else if (mapName === "mapdonjonslimeboss") {
+        // Sur mapdonjonslimeboss, NE SAUVEGARDER AUCUN MONSTRE
+        monstersToSave = [];
+        console.log(`🚫 Aucun monstre sauvegardé pour mapdonjonslimeboss (map boss)`);
     } else if (mapName === "map1" || mapName === "map2" || mapName === "map3") {
         // Sur les maps 1, 2 et 3, sauvegarder UNIQUEMENT les corbeaux, corbeaux d'élite et maitrecorbeaux
         monstersToSave = window.monsters.filter(m => 
@@ -121,6 +125,10 @@ function loadMonstersForMap(mapName) {
             // Sur les maps slime, charger UNIQUEMENT les slimes
             validMonsters = mapSaves.filter(m => m.type === "slime");
             console.log(`🔵 ${validMonsters.length} slimes chargés pour ${mapName}`);
+        } else if (mapName === "mapdonjonslimeboss") {
+            // Sur mapdonjonslimeboss, charger UNIQUEMENT les maitrecorbeaux
+            validMonsters = mapSaves.filter(m => m.type === "maitrecorbeau");
+            console.log(`⚫ ${validMonsters.length} maitrecorbeaux chargés pour ${mapName}`);
         } else if (mapName === "map1" || mapName === "map2" || mapName === "map3") {
             // Sur les maps 1, 2 et 3, charger UNIQUEMENT les corbeaux et maitrecorbeaux
             validMonsters = mapSaves.filter(m => m.type === "crow" || m.type === "maitrecorbeau");
@@ -219,6 +227,11 @@ function cleanCorruptedSaveData() {
                     delete allSaves[mapName];
                     hasCorruption = true;
                 }
+            } else if (mapName === "mapdonjonslimeboss") {
+                // Sur mapdonjonslimeboss, supprimer tous les monstres
+                console.log(`🗑️ Suppression de tous les monstres sur mapdonjonslimeboss`);
+                delete allSaves[mapName];
+                hasCorruption = true;
             } else if (mapName === "map1" || mapName === "map2" || mapName === "map3") {
                 // Sur les maps 1, 2 et 3, supprimer les slimes et ne garder que les corbeaux, corbeaux d'élite et maitrecorbeaux
                 const invalidMonsters = mapSaves.filter(m => m.type === "slime");
@@ -328,3 +341,32 @@ window.loadMonstersForMap = loadMonstersForMap;
 window.cleanCorruptedSaveData = cleanCorruptedSaveData;
 window.clearMonsterDataForMap = clearMonsterDataForMap;
 window.clearAllMonsterData = clearAllMonsterData;
+
+// Fonction pour nettoyer les données de monstres de mapdonjonslimeboss
+window.clearBossMapMonsterData = function() {
+    console.log("🗑️ Nettoyage des données de monstres pour mapdonjonslimeboss...");
+    
+    try {
+        // Charger les données existantes
+        const existingData = localStorage.getItem('monsterSaves');
+        if (existingData) {
+            const monsterSaves = JSON.parse(existingData);
+            
+            // Supprimer les données de mapdonjonslimeboss
+            if (monsterSaves.mapdonjonslimeboss) {
+                delete monsterSaves.mapdonjonslimeboss;
+                console.log("✅ Données de monstres supprimées pour mapdonjonslimeboss");
+                
+                // Sauvegarder les données mises à jour
+                localStorage.setItem('monsterSaves', JSON.stringify(monsterSaves));
+                console.log("💾 localStorage mis à jour");
+            } else {
+                console.log("ℹ️ Aucune donnée de monstres trouvée pour mapdonjonslimeboss");
+            }
+        } else {
+            console.log("ℹ️ Aucune donnée de monstres trouvée dans localStorage");
+        }
+    } catch (error) {
+        console.error("❌ Erreur lors du nettoyage des données de monstres:", error);
+    }
+};

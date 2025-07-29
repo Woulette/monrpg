@@ -356,6 +356,54 @@ window.spawnMonster = function(type) {
   return monstre;
 };
 
+// Fonction de téléportation globale (accessible depuis la console)
+window.teleportToMap = function(mapName, x = 400, y = 300) {
+    if (!mapName) {
+        console.log("❌ Usage: teleportToMap('nomDeLaMap', x, y)");
+        console.log("📋 Maps disponibles: map1, map2, map3, mapdonjonslime, mapdonjonslime2, mapdonjonslimeboss");
+        return;
+    }
+    
+    console.log(`🚀 Téléportation vers ${mapName} aux coordonnées (${x}, ${y})`);
+    
+    // Sauvegarder la position actuelle
+    if (window.saveGame) {
+        window.saveGame();
+    }
+    
+    // Changer de map
+    window.currentMap = mapName;
+    window.player.x = x;
+    window.player.y = y;
+    
+    // Charger la nouvelle map
+    if (window.loadMap) {
+        window.loadMap(mapName);
+    }
+    
+    // Recharger les monstres
+    if (window.loadMonstersForMap) {
+        window.loadMonstersForMap(mapName);
+    }
+    
+    // Recharger les PNJ
+    if (window.loadPNJsForMap) {
+        window.loadPNJsForMap(mapName);
+    }
+    
+    console.log(`✅ Téléportation réussie vers ${mapName}`);
+};
+
+// Afficher les commandes disponibles au démarrage
+console.log("🎮 Commandes de téléportation disponibles:");
+console.log("teleportToMap('map1') - Téléportation vers map1");
+console.log("teleportToMap('map2') - Téléportation vers map2");
+console.log("teleportToMap('map3') - Téléportation vers map3");
+console.log("teleportToMap('mapdonjonslime') - Téléportation vers le donjon slime");
+console.log("teleportToMap('mapdonjonslime2') - Téléportation vers le donjon slime niveau 2");
+console.log("teleportToMap('mapdonjonslimeboss') - Téléportation vers l'antre du SlimeBoss");
+console.log("teleportToMap('nomMap', x, y) - Téléportation avec coordonnées personnalisées");
+
 function resizeGameCanvas() {
     const canvas = document.getElementById('gameCanvas');
     const ratio = 1536 / 910; // Ratio d'origine du canvas
@@ -406,4 +454,193 @@ function initEtablies() {
     
     console.log("Système d'établies initialisé avec succès");
 }
+
+// Fonction pour afficher la popup de victoire du boss
+window.showBossVictoryPopup = function() {
+    // Créer la popup
+    const popup = document.createElement('div');
+    popup.id = 'boss-victory-popup';
+    popup.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        border: 3px solid #f39c12;
+        border-radius: 15px;
+        padding: 30px;
+        color: white;
+        font-family: 'Arial', sans-serif;
+        text-align: center;
+        z-index: 10000;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        min-width: 400px;
+    `;
+    
+    popup.innerHTML = `
+        <h2 style="color: #f39c12; margin-bottom: 20px; font-size: 24px;">🏆 FÉLICITATIONS ! 🏆</h2>
+        <p style="font-size: 18px; margin-bottom: 15px;">Vous avez éliminé le SlimeBoss !</p>
+        <p style="font-size: 16px; margin-bottom: 25px; color: #ecf0f1;">Récupérez votre récompense dans le coffre du donjon.</p>
+        <button id="close-boss-popup" style="
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        ">Fermer</button>
+    `;
+    
+    document.body.appendChild(popup);
+    
+    // Gestionnaire pour fermer la popup
+    document.getElementById('close-boss-popup').addEventListener('click', function() {
+        document.body.removeChild(popup);
+    });
+    
+    console.log("🎉 Popup de victoire du SlimeBoss affichée");
+};
+
+// Fonction pour afficher la fenêtre de sélection d'objets du coffre
+window.showBossChestWindow = function() {
+    console.log("🎁 Affichage de la fenêtre de sélection du coffre du SlimeBoss...");
+    
+    // Créer la fenêtre du coffre
+    const chestWindow = document.createElement('div');
+    chestWindow.id = 'boss-chest-window';
+    chestWindow.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        border: 3px solid #f39c12;
+        border-radius: 15px;
+        padding: 30px;
+        color: white;
+        font-family: 'Arial', sans-serif;
+        text-align: center;
+        z-index: 10000;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        min-width: 500px;
+    `;
+    
+    // Définir les 3 objets disponibles
+    const chestItems = [
+        {
+            id: "boss_sword_slime",
+            name: "Épée du SlimeBoss",
+            type: "arme",
+            category: "équipement",
+            description: "Une épée forgée dans l'essence du SlimeBoss",
+            image: "assets/equipements/epee_slimeboss.png",
+            stats: { force: 15, defense: 5 }
+        },
+        {
+            id: "boss_armor_slime",
+            name: "Armure du SlimeBoss",
+            type: "armure",
+            category: "équipement",
+            description: "Une armure résistante créée à partir du SlimeBoss",
+            image: "assets/equipements/armure_slimeboss.png",
+            stats: { defense: 20, hp: 50 }
+        },
+        {
+            id: "boss_potion_slime",
+            name: "Potion du SlimeBoss",
+            type: "potion",
+            category: "consommable",
+            description: "Une potion magique qui restaure complètement la vie",
+            image: "assets/objets/potion_slimeboss.png",
+            effect: "restore_full_hp"
+        }
+    ];
+    
+    chestWindow.innerHTML = `
+        <h2 style="color: #f39c12; margin-bottom: 20px; font-size: 24px;">🎁 Coffre du SlimeBoss</h2>
+        <p style="font-size: 16px; margin-bottom: 25px; color: #ecf0f1;">Choisissez votre récompense :</p>
+        <div style="display: flex; justify-content: space-around; gap: 20px; margin-bottom: 25px;">
+            ${chestItems.map((item, index) => `
+                <div class="chest-item" data-item-index="${index}" style="
+                    background: rgba(255,255,255,0.1);
+                    border: 2px solid #f39c12;
+                    border-radius: 10px;
+                    padding: 15px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    min-width: 120px;
+                " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                    <div style="width: 64px; height: 64px; background: #555; margin: 0 auto 10px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 24px;">📦</div>
+                    <div style="font-weight: bold; margin-bottom: 5px;">${item.name}</div>
+                    <div style="font-size: 12px; color: #bdc3c7;">${item.description}</div>
+                </div>
+            `).join('')}
+        </div>
+        <button id="close-chest-window" style="
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        ">Fermer</button>
+    `;
+    
+    document.body.appendChild(chestWindow);
+    
+    // Gestionnaires pour les clics sur les objets
+    const itemElements = chestWindow.querySelectorAll('.chest-item');
+    itemElements.forEach((element, index) => {
+        element.addEventListener('click', function() {
+            const selectedItem = chestItems[index];
+            console.log(`🎁 Objet sélectionné: ${selectedItem.name}`);
+            
+            // Ajouter l'objet à l'inventaire
+            if (typeof window.addItemToInventory === "function") {
+                window.addItemToInventory(selectedItem);
+                console.log(`✅ ${selectedItem.name} ajouté à l'inventaire`);
+            }
+            
+            // Fermer la fenêtre
+            document.body.removeChild(chestWindow);
+            
+            // Téléporter vers map3 après un délai
+            setTimeout(() => {
+                console.log("🚪 Téléportation vers map3 après sélection de la récompense...");
+                if (typeof window.teleportPlayer === "function") {
+                    window.teleportPlayer("map3", 10, 10);
+                }
+                
+                // Sauvegarde immédiate après téléportation
+                setTimeout(() => {
+                    if (typeof window.saveGameState === "function") {
+                        window.saveGameState();
+                        console.log("💾 Sauvegarde automatique effectuée après sélection de la récompense");
+                    }
+                }, 500);
+            }, 1000);
+        });
+    });
+    
+    // Gestionnaire pour fermer la fenêtre
+    document.getElementById('close-chest-window').addEventListener('click', function() {
+        document.body.removeChild(chestWindow);
+    });
+    
+    console.log("🎁 Fenêtre de sélection du coffre affichée");
+};
+
+// Fonction pour donner la récompense du boss (remplacée par la fenêtre de sélection)
+window.giveBossReward = function() {
+    console.log("🎁 Ouverture de la fenêtre de sélection du coffre...");
+    
+    // Afficher la fenêtre de sélection
+    if (typeof window.showBossChestWindow === "function") {
+        window.showBossChestWindow();
+    }
+};
 

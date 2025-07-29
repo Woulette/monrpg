@@ -144,7 +144,7 @@ function drawMonsters(ctx) {
             if (levelDiff < 5) ctx.fillStyle = "#ffffff";
             else if (levelDiff <= 15) ctx.fillStyle = "#ffa500";
             else ctx.fillStyle = "#ff0000";
-            let nomAffiche = monster.name || (monster.type === "maitrecorbeau" ? "Maitrecorbeau" : monster.type === "corbeauelite" ? "Corbeau d'élite" : "Corbeau");
+            let nomAffiche = monster.name || (monster.type === "maitrecorbeau" ? "Maitrecorbeau" : monster.type === "corbeauelite" ? "Corbeau d'élite" : monster.type === "slimeboss" ? "SlimeBoss" : "Corbeau");
             ctx.fillText(`${nomAffiche} Lv ${monster.level || 1}`, textX, textY);
             ctx.restore();
         }
@@ -203,6 +203,52 @@ function drawMonsters(ctx) {
                 monster.frame * 32, 0, 32, 32,
                 monster.px + offsetX + (window.mapOffsetX || 0), monster.py + offsetY + (window.mapOffsetY || 0), monsterSize, monsterHeight
             );
+        } else if (monster.type === "slimeboss") {
+            // Gestion spéciale pour le SlimeBoss (64x64 avec 4 animations)
+            // Calculer les offsets pour centrer le boss 64x64 sur sa case
+            const bossSize = 64;
+            const bossHeight = 64;
+            const bossOffsetX = (TILE_SIZE / 2) - (bossSize / 2);
+            const bossOffsetY = (TILE_SIZE / 2) - (bossHeight / 2);
+            
+            // Animation du boss (4 frames, plus lente)
+            const now = Date.now();
+            if (now - monster.lastAnim > monster.animDelay) {
+                monster.currentAnimation = (monster.currentAnimation || 0) + 1;
+                monster.currentAnimation = monster.currentAnimation % 4; // 4 frames
+                monster.lastAnim = now;
+            }
+            
+            // Dessiner le boss (64x64)
+            ctx.drawImage(
+                monster.img,
+                (monster.currentAnimation || 0) * 64, 0, // Source X, Y (4 frames de 64px)
+                64, 64, // Source width, height
+                monster.px + bossOffsetX + (window.mapOffsetX || 0), monster.py + bossOffsetY + (window.mapOffsetY || 0), // Destination X, Y
+                64, 64 // Destination width, height
+            );
+            
+            // Dessiner la barre de vie du boss
+            if (monster.hp < monster.maxHp) {
+                const barWidth = 64;
+                const barHeight = 6;
+                const barX = monster.px + bossOffsetX + (window.mapOffsetX || 0);
+                const barY = monster.py + bossOffsetY - 10 + (window.mapOffsetY || 0);
+                
+                // Fond de la barre
+                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                ctx.fillRect(barX, barY, barWidth, barHeight);
+                
+                // Barre de vie
+                const healthPercent = monster.hp / monster.maxHp;
+                ctx.fillStyle = healthPercent > 0.5 ? "#00ff00" : healthPercent > 0.25 ? "#ffff00" : "#ff0000";
+                ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+                
+                // Bordure
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 1;
+                ctx.strokeRect(barX, barY, barWidth, barHeight);
+            }
         } else {
             // Animation normale pour les corbeaux
             ctx.drawImage(
@@ -230,12 +276,26 @@ function drawMonsters(ctx) {
             ctx.strokeStyle = '#00ffff'; // Cyan pour l'effet de hover
             ctx.lineWidth = 3;
             ctx.setLineDash([5, 5]); // Ligne pointillée
-            ctx.strokeRect(
-                monster.px + offsetX + (window.mapOffsetX || 0) - 2, 
-                monster.py + offsetY + (window.mapOffsetY || 0) - 2, 
-                monsterSize + 4, 
-                monsterHeight + 4
-            );
+            
+            // Gestion spéciale pour le SlimeBoss (64x64)
+            if (monster.type === "slimeboss") {
+                const bossSize = 64;
+                const bossOffsetX = (TILE_SIZE / 2) - (bossSize / 2);
+                const bossOffsetY = (TILE_SIZE / 2) - (bossSize / 2);
+                ctx.strokeRect(
+                    monster.px + bossOffsetX + (window.mapOffsetX || 0) - 2, 
+                    monster.py + bossOffsetY + (window.mapOffsetY || 0) - 2, 
+                    bossSize + 4, 
+                    bossSize + 4
+                );
+            } else {
+                ctx.strokeRect(
+                    monster.px + offsetX + (window.mapOffsetX || 0) - 2, 
+                    monster.py + offsetY + (window.mapOffsetY || 0) - 2, 
+                    monsterSize + 4, 
+                    monsterHeight + 4
+                );
+            }
             ctx.restore();
         }
     });

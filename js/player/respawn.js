@@ -15,11 +15,28 @@ function respawnPlayer() {
         release(player.x, player.y);
     }
     
-    // Remettre le joueur au point de spawn
-    player.x = player.spawnX;
-    player.y = player.spawnY;
-    player.px = player.spawnX * TILE_SIZE;
-    player.py = player.spawnY * TILE_SIZE;
+    // Téléporter vers map1 si on n'y est pas déjà
+    if (window.currentMap !== "map1") {
+        console.log("🔄 Respawn : Téléportation vers map1");
+        if (typeof window.teleportPlayer === "function") {
+            window.teleportPlayer("map1", player.spawnX, player.spawnY);
+        } else if (typeof window.loadMap === "function") {
+            window.loadMap("map1");
+            // Positionner le joueur après le chargement de la map
+            setTimeout(() => {
+                player.x = player.spawnX;
+                player.y = player.spawnY;
+                player.px = player.spawnX * TILE_SIZE;
+                player.py = player.spawnY * TILE_SIZE;
+            }, 100);
+        }
+    } else {
+        // Remettre le joueur au point de spawn sur map1
+        player.x = player.spawnX;
+        player.y = player.spawnY;
+        player.px = player.spawnX * TILE_SIZE;
+        player.py = player.spawnY * TILE_SIZE;
+    }
     
     // Restaurer la vie
     player.life = player.maxLife;
@@ -44,6 +61,7 @@ function respawnPlayer() {
         occupy(player.x, player.y);
     }
     
+    console.log(`✅ Joueur respawné sur map1 à la position (${player.spawnX}, ${player.spawnY})`);
 }
 
 // Rendre la fonction accessible globalement
