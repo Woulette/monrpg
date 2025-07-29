@@ -224,6 +224,8 @@ function createPapi3() {
         interactionRange: 2,
         // Propriété pour suivre si Papi 3 s'est déplacé
         hasMoved: false,
+        // Propriété pour suivre si la quête slimeBoss a été proposée dans cette session
+        slimeBossQuestOffered: false,
         onInteraction: function() {
             console.log("Papi3 onInteraction appelé");
             
@@ -304,12 +306,22 @@ function createPapi3() {
                                 "Je ne peux pas te laisser passer aventurier, tu risquerais d'y laisser ton drop.",
                                 "Prouve-moi ta valeur avant !"
                             ];
-                        } else if (crowCraftCompleted && !slimeBossAccepted) {
+                        } else if (crowCraftCompleted && !slimeBossAccepted && !papi3.slimeBossQuestOffered) {
                             // Le joueur a terminé crowCraft mais n'a pas encore accepté slimeBoss
+                            // Marquer que la quête va être proposée
+                            papi3.slimeBossQuestOffered = true;
                             papi3.dialogues = [
                                 "Ah, je vois que tu as terminé tes équipements !",
                                 "Maintenant, tu souhaites accéder au donjon slime ?",
-                                "Mais tu es trop faible ! Prouve-moi ta valeur en tuant le maître des lieux."
+                                "Mais tu es trop faible ! Prouve-moi ta valeur en tuant le maître des lieux.",
+                                "Es-tu prêt à accepter cette mission ?"
+                            ];
+                        } else if (crowCraftCompleted && !slimeBossAccepted) {
+                            // Le joueur a terminé crowCraft mais n'a pas encore accepté slimeBoss (déjà proposé)
+                            papi3.dialogues = [
+                                "Tu souhaites accéder au donjon slime ?",
+                                "Mais tu es trop faible ! Prouve-moi ta valeur en tuant le maître des lieux.",
+                                "Accepte la mission pour continuer ton aventure !"
                             ];
                         } else if (crowCraftCompleted && slimeBossCompleted) {
                             // Le joueur a terminé toutes les quêtes précédentes
@@ -330,7 +342,7 @@ function createPapi3() {
                                 papi3.dialogues = [
                                     "Tu as accepté la mission de vaincre le boss du donjon.",
                                     "Ce monstre est d'une puissance inouïe, sois prudent !",
-                                    "Une fois vaincu, va voir Papi 4 dans le donjon pour ta récompense."
+                                    "Une fois vaincu, va voir Papi 4 dans la maison pour ta récompense."
                                 ];
                             } else if (slimeBossFinalCompleted) {
                                 // Toutes les quêtes sont terminées
@@ -376,7 +388,7 @@ function createPapi4() {
         id: 'papi4',
         name: "Papi le Gardien du Donjon",
         type: "quest_validator",
-        x: 15, // Position à définir sur la map 4 (donjon slime)
+        x: 15, // Position par défaut sur la map 4 (donjon slime)
         y: 15,
         px: 15 * TILE_SIZE,
         py: 15 * TILE_SIZE,
@@ -392,9 +404,10 @@ function createPapi4() {
             "Tu mérites une récompense spéciale pour ta bravoure !"
         ],
         alternativeDialogues: [
-            "Le donjon slime est maintenant sécurisé grâce à toi.",
-            "Tu es devenu un héros légendaire dans notre monde.",
-            "Continue à protéger notre univers des menaces !"
+            "Depuis la brèche dimensionnelle, des donjons mystérieux sont apparus...",
+            "Le donjon slime que tu vois là-bas est l'un d'eux.",
+            "Son énergie est instable et les monstres risquent de s'échapper de ce lieu scellé.",
+            "Seul un héros courageux pourra rétablir l'équilibre et fermer cette brèche."
         ],
         currentDialogue: 0,
         isTalking: false,
@@ -422,10 +435,27 @@ function createPapi4() {
                     papi4.currentDialogue = 0;
                     console.log("Dialogues de validation définis pour Papi4:", questToValidate.id);
                 } else {
-                    // Utiliser les dialogues alternatifs par défaut
-                    papi4.dialogues = papi4.alternativeDialogues;
+                    // Vérifier l'état des quêtes pour déterminer le dialogue approprié
+                    if (typeof window.quests !== 'undefined') {
+                        const slimeBossFinalCompleted = window.quests.slimeBossFinal && window.quests.slimeBossFinal.completed;
+                        
+                        if (slimeBossFinalCompleted && window.currentMap === "maison") {
+                            // Toutes les quêtes sont terminées et on est dans la maison
+                            papi4.dialogues = [
+                                "Formidable ! À croire que tu es l'enfant de la prophétie !",
+                                "Je n'ai pas les mots... Rejoins-moi dans la maison, tu m'y trouveras !",
+                                "Une récompense t'attend."
+                            ];
+                        } else {
+                            // Utiliser les dialogues de la brèche dimensionnelle par défaut
+                            papi4.dialogues = papi4.alternativeDialogues;
+                        }
+                    } else {
+                        // Utiliser les dialogues de la brèche dimensionnelle par défaut
+                        papi4.dialogues = papi4.alternativeDialogues;
+                    }
                     papi4.currentDialogue = 0;
-                    console.log("Dialogues alternatifs définis pour Papi4");
+                    console.log("Dialogues de la brèche dimensionnelle définis pour Papi4");
                 }
             }
             
@@ -433,6 +463,16 @@ function createPapi4() {
             startPNJDialog(papi4);
         }
     };
+    
+    // Adapter la position selon la map actuelle
+    if (window.currentMap === "maison") {
+        papi4.x = 10;
+        papi4.y = 4;
+        papi4.px = 10 * TILE_SIZE;
+        papi4.py = 4 * TILE_SIZE;
+        console.log("🏠 Papi 4 créé à la position (10, 4) dans la maison");
+        console.log("🏠 Papi 4 pixels: px=" + papi4.px + ", py=" + papi4.py);
+    }
     
     pnjs.push(papi4);
     
@@ -452,7 +492,12 @@ function loadPapi3Image() {
     
     papi3.img = new Image();
     papi3.img.onload = function() {
-            console.log("Image de Papi3 chargée avec succès");
+        console.log("Image de Papi3 chargée avec succès");
+    };
+    papi3.img.onerror = function() {
+        console.error("Erreur lors du chargement de l'image de Papi3");
+    };
+    papi3.img.src = 'assets/pnj/papi.png'; // Utilise la même image que Papi
 }
 
 // Charger l'image de Papi4
@@ -468,12 +513,13 @@ function loadPapi4Image() {
         console.error("Erreur lors du chargement de l'image de Papi4");
     };
     papi4.img.src = 'assets/pnj/papi.png'; // Utilise la même image que les autres Papi
-};
-    papi3.img.onerror = function() {
-        console.error("Erreur lors du chargement de l'image de Papi3");
-    };
-    papi3.img.src = 'assets/pnj/papi.png'; // Utilise la même image que Papi
 }
+
+// Rendre les fonctions accessibles globalement
+window.loadPapiImage = loadPapiImage;
+window.loadPapi2Image = loadPapi2Image;
+window.loadPapi3Image = loadPapi3Image;
+window.loadPapi4Image = loadPapi4Image;
 
 // Vérifier si le joueur est à portée d'interaction avec un PNJ
 function checkPNJInteraction() {
@@ -560,9 +606,9 @@ function drawPNJs(ctx) {
     pnjs.forEach(pnj => {
         if (!pnj || !pnj.img || pnj.hp <= 0) return;
         
-        // Position fixe sur la map (pas de caméra)
-        const drawX = pnj.px;
-        const drawY = pnj.py;
+        // Position avec les offsets de la map
+        const drawX = pnj.px + (window.mapOffsetX || 0);
+        const drawY = pnj.py + (window.mapOffsetY || 0);
         
         // Dessiner le PNJ de manière statique
         ctx.drawImage(
@@ -621,6 +667,10 @@ function initPNJs() {
         loadPapi3Image();
     } else if (currentMap === "map4") {
         // Créer Papi4 sur la map 4 (donjon slime)
+        createPapi4();
+        loadPapi4Image();
+    } else if (currentMap === "maison") {
+        // Créer Papi4 dans la maison
         createPapi4();
         loadPapi4Image();
     }
@@ -704,6 +754,16 @@ function showPNJDialogModal(pnjName, dialogue, customCallback = null, pnj = null
             const modal = document.getElementById('pnj-dialog-modal');
             const currentPnjId = modal.getAttribute('data-current-pnj-id');
             
+            // Cas spécial pour le dialogue de création de personnage (pas de PNJ associé)
+            if (!currentPnjId) {
+                console.log("🎮 Dialogue de création de personnage - fermeture directe");
+                hidePNJDialogModal();
+                if (customCallback) {
+                    customCallback();
+                }
+                return;
+            }
+            
             // Récupérer le PNJ actuel depuis la liste globale
             const currentPnj = pnjs.find(p => p.id === currentPnjId);
             if (!currentPnj) {
@@ -772,21 +832,45 @@ function showPNJDialogModal(pnjName, dialogue, customCallback = null, pnj = null
                         
                         // Si une quête a été validée, proposer la nouvelle quête après
                         if (questValidated) {
-                            if (questValidated.id === 'slimeBoss' && typeof isQuestAvailable === 'function' && isQuestAvailable('slimeBossFinal')) {
-                                // Proposer la quête finale après avoir validé slimeBoss
-                                if (typeof showSlimeBossFinalQuestOffer === 'function') {
-                                    showSlimeBossFinalQuestOffer();
+                            // Vérifier quelle quête a été validée en regardant l'état des quêtes
+                            if (typeof window.quests !== 'undefined') {
+                                const crowCraftCompleted = window.quests.crowCraft && window.quests.crowCraft.completed;
+                                const slimeBossCompleted = window.quests.slimeBoss && window.quests.slimeBoss.completed;
+                                
+                                if (crowCraftCompleted && !slimeBossCompleted && typeof isQuestAvailable === 'function' && isQuestAvailable('slimeBoss')) {
+                                    // Proposer la quête slimeBoss après avoir validé crowCraft
+                                    console.log("Proposition de la quête slimeBoss après validation de crowCraft");
+                                    if (typeof showSlimeBossQuestOffer === 'function') {
+                                        showSlimeBossQuestOffer();
+                                    }
+                                } else if (slimeBossCompleted && typeof isQuestAvailable === 'function' && isQuestAvailable('slimeBossFinal')) {
+                                    // Proposer la quête finale après avoir validé slimeBoss
+                                    console.log("Proposition de la quête slimeBossFinal après validation de slimeBoss");
+                                    if (typeof showSlimeBossFinalQuestOffer === 'function') {
+                                        showSlimeBossFinalQuestOffer();
+                                    }
                                 }
-                            } else if (questValidated.id === 'crowCraft' && typeof isQuestAvailable === 'function' && isQuestAvailable('slimeBoss')) {
-                                // Proposer la quête slimeBoss après avoir validé crowCraft
-                                if (typeof showSlimeBossQuestOffer === 'function') {
-                                    showSlimeBossQuestOffer();
+                            }
+                        } else {
+                            // Si aucune quête n'a été validée, vérifier si on doit proposer slimeBoss
+                            if (typeof window.quests !== 'undefined') {
+                                const crowCraftCompleted = window.quests.crowCraft && window.quests.crowCraft.completed;
+                                const slimeBossAccepted = window.quests.slimeBoss && window.quests.slimeBoss.accepted;
+                                const slimeBossCompleted = window.quests.slimeBoss && window.quests.slimeBoss.completed;
+                                
+                                if (crowCraftCompleted && !slimeBossAccepted && !slimeBossCompleted && 
+                                    typeof isQuestAvailable === 'function' && isQuestAvailable('slimeBoss')) {
+                                    // Proposer la quête slimeBoss si elle n'a pas encore été proposée
+                                    console.log("Proposition de la quête slimeBoss après dialogue");
+                                    if (typeof showSlimeBossQuestOffer === 'function') {
+                                        showSlimeBossQuestOffer();
+                                    }
                                 }
                             }
                         }
                     }
                     
-                                        if (customCallback) {
+                    if (customCallback) {
                         customCallback();
                     }
                 } else if (currentPnj.id === 'papi4') {
@@ -870,15 +954,30 @@ function handlePNJInteraction(key) {
 
 // Afficher le dialogue de création de personnage
 function showCharacterCreationDialog() {
+    // Vérifier si le dialogue a déjà été affiché
+    if (window.characterCreationDialogShown) {
+        console.log("🎮 Dialogue de bienvenue déjà affiché, ignoré");
+        return;
+    }
+    
     const dialogue = "Ooh, encore un nouveau ! Tu dois te demander ce que tu fais ici, jeune âme. Il y a plusieurs perturbations entre chaque univers et plusieurs jeunes âmes se retrouvent égarées dans d'autres univers comme toi. Viens me voir, je vais tout t'expliquer.";
+    
+    // Marquer que le dialogue a été affiché
+    window.characterCreationDialogShown = true;
     
     showPNJDialogModal("Papi", dialogue, function() {
         // Callback après fermeture du dialogue - le joueur reste en jeu
         console.log("🎮 Dialogue de bienvenue terminé, le joueur peut maintenant jouer");
-    });
+        // S'assurer que la fenêtre est bien fermée
+        hidePNJDialogModal();
+    }, null); // Pas de PNJ associé pour le dialogue de création
 }
 
-
+// Réinitialiser le flag du dialogue de création de personnage
+function resetCharacterCreationDialog() {
+    window.characterCreationDialogShown = false;
+    console.log("🎮 Flag du dialogue de création de personnage réinitialisé");
+}
 
 // Export global
 window.pnjs = pnjs;
@@ -888,4 +987,5 @@ window.drawPNJs = drawPNJs;
 window.handlePNJInteraction = handlePNJInteraction;
 window.showPNJDialogModal = showPNJDialogModal;
 window.hidePNJDialogModal = hidePNJDialogModal;
-window.showCharacterCreationDialog = showCharacterCreationDialog; 
+window.showCharacterCreationDialog = showCharacterCreationDialog;
+window.resetCharacterCreationDialog = resetCharacterCreationDialog; 

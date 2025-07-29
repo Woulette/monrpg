@@ -58,6 +58,11 @@ function updatePlayer(ts) {
             if (window.currentMap && (window.currentMap.includes('mapdonjonslime'))) {
                 currentMoveSpeed *= 0.5; // Ralentir de 50%
             }
+            
+            // Ralentir le joueur dans la maison de 60%
+            if (window.currentMap === "maison") {
+                currentMoveSpeed *= 0.4; // Ralentir de 60%
+            }
             if (dx !== 0) player.px += currentMoveSpeed * Math.sign(dx);
             if (dy !== 0) player.py += currentMoveSpeed * Math.sign(dy);
             
@@ -283,7 +288,7 @@ function updatePlayer(ts) {
                 const tileIndex = player.y * layer.width + player.x;
                 const tileId = layer.data[tileIndex];
                 
-                if (tileId === 1 || tileId === 2 || tileId === 3 || tileId === 4 || tileId === 12008 || tileId === 12208 || tileId === 15408 || tileId === 15608) {
+                if (tileId === 1 || tileId === 2 || tileId === 3 || tileId === 4 || tileId === 12008 || tileId === 12208 || tileId === 15408 || tileId === 15608 || tileId === 6 || tileId === 7) {
                     portalFound = true;
                     portalGid = tileId;
                     break;
@@ -319,6 +324,10 @@ function updatePlayer(ts) {
                     // Portail ID 4 → Map 2
                     destinationMap = `map${currentMapNumber - 1}`;
                     targetPortalId = 3;
+                } else if (portalGid === 6) {
+                    // Portail ID 6 → Maison
+                    destinationMap = "maison";
+                    targetPortalId = 7;
                 }
             } else if (window.currentMap === "mapdonjonslime") {
                 // Gestion spéciale pour la map slime
@@ -361,6 +370,13 @@ function updatePlayer(ts) {
                 // Pas de portail de sortie - le joueur doit tuer le SlimeBoss pour sortir
                 // Le boss sera implémenté plus tard
                 console.log("🏰 Vous êtes dans l'antre du SlimeBoss ! Tuez-le pour sortir.");
+            } else if (window.currentMap === "maison") {
+                // Gestion spéciale pour la maison
+                if (portalGid === 7) {
+                    // Portail ID 7 → Map 3
+                    destinationMap = "map3";
+                    targetPortalId = 6;
+                }
             } else {
                 // Logique générale pour les autres maps
                 if (portalGid === 1) {

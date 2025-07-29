@@ -32,6 +32,11 @@ function calculateMapCentering() {
         window.mapOffsetX = Math.max(0, (canvas.width - mapWidth) / 2);
         window.mapOffsetY = Math.max(0, (canvas.height - mapHeight) / 2);
         console.log(`🎯 Centrage de ${window.currentMap}: offsetX=${window.mapOffsetX}, offsetY=${window.mapOffsetY}`);
+    } else if (window.currentMap === "maison") {
+        // Centrage spécial pour la maison - plus bas
+        window.mapOffsetX = Math.max(0, (canvas.width - mapWidth) / 2);
+        window.mapOffsetY = Math.max(0, (canvas.height - mapHeight) / 2) + 25; // 25px plus bas
+        console.log(`🏠 Centrage de la maison: offsetX=${window.mapOffsetX}, offsetY=${window.mapOffsetY}`);
     } else {
         // Pour les autres maps, pas de centrage
         window.mapOffsetX = 0;
@@ -130,7 +135,7 @@ async function loadMap(mapName) {
 
 // Fonction pour téléporter le joueur vers une nouvelle map
 function teleportPlayer(mapName, spawnX, spawnY) {
-    console.log(`Téléportation vers ${mapName} à la position (${spawnX}, ${spawnY})`);
+    console.log(`🏠 Téléportation vers ${mapName} à la position (${spawnX}, ${spawnY})`);
     
     // Plus de sauvegarde des monstres - système supprimé
     
@@ -149,6 +154,8 @@ function teleportPlayer(mapName, spawnX, spawnY) {
             player.py = spawnY * TILE_SIZE;
             player.spawnX = spawnX;
             player.spawnY = spawnY;
+            
+            console.log(`🏠 Joueur téléporté à la position (${player.x}, ${player.y}) avec pixels (${player.px}, ${player.py})`);
             
             // Réinitialiser l'état
             player.moving = false;

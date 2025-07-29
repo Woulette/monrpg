@@ -59,5 +59,17 @@ function nextStepToTarget() {
     player.moving = true;
 }
 
+// Fonction pour obtenir la vitesse actuelle du joueur
+function getPlayerSpeed() {
+    let baseSpeed = player.speed || 1;
+    
+    // Réduction de vitesse dans la maison
+    if (window.currentMap === "maison") {
+        baseSpeed = baseSpeed * 0.4; // 60% de réduction = 40% de la vitesse normale
+    }
+    
+    return baseSpeed;
+}
+
 // Export des fonctions de mouvement
 window.nextStepToTarget = nextStepToTarget; 

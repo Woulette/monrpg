@@ -18,7 +18,7 @@ const player = {
     baseForce: 1000,
     baseIntelligence: 1,
     baseAgilite: 1,
-    baseDefense: 100,
+    baseDefense: 1,
     baseChance: 1,
     baseVitesse: 1,
     baseVie: 1, // Stat de vie de base
@@ -129,7 +129,7 @@ function resetPlayer() {
     player.baseForce = 1000;
     player.baseIntelligence = 1;
     player.baseAgilite = 1;
-    player.baseDefense = 100;
+    player.baseDefense = 1;
     player.baseChance = 1;
     player.baseVitesse = 1;
     player.baseVie = 1;

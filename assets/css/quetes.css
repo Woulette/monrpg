@@ -65,7 +65,7 @@
 }
 
 /* Bouton accepter */
-.quest-accept-button {
+.quest-accept-button, .quest-accept-btn {
     background: linear-gradient(135deg, #4CAF50, #45a049);
     color: white;
     border: none;
@@ -77,13 +77,13 @@
     transition: all 0.3s ease;
 }
 
-.quest-accept-button:hover {
+.quest-accept-button:hover, .quest-accept-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Bouton refuser */
-.quest-decline-button {
+.quest-decline-button, .quest-decline-btn {
     background: linear-gradient(135deg, #f44336, #da190b);
     color: white;
     border: none;
@@ -95,7 +95,7 @@
     transition: all 0.3s ease;
 }
 
-.quest-decline-button:hover {
+.quest-decline-button:hover, .quest-decline-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }

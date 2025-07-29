@@ -212,6 +212,11 @@ window.addEventListener('DOMContentLoaded', function() {
       window.playerName = undefined;
       window.playerAvatar = undefined;
       selectedAvatar = null;
+      
+      // Réinitialiser le flag du dialogue de création de personnage
+      if (typeof resetCharacterCreationDialog === 'function') {
+        resetCharacterCreationDialog();
+      }
       // Réinitialiser le menu de création
       avatarOptions.forEach(i => i.style.borderColor = 'transparent');
       nameForm.style.display = 'none';

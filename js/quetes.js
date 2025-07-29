@@ -566,7 +566,7 @@ function showQuestOffer() {
         
         const acceptButton = document.createElement('button');
         acceptButton.textContent = 'Accepter';
-        acceptButton.className = 'quest-accept-button';
+        acceptButton.className = 'quest-accept-btn';
         acceptButton.onclick = function() {
             acceptQuest(quest.id);
             questModal.remove();
@@ -574,7 +574,7 @@ function showQuestOffer() {
         
         const declineButton = document.createElement('button');
         declineButton.textContent = 'Refuser';
-        declineButton.className = 'quest-decline-button';
+        declineButton.className = 'quest-decline-btn';
         declineButton.onclick = function() {
             questModal.remove();
             if (typeof window.hidePNJDialogModal === 'function') {
