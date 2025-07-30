@@ -201,6 +201,12 @@ function drawMonsters(ctx) {
                 monsterHeight = 48;
                 offsetX = (TILE_SIZE / 2) - (monsterSize / 2);
                 offsetY = TILE_SIZE - monsterHeight;
+            } else if (monster.type === "slimeboss") {
+                // Gestion spéciale pour le SlimeBoss 64x64
+                monsterSize = 64;
+                monsterHeight = 64;
+                offsetX = (TILE_SIZE / 2) - (monsterSize / 2);
+                offsetY = (TILE_SIZE / 2) - (monsterHeight / 2);
             } else {
                 offsetX = (TILE_SIZE / 2) - (monsterSize / 2);
                 offsetY = (TILE_SIZE / 2) - (monsterHeight / 2);
@@ -281,6 +287,26 @@ function drawMonsters(ctx) {
                         monster.px + offsetX + (window.mapOffsetX || 0), monster.py + offsetY + (window.mapOffsetY || 0), monsterSize, monsterHeight
                     );
                 }
+            } else if (monster.type === "slimeboss") {
+                // Gestion spéciale pour le SlimeBoss 64x64
+                if (!monster.img || !monster.img.complete) {
+                    console.log(`⚠️ Image non disponible pour slimeboss ${index}`);
+                    return;
+                }
+                
+                // Animation du SlimeBoss avec 4 frames (64x64 chaque frame)
+                const now = Date.now();
+                if (!monster.lastAnim || now - monster.lastAnim > monster.animDelay) {
+                    monster.frame = (monster.frame + 1) % 4;
+                    monster.lastAnim = now;
+                }
+                
+                // Dessiner le SlimeBoss avec sa taille complète 64x64
+                ctx.drawImage(
+                    monster.img,
+                    monster.frame * 64, 0, 64, 64,
+                    monster.px + offsetX + (window.mapOffsetX || 0), monster.py + offsetY + (window.mapOffsetY || 0), monsterSize, monsterHeight
+                );
             } else {
                 // Animation standard pour les autres monstres
                 const now = Date.now();
@@ -307,7 +333,7 @@ function drawMonsters(ctx) {
 
         // Afficher la barre de vie SEULEMENT si le monstre est sélectionné/attaqué ou en aggro
         if (window.attackTarget === monster || monster.state === "aggro") {
-            let barWidth = 32, barHeight = 5;
+            let barWidth = monsterSize || 32, barHeight = 5;
             let barX = monster.px + offsetX + (window.mapOffsetX || 0), barY = monster.py + offsetY - 10 + (window.mapOffsetY || 0);
             ctx.fillStyle = "black";
             ctx.fillRect(barX, barY, barWidth, barHeight);

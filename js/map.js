@@ -61,6 +61,10 @@ async function loadMap(mapName) {
         window.mapData = json;
         window.currentMap = mapName;
         
+        // Déclencher le fondu au noir pour la transition de map
+        window.blackScreenStartTime = Date.now();
+        console.log("🌑 Déclenchement du fondu au noir pour le changement de map");
+        
         // Calculer le centrage de la map
         calculateMapCentering();
         
@@ -235,6 +239,52 @@ function teleportPlayer(mapName, spawnX, spawnY) {
 window.loadMap = loadMap;
 window.teleportPlayer = teleportPlayer;
 
+// Fonction de débogage pour forcer la réinitialisation du fondu au noir
+function forceResetBlackScreen() {
+    console.log("🔄 Forçage de la réinitialisation de l'écran noir");
+    window.blackScreenStartTime = null;
+    window.blackScreenDuration = 250;
+}
+
+// Fonction de débogage pour diagnostiquer le système de fondu
+function diagnoseBlackScreen() {
+    console.log("🔍 Diagnostic du système de fondu au noir:");
+    console.log("- blackScreenStartTime:", window.blackScreenStartTime);
+    console.log("- blackScreenDuration:", window.blackScreenDuration);
+    if (window.blackScreenStartTime) {
+        const elapsed = Date.now() - window.blackScreenStartTime;
+        console.log("- Temps écoulé:", elapsed, "ms");
+        console.log("- Temps restant:", Math.max(0, window.blackScreenDuration - elapsed), "ms");
+    }
+}
+
+window.forceResetBlackScreen = forceResetBlackScreen;
+window.diagnoseBlackScreen = diagnoseBlackScreen;
+
+// Fonction de test pour simuler un respawn
+function testRespawnSequence() {
+    console.log("🧪 Test de la séquence de respawn...");
+    
+    // Simuler la mort du joueur
+    if (window.player) {
+        window.player.isDead = true;
+        window.player.life = 0;
+        console.log("💀 Joueur marqué comme mort");
+    }
+    
+    // Attendre un peu puis déclencher le respawn
+    setTimeout(() => {
+        console.log("🔄 Déclenchement du respawn...");
+        if (typeof window.respawnPlayer === "function") {
+            window.respawnPlayer();
+        } else {
+            console.error("❌ respawnPlayer non trouvé");
+        }
+    }, 1000);
+}
+
+window.testRespawnSequence = testRespawnSequence;
+
 function initMap() {
     console.log("Initialisation de la carte...");
     if (!window.mapData) {
@@ -396,10 +446,13 @@ function drawMap() {
             // Afficher l'écran noir de transition
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            console.log(`🌑 Écran noir actif: ${elapsed}/${window.blackScreenDuration}ms`);
             return; // Ne pas dessiner la map pendant l'écran noir
         } else {
             // Fin de l'écran noir, nettoyer
+            console.log("✅ Fin de l'écran noir de transition - nettoyage forcé");
             window.blackScreenStartTime = null;
+            window.blackScreenDuration = 250; // Restaurer la durée par défaut
         }
     }
     

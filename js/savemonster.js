@@ -118,6 +118,16 @@ function loadMonstersForMap(mapName) {
     
     console.log(`📂 Chargement des monstres pour ${mapName} (personnage ${window.currentCharacterId})...`);
     
+    // INVALIDATION DES SAUVEGARDES OBSOLÈTES POUR MAPDONJONSLIMEBOSS
+    if (mapName === "mapdonjonslimeboss") {
+        console.log("🔍 Vérification des sauvegardes obsolètes pour mapdonjonslimeboss...");
+        const wasInvalidated = invalidateBossMapSaves();
+        if (wasInvalidated) {
+            console.log("🔄 Sauvegarde obsolète invalidée, création de nouveaux monstres...");
+            return false; // Forcer la création de nouveaux monstres
+        }
+    }
+    
     try {
         const saveKey = `monrpg_monsters_${window.currentCharacterId}`;
         const savedData = localStorage.getItem(saveKey);
@@ -166,6 +176,23 @@ function loadMonstersForMap(mapName) {
             
             return monster;
         });
+        
+        // VÉRIFICATION SPÉCIALE POUR MAPDONJONSLIMEBOSS
+        if (mapName === "mapdonjonslimeboss") {
+            const hasSlimeBoss = window.monsters.some(m => m.type === 'slimeboss');
+            if (!hasSlimeBoss) {
+                console.log("🐉 Aucun SlimeBoss trouvé dans la sauvegarde, création forcée...");
+                // Forcer la création du SlimeBoss
+                if (typeof window.spawnSlimeBossOnBossMap === 'function') {
+                    window.spawnSlimeBossOnBossMap();
+                    console.log("✅ SlimeBoss créé avec succès");
+                } else {
+                    console.log("❌ Fonction spawnSlimeBossOnBossMap non disponible");
+                }
+            } else {
+                console.log("✅ SlimeBoss trouvé dans la sauvegarde");
+            }
+        }
         
         // Assigner les images après avoir créé tous les monstres
         if (typeof window.assignMonsterImages === 'function') {
@@ -288,9 +315,45 @@ window.forceCleanMonsterData = function() {
     console.log('✅ Nettoyage forcé terminé');
 };
 
+// Fonction pour invalider les sauvegardes obsolètes de mapdonjonslimeboss
+function invalidateBossMapSaves() {
+    if (!window.currentCharacterId) {
+        console.log('⚠️ Aucun personnage actif, impossible d\'invalider les sauvegardes');
+        return;
+    }
+    
+    try {
+        const saveKey = `monrpg_monsters_${window.currentCharacterId}`;
+        const savedData = localStorage.getItem(saveKey);
+        
+        if (savedData) {
+            const allMonsterData = JSON.parse(savedData);
+            
+            // Vérifier si mapdonjonslimeboss existe et ne contient pas de SlimeBoss
+            if (allMonsterData.mapdonjonslimeboss) {
+                const hasSlimeBoss = allMonsterData.mapdonjonslimeboss.some(m => m.type === 'slimeboss');
+                
+                if (!hasSlimeBoss) {
+                    console.log('🗑️ Sauvegarde obsolète de mapdonjonslimeboss détectée, suppression...');
+                    delete allMonsterData.mapdonjonslimeboss;
+                    localStorage.setItem(saveKey, JSON.stringify(allMonsterData));
+                    console.log('✅ Sauvegarde obsolète supprimée');
+                    return true; // Indique qu'une sauvegarde a été invalidée
+                }
+            }
+        }
+        
+        return false; // Aucune sauvegarde invalidée
+    } catch (error) {
+        console.error('❌ Erreur lors de l\'invalidation des sauvegardes:', error);
+        return false;
+    }
+}
+
 // Exporter les fonctions
 window.saveMonstersForMap = saveMonstersForMap;
 window.loadMonstersForMap = loadMonstersForMap;
 window.clearMonsterDataForMap = clearMonsterDataForMap;
 window.clearAllMonsterData = clearAllMonsterData;
 window.loadCrowKillCounts = loadCrowKillCounts;
+window.invalidateBossMapSaves = invalidateBossMapSaves;

@@ -12,16 +12,10 @@ function updatePlayer(ts) {
         attackTarget = null;
         window.attackTarget = null;
         player.inCombat = false;
-        return; // Arrêter l'update si le joueur est mort
     }
     
-    // Si le joueur est mort, ne pas continuer l'update
-    if (player.isDead) {
-        return;
-    }
-    
-    // Déplacement fluide
-    if (player.moving) {
+    // Déplacement fluide (seulement si le joueur n'est pas mort)
+    if (!player.isDead && player.moving) {
         let tx = player.moveTarget.x * TILE_SIZE;
         let ty = player.moveTarget.y * TILE_SIZE;
         let dx = tx - player.px;
@@ -65,22 +59,16 @@ function updatePlayer(ts) {
             }
             if (dx !== 0) player.px += currentMoveSpeed * Math.sign(dx);
             if (dy !== 0) player.py += currentMoveSpeed * Math.sign(dy);
-            
-
         }
     }
 
-    // Gestion du combat
+    // Gestion du combat (seulement si le joueur n'est pas mort)
     if (
+        !player.isDead &&
         attackTarget &&
         attackTarget.hp > 0 &&
         player.life > 0
     ) {
-        // L'aggro ne sera déclenché que lors d'une vraie attaque, pas juste une sélection
-        // attackTarget.aggro = true; // DÉPLACÉ vers la vraie attaque
-        // attackTarget.aggroTarget = player; // DÉPLACÉ vers la vraie attaque
-        // player.inCombat = true; // DÉPLACÉ vers la vraie attaque
-
         let dist = Math.abs(player.x - attackTarget.x) + Math.abs(player.y - attackTarget.y);
 
         // Orienter le joueur vers le monstre en combat (sans bloquer le mouvement)
@@ -259,8 +247,8 @@ function updatePlayer(ts) {
         }
     }
 
-    // Système de régénération de vie
-    if (!player.inCombat && player.life < player.maxLife) {
+    // Système de régénération de vie (seulement si le joueur n'est pas mort)
+    if (!player.isDead && !player.inCombat && player.life < player.maxLife) {
         const currentTime = Date.now();
         if (currentTime - player.lastRegenTime > 1000) { // Régénération toutes les secondes
             player.life = Math.min(player.maxLife, player.life + 1);
@@ -272,28 +260,29 @@ function updatePlayer(ts) {
     if (player.isDead) {
         const currentTime = Date.now();
         const elapsed = currentTime - player.deathTime;
-        if (currentTime - player.deathTime >= player.respawnTime) {
+        
+        if (elapsed >= player.respawnTime) {
             respawnPlayer();
         }
     }
     
-            // Vérification de téléportation automatique
-        if (window.mapData && window.mapData.layers && window.mapData.layers.length > 0) {
-            // Chercher tous les portails (ID 1, 2, 3, 4, 12008, 12208) dans tous les calques
-            let portalFound = false;
-            let portalGid = null;
+    // Vérification de téléportation automatique
+    if (window.mapData && window.mapData.layers && window.mapData.layers.length > 0) {
+        // Chercher tous les portails (ID 1, 2, 3, 4, 12008, 12208) dans tous les calques
+        let portalFound = false;
+        let portalGid = null;
+        
+        for (let layerIndex = 0; layerIndex < window.mapData.layers.length; layerIndex++) {
+            const layer = window.mapData.layers[layerIndex];
+            const tileIndex = player.y * layer.width + player.x;
+            const tileId = layer.data[tileIndex];
             
-            for (let layerIndex = 0; layerIndex < window.mapData.layers.length; layerIndex++) {
-                const layer = window.mapData.layers[layerIndex];
-                const tileIndex = player.y * layer.width + player.x;
-                const tileId = layer.data[tileIndex];
-                
-                if (tileId === 1 || tileId === 2 || tileId === 3 || tileId === 4 || tileId === 12008 || tileId === 12208 || tileId === 15408 || tileId === 15608 || tileId === 6 || tileId === 7) {
-                    portalFound = true;
-                    portalGid = tileId;
-                    break;
-                }
+            if (tileId === 1 || tileId === 2 || tileId === 3 || tileId === 4 || tileId === 12008 || tileId === 12208 || tileId === 15408 || tileId === 15608 || tileId === 6 || tileId === 7) {
+                portalFound = true;
+                portalGid = tileId;
+                break;
             }
+        }
 
         // Portail détecté
         if (portalFound) {
@@ -544,9 +533,16 @@ function updatePlayer(ts) {
                 }
             }
         }
-
     }
 }
 
+// Fonction de mise à jour du respawn du joueur
+function updatePlayerRespawn(ts) {
+    // Cette fonction est appelée par la boucle de jeu principale
+    // La logique de respawn est déjà dans updatePlayer()
+    // Cette fonction sert juste de pont pour la boucle de jeu
+}
+
 // Export de la fonction update
-window.updatePlayer = updatePlayer; 
+window.updatePlayer = updatePlayer;
+window.updatePlayerRespawn = updatePlayerRespawn; 

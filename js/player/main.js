@@ -15,7 +15,7 @@ const player = {
     maxLife: 50,
     life: 50,
     // Statistiques de base (modifiables avec points de caractéristiques)
-    baseForce: 1000,
+    baseForce: 500,
     baseIntelligence: 1,
     baseAgilite: 1,
     baseDefense: 1,
@@ -126,7 +126,7 @@ function resetPlayer() {
     player.life = 50;
     
     // Réinitialiser les statistiques de base
-    player.baseForce = 1000;
+    player.baseForce = 500;
     player.baseIntelligence = 1;
     player.baseAgilite = 1;
     player.baseDefense = 1;
@@ -213,22 +213,27 @@ window.attackTarget = attackTarget;
 
 // Fonction de dessin du joueur
 function drawPlayer(ctx) {
-    if (!window.playerImg || !window.playerImg.complete || player.isDead) {
-        console.log('⚠️ drawPlayer: image non disponible ou joueur mort', {
-            playerImg: !!window.playerImg,
-            complete: window.playerImg ? window.playerImg.complete : false,
-            isDead: player.isDead
-        });
+    // Vérifier que nous utilisons le bon objet player
+    const currentPlayer = window.player || player;
+    
+    if (!window.playerImg || !window.playerImg.complete || currentPlayer.isDead) {
+        // Log désactivé temporairement pour éviter le spam
+        // console.log('⚠️ drawPlayer: image non disponible ou joueur mort', {
+        //     playerImg: !!window.playerImg,
+        //     complete: window.playerImg ? window.playerImg.complete : false,
+        //     isDead: currentPlayer.isDead,
+        //     playerReference: currentPlayer === window.player ? 'window.player' : 'local player'
+        // });
         return;
     }
     
     try {
         ctx.drawImage(
             window.playerImg,
-            player.frame * PLAYER_WIDTH,
-            player.direction * PLAYER_HEIGHT,
+            currentPlayer.frame * PLAYER_WIDTH,
+            currentPlayer.direction * PLAYER_HEIGHT,
             PLAYER_WIDTH, PLAYER_HEIGHT,
-            player.px + (window.mapOffsetX || 0), player.py + (window.mapOffsetY || 0),
+            currentPlayer.px + (window.mapOffsetX || 0), currentPlayer.py + (window.mapOffsetY || 0),
             TILE_SIZE, TILE_SIZE
         );
     } catch (error) {
@@ -236,7 +241,21 @@ function drawPlayer(ctx) {
     }
 }
 
+// Fonction de diagnostic du joueur
+function diagnosePlayer() {
+    console.log("[RESPAWN] 🔍 Diagnostic du joueur:");
+    console.log("[RESPAWN] - window.player:", window.player);
+    console.log("[RESPAWN] - local player:", player);
+    console.log("[RESPAWN] - isDead (window):", window.player ? window.player.isDead : "N/A");
+    console.log("[RESPAWN] - isDead (local):", player.isDead);
+    console.log("[RESPAWN] - life (window):", window.player ? window.player.life : "N/A");
+    console.log("[RESPAWN] - life (local):", player.life);
+    console.log("[RESPAWN] - deathTime:", player.deathTime);
+    console.log("[RESPAWN] - respawnTime:", player.respawnTime);
+}
+
 // Export des fonctions principales
 window.player = player;
 window.initPlayer = initPlayer;
-window.drawPlayer = drawPlayer; 
+window.drawPlayer = drawPlayer;
+window.diagnosePlayer = diagnosePlayer; 

@@ -246,4 +246,225 @@ window.testSlimeBossSpawn = function() {
     console.log('🧪 === FIN DU TEST ===');
 };
 
+// Fonction de test complète pour diagnostiquer le SlimeBoss
+window.testSlimeBossComplete = function() {
+    console.log('🧪 === TEST COMPLET DU SLIMEBOSS ===');
+    
+    // Test 1: Vérifier l'état initial
+    console.log('📋 Test 1: État initial');
+    console.log('🗺️ Map actuelle:', window.currentMap);
+    console.log('📊 Nombre de monstres:', window.monsters ? window.monsters.length : 0);
+    
+    if (window.currentMap !== 'mapdonjonslimeboss') {
+        console.log('⚠️ Vous devez être sur mapdonjonslimeboss pour tester le SlimeBoss');
+        console.log('🧪 === FIN DU TEST ===');
+        return;
+    }
+    
+    // Test 2: Vérifier les fonctions disponibles
+    console.log('📋 Test 2: Vérification des fonctions');
+    console.log('🔧 spawnSlimeBossOnBossMap disponible:', typeof window.spawnSlimeBossOnBossMap === 'function');
+    console.log('🔧 initMonsters disponible:', typeof window.initMonsters === 'function');
+    console.log('🔧 assignMonsterImages disponible:', typeof window.assignMonsterImages === 'function');
+    
+    // Test 3: Forcer le spawn du boss
+    console.log('📋 Test 3: Spawn forcé du SlimeBoss');
+    if (typeof window.spawnSlimeBossOnBossMap === 'function') {
+        const boss = window.spawnSlimeBossOnBossMap();
+        if (boss) {
+            console.log('✅ SlimeBoss créé avec succès:', boss);
+        } else {
+            console.log('❌ Échec de la création du SlimeBoss');
+        }
+    }
+    
+    // Test 4: Vérifier l'état après spawn
+    console.log('📋 Test 4: État après spawn');
+    console.log('📊 Nombre de monstres après spawn:', window.monsters ? window.monsters.length : 0);
+    
+    if (window.monsters && window.monsters.length > 0) {
+        const slimeBosses = window.monsters.filter(m => m.type === 'slimeboss');
+        console.log('🐉 SlimeBoss trouvés:', slimeBosses.length);
+        
+        slimeBosses.forEach((boss, index) => {
+            console.log(`🐉 SlimeBoss ${index + 1}:`, {
+                id: boss.id,
+                name: boss.name,
+                position: { x: boss.x, y: boss.y },
+                hp: `${boss.hp}/${boss.maxHp}`,
+                isDead: boss.isDead,
+                img: boss.img ? 'chargée' : 'non chargée',
+                imgComplete: boss.img ? boss.img.complete : false
+            });
+        });
+    }
+    
+    // Test 5: Forcer l'assignation des images
+    console.log('📋 Test 5: Assignation des images');
+    if (typeof window.assignMonsterImages === 'function') {
+        window.assignMonsterImages();
+        console.log('✅ assignMonsterImages appelée');
+    }
+    
+    // Test 6: Vérifier l'état final
+    console.log('📋 Test 6: État final');
+    setTimeout(() => {
+        if (window.monsters && window.monsters.length > 0) {
+            const slimeBosses = window.monsters.filter(m => m.type === 'slimeboss');
+            console.log('🐉 SlimeBoss finaux:', slimeBosses.length);
+            
+            slimeBosses.forEach((boss, index) => {
+                console.log(`🐉 SlimeBoss ${index + 1} final:`, {
+                    id: boss.id,
+                    name: boss.name,
+                    position: { x: boss.x, y: boss.y },
+                    hp: `${boss.hp}/${boss.maxHp}`,
+                    isDead: boss.isDead,
+                    img: boss.img ? 'chargée' : 'non chargée',
+                    imgComplete: boss.img ? boss.img.complete : false
+                });
+            });
+        }
+        console.log('🧪 === FIN DU TEST ===');
+    }, 1000);
+};
+
+// Fonction de test pour vérifier la correction des sauvegardes obsolètes
+window.testBossMapCorrection = function() {
+    console.log('🧪 === TEST DE CORRECTION DES SAUVEGARDES OBSOLÈTES ===');
+    
+    // Test 1: Vérifier l'état initial
+    console.log('📋 Test 1: État initial');
+    console.log('🗺️ Map actuelle:', window.currentMap);
+    
+    if (window.currentMap !== 'mapdonjonslimeboss') {
+        console.log('⚠️ Vous devez être sur mapdonjonslimeboss pour tester');
+        console.log('🧪 === FIN DU TEST ===');
+        return;
+    }
+    
+    // Test 2: Invalider les sauvegardes obsolètes
+    console.log('📋 Test 2: Invalidation des sauvegardes obsolètes');
+    if (typeof window.invalidateBossMapSaves === 'function') {
+        const wasInvalidated = window.invalidateBossMapSaves();
+        console.log('🗑️ Sauvegarde invalidée:', wasInvalidated);
+    }
+    
+    // Test 3: S'assurer que le boss existe
+    console.log('📋 Test 3: Vérification de l\'existence du boss');
+    if (typeof window.ensureSlimeBossExists === 'function') {
+        const bossExists = window.ensureSlimeBossExists();
+        console.log('🐉 Boss existe:', bossExists);
+    }
+    
+    // Test 4: Diagnostic final
+    console.log('📋 Test 4: Diagnostic final');
+    if (typeof window.diagnoseSlimeBoss === 'function') {
+        window.diagnoseSlimeBoss();
+    }
+    
+    console.log('🧪 === FIN DU TEST ===');
+};
+
+// Fonction pour forcer la recréation complète de la map boss
+window.forceRecreateBossMap = function() {
+    console.log('🔄 === FORÇAGE DE LA RECRÉATION DE LA MAP BOSS ===');
+    
+    if (window.currentMap !== 'mapdonjonslimeboss') {
+        console.log('⚠️ Vous devez être sur mapdonjonslimeboss pour utiliser cette fonction');
+        return;
+    }
+    
+    // Étape 1: Supprimer tous les monstres existants
+    console.log('📋 Étape 1: Suppression des monstres existants');
+    if (window.monsters) {
+        window.monsters.length = 0;
+        console.log('✅ Tous les monstres supprimés');
+    }
+    
+    // Étape 2: Invalider les sauvegardes
+    console.log('📋 Étape 2: Invalidation des sauvegardes');
+    if (typeof window.invalidateBossMapSaves === 'function') {
+        window.invalidateBossMapSaves();
+    }
+    
+    // Étape 3: Forcer la création du boss
+    console.log('📋 Étape 3: Création forcée du boss');
+    if (typeof window.spawnSlimeBossOnBossMap === 'function') {
+        const boss = window.spawnSlimeBossOnBossMap();
+        if (boss) {
+            console.log('✅ Boss créé avec succès:', boss.id);
+        } else {
+            console.log('❌ Échec de la création du boss');
+        }
+    }
+    
+    // Étape 4: Assigner les images
+    console.log('📋 Étape 4: Assignation des images');
+    if (typeof window.assignMonsterImages === 'function') {
+        window.assignMonsterImages();
+    }
+    
+    // Étape 5: Diagnostic final
+    console.log('📋 Étape 5: Diagnostic final');
+    setTimeout(() => {
+        if (typeof window.diagnoseSlimeBoss === 'function') {
+            window.diagnoseSlimeBoss();
+        }
+    }, 500);
+    
+    console.log('🔄 === FIN DE LA RECRÉATION ===');
+};
+
+// Fonction de test pour vérifier le rendu du SlimeBoss
+window.testSlimeBossRendering = function() {
+    console.log('🎨 === TEST DE RENDU DU SLIMEBOSS ===');
+    
+    // Test 1: Vérifier l'état initial
+    console.log('📋 Test 1: État initial');
+    console.log('🗺️ Map actuelle:', window.currentMap);
+    
+    if (window.currentMap !== 'mapdonjonslimeboss') {
+        console.log('⚠️ Vous devez être sur mapdonjonslimeboss pour tester');
+        console.log('🎨 === FIN DU TEST ===');
+        return;
+    }
+    
+    // Test 2: Vérifier que le boss existe
+    console.log('📋 Test 2: Vérification de l\'existence du boss');
+    if (window.monsters && window.monsters.length > 0) {
+        const boss = window.monsters.find(m => m.type === 'slimeboss');
+        if (boss) {
+            console.log('✅ Boss trouvé:', {
+                id: boss.id,
+                position: { x: boss.x, y: boss.y, px: boss.px, py: boss.py },
+                size: { width: boss.width, height: boss.height },
+                img: boss.img ? 'chargée' : 'non chargée',
+                imgComplete: boss.img ? boss.img.complete : false
+            });
+        } else {
+            console.log('❌ Aucun boss trouvé');
+        }
+    } else {
+        console.log('❌ Aucun monstre trouvé');
+    }
+    
+    // Test 3: Vérifier les images
+    console.log('📋 Test 3: Vérification des images');
+    console.log('🖼️ slimeBossImg:', {
+        exists: !!window.slimeBossImg,
+        complete: window.slimeBossImg ? window.slimeBossImg.complete : false,
+        naturalWidth: window.slimeBossImg ? window.slimeBossImg.naturalWidth : 0,
+        naturalHeight: window.slimeBossImg ? window.slimeBossImg.naturalHeight : 0
+    });
+    
+    // Test 4: Forcer la recréation si nécessaire
+    console.log('📋 Test 4: Recréation si nécessaire');
+    if (typeof window.forceRecreateBossMap === 'function') {
+        window.forceRecreateBossMap();
+    }
+    
+    console.log('🎨 === FIN DU TEST ===');
+};
+
 console.log('✅ Loader de sauvegarde prêt');
