@@ -22,22 +22,22 @@
     
 
     <!-- Charger utils.js en tout premier pour les fonctions globales -->
-    <script src="js/utils.js"></script>
-    <script src="js/pnj.js"></script>
-    <script src="js/quetes.js"></script>
+    <script src="js/core/utils.js"></script>
+    <script src="js/entities/npcs/pnj.js"></script>
+    <script src="js/quests/quetes.js"></script>
     <!-- Charger la logique des monstres découpée -->
-    <script src="js/monsters/core.js"></script>
-    <script src="js/monsters/draw.js"></script>
-    <script src="js/monsters/ai.js"></script>
+    <script src="js/entities/monsters/core.js"></script>
+    <script src="js/entities/monsters/draw.js"></script>
+    <script src="js/entities/monsters/ai.js"></script>
     <!-- Charger la logique de progression du donjon -->
-    <script src="js/dungeon-progression.js"></script>
+    <script src="js/dungeon/dungeon-progression.js"></script>
     <!-- Charger le système de sauvegarde -->
-    <script src="js/save-system.js"></script>
+    <script src="js/save/save-system.js"></script>
     <script src="js/save/loader.js"></script>
     <!-- Charger le système de sauvegarde des monstres -->
-    <script src="js/savemonster.js"></script>
+    <script src="js/save/savemonster.js"></script>
     <!-- Charger le système de menu multi-personnages -->
-    <script src="js/menu.js"></script>
+    <script src="js/ui/menu.js"></script>
 </head>
 <body>
     <!-- Menu principal de sélection de personnages -->
@@ -590,21 +590,21 @@
     </div>
 
     <!-- JS à charger en dernier (sauf utils.js et monsters/ déjà chargés dans le head) -->
-<script src="js/hud.js"></script>
-<script src="js/pathfinding.js"></script>
-<script src="js/player/constants.js"></script>
-<script src="js/player/stats.js"></script>
-<script src="js/player/combat.js"></script>
-<script src="js/player/movement.js"></script>
-<script src="js/player/bubbles.js"></script>
-<script src="js/player/respawn.js"></script>
-<script src="js/player/interaction.js"></script>
-<script src="js/player/update.js"></script>
-<script src="js/player/main.js"></script>
-<script src="js/collision.js"></script>
-<script src="js/tileset.js"></script>
-<script src="js/map.js"></script>
-<script src="js/main.js"></script>
+<script src="js/systems/hud.js"></script>
+<script src="js/core/pathfinding.js"></script>
+<script src="js/entities/player/constants.js"></script>
+<script src="js/entities/player/stats.js"></script>
+<script src="js/entities/player/combat.js"></script>
+<script src="js/entities/player/movement.js"></script>
+<script src="js/entities/player/bubbles.js"></script>
+<script src="js/entities/player/respawn.js"></script>
+<script src="js/entities/player/interaction.js"></script>
+<script src="js/entities/player/update.js"></script>
+<script src="js/entities/player/main.js"></script>
+<script src="js/core/collision.js"></script>
+<script src="js/tools/tileset.js"></script>
+<script src="js/core/map.js"></script>
+<script src="js/core/main.js"></script>
 <script src="js/inventory/loader.js"></script>
 <script src="js/inventory/grid.js"></script>
 <script src="js/inventory/items.js"></script>
@@ -612,11 +612,11 @@
 <script src="js/inventory/equipment-display.js"></script>
 <script src="js/inventory/stats-display.js"></script>
 <script src="js/inventory/main.js"></script>
-<script src="js/chat.js"></script>
-<script src="js/floating-chat.js"></script>
-<script src="js/damage-display.js"></script>
-<script src="js/equipment-system.js"></script>
-<script src="js/loot-system.js"></script>
+<script src="js/systems/chat.js"></script>
+<script src="js/systems/floating-chat.js"></script>
+<script src="js/systems/damage-display.js"></script>
+<script src="js/systems/equipment-system.js"></script>
+<script src="js/systems/loot-system.js"></script>
 <script src="js/metier/etablie.js"></script>
 <script src="js/metier/niveaudemetier.js"></script>
 
