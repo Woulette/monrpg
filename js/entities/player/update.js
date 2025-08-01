@@ -14,6 +14,20 @@ function updatePlayer(ts) {
         player.inCombat = false;
     }
     
+    // Animation du joueur (mouvement seulement)
+    if (!player.isDead) {
+        // Animation de mouvement (seulement quand le joueur bouge)
+        if (player.moving) {
+            if (!player.lastAnim || ts - player.lastAnim > 80) { // 80ms pour l'animation de mouvement
+                player.frame = (player.frame + 1) % 4;
+                player.lastAnim = ts;
+            }
+        } else {
+            // Pas d'animation idle, garder la frame 0
+            player.frame = 0;
+        }
+    }
+    
     // Déplacement fluide (seulement si le joueur n'est pas mort)
     if (!player.isDead && player.moving) {
         let tx = player.moveTarget.x * TILE_SIZE;
@@ -32,7 +46,7 @@ function updatePlayer(ts) {
             if (typeof occupy === "function") occupy(player.x, player.y);
 
             player.moving = false;
-            player.frame = 0;
+            // Ne pas réinitialiser player.frame ici, l'animation idle prendra le relais
 
             // Rafraîchir l'affichage des quêtes si la fenêtre est ouverte
             if (typeof refreshQuestsOnPlayerMove === 'function') {

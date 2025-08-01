@@ -2,7 +2,7 @@
 const PLAYER_WIDTH = 32;
 const PLAYER_HEIGHT = 32;
 const TILE_SIZE = window.TILE_SIZE || 32;
-const MOVE_SPEED = 4;
+const MOVE_SPEED = 3;
 
 // Constantes pour combat
 const PLAYER_ATTACK_DAMAGE = 5;

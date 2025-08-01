@@ -277,6 +277,23 @@ function initUIEventHandlers() {
     }
 }
 
+// Fonction de diagnostic des performances
+function diagnosePerformance() {
+    console.log("🔍 Diagnostic des performances:");
+    console.log("- FPS actuel:", window.lastFrameTime ? Math.round(1000 / (Date.now() - window.lastFrameTime)) : "N/A");
+    console.log("- Nombre de monstres:", window.monsters ? window.monsters.length : 0);
+    console.log("- Joueur en mouvement:", window.player ? window.player.moving : "N/A");
+    console.log("- Joueur en combat:", window.player ? window.player.inCombat : "N/A");
+    console.log("- Effets de dégâts actifs:", window.damageEffects ? window.damageEffects.length : 0);
+    console.log("- Loot actif:", window.lootItems ? window.lootItems.length : 0);
+    console.log("- Quêtes actives:", window.activeQuests ? window.activeQuests.length : 0);
+    console.log("- Map actuelle:", window.currentMap);
+    console.log("- Canvas visible:", canvas ? canvas.style.display : "N/A");
+}
+
+// Export de la fonction de diagnostic
+window.diagnosePerformance = diagnosePerformance;
+
 // La boucle principale du jeu
 function gameLoop(ts) {
     // Vérifier STRICTEMENT si nous sommes en mode jeu
@@ -285,82 +302,94 @@ function gameLoop(ts) {
         console.log('⏸️ Boucle de jeu arrêtée - mode menu actif');
         return;
     }
+    
+    // Optimisation : limiter le framerate pour éviter la surcharge
+    if (window.lastFrameTime && ts - window.lastFrameTime < 16) { // ~60 FPS max
+        requestAnimationFrame(gameLoop);
+        return;
+    }
+    window.lastFrameTime = ts;
    
+    // Mise à jour du joueur (toujours nécessaire)
     updatePlayer(ts);
 
-    // Déplacement pixel par pixel des monstres
-    if (typeof moveMonsters === "function") {
-        moveMonsters(ts);
+    // Mise à jour des monstres (seulement si ils existent)
+    if (window.monsters && window.monsters.length > 0) {
+        // Déplacement pixel par pixel des monstres
+        if (typeof moveMonsters === "function") {
+            moveMonsters(ts);
+        }
+
+        // Logique IA des monstres
+        if (typeof updateMonsters === "function") {
+            updateMonsters(ts);
+        }
+
+        // Mise à jour des respawns de monstres
+        if (typeof updateMonsterRespawn === "function") {
+            updateMonsterRespawn(ts);
+        }
     }
 
-    // Logique IA des monstres
-    if (typeof updateMonsters === "function") {
-        updateMonsters(ts);
-    }
-
-    // Mise à jour des respawns de monstres
-    if (typeof updateMonsterRespawn === "function") {
-        updateMonsterRespawn(ts);
-    }
-
-    // Mise à jour du système de combat
-    if (typeof updateCombat === "function") {
+    // Mise à jour du système de combat (seulement si le joueur est en combat)
+    if (window.player && window.player.inCombat && typeof updateCombat === "function") {
         updateCombat(ts);
     }
 
-    // Mise à jour du système de régénération
-    if (typeof updateRegeneration === "function") {
+    // Mise à jour du système de régénération (seulement si nécessaire)
+    if (window.player && window.player.life < window.player.maxLife && typeof updateRegeneration === "function") {
         updateRegeneration(ts);
     }
 
-    // Mise à jour du système de mort et respawn du joueur
-    if (typeof updatePlayerRespawn === "function") {
+    // Mise à jour du système de mort et respawn du joueur (seulement si mort)
+    if (window.player && window.player.isDead && typeof updatePlayerRespawn === "function") {
         updatePlayerRespawn(ts);
     }
 
-    // Mise à jour du système de suivi automatique
-    if (typeof updateAutoFollow === "function") {
+    // Mise à jour du système de suivi automatique (seulement si activé)
+    if (window.player && window.player.autoFollow && typeof updateAutoFollow === "function") {
         updateAutoFollow(ts);
     }
 
-    // Mise à jour du système de pathfinding
-    if (typeof updatePathfinding === "function") {
+    // Mise à jour du système de pathfinding (seulement si le joueur bouge)
+    if (window.player && window.player.moving && typeof updatePathfinding === "function") {
         updatePathfinding(ts);
     }
 
-    // Mise à jour du système de chat flottant
+    // Mise à jour du système de chat flottant (seulement si actif)
     if (typeof updateFloatingChat === "function") {
         updateFloatingChat(ts);
     }
 
-    // Mise à jour du système d'affichage des dégâts
+    // Mise à jour du système d'affichage des dégâts (toujours nécessaire)
     if (typeof updateDamageDisplay === "function") {
         updateDamageDisplay(ts);
     }
 
-    // Mise à jour des effets de dégâts
+    // Mise à jour des effets de dégâts (toujours nécessaire)
     if (typeof window.updateDamageEffects === "function") {
         window.updateDamageEffects();
     }
 
-    // Mise à jour du système de loot
-    if (typeof updateLootSystem === "function") {
+    // Mise à jour du système de loot (seulement si il y a du loot)
+    if (window.lootItems && window.lootItems.length > 0 && typeof updateLootSystem === "function") {
         updateLootSystem(ts);
     }
 
-    // Mise à jour du système d'établies
+    // Mise à jour du système d'établies (seulement si on est près d'une établie)
     if (typeof updateEtablies === "function") {
         updateEtablies(ts);
     }
 
-    // Mise à jour du système de quêtes
-    if (typeof updateQuests === "function") {
+    // Mise à jour du système de quêtes (seulement si il y a des quêtes actives)
+    if (window.activeQuests && window.activeQuests.length > 0 && typeof updateQuests === "function") {
         updateQuests(ts);
     }
 
-    // Mise à jour du système de sauvegarde automatique
-    if (typeof window.saveSystem !== 'undefined' && window.saveSystem.autoSave) {
+    // Mise à jour du système de sauvegarde automatique (seulement toutes les 30 secondes)
+    if (window.saveSystem && window.saveSystem.autoSave && (!window.lastAutoSave || ts - window.lastAutoSave > 30000)) {
         window.saveSystem.autoSave();
+        window.lastAutoSave = ts;
     }
 
     // Dessiner le jeu

@@ -4,6 +4,7 @@ const player = {
     y: 12,
     direction: 0,
     frame: 0,
+    lastAnim: 0, // Ajout pour gérer l'animation
     px: 25 * TILE_SIZE,
     py: 12 * TILE_SIZE,
     moving: false,
@@ -106,6 +107,7 @@ function resetPlayer() {
     player.y = 12;
     player.direction = 0;
     player.frame = 0;
+    player.lastAnim = 0; // Réinitialiser l'animation
     player.px = 25 * TILE_SIZE;
     player.py = 12 * TILE_SIZE;
     player.moving = false;

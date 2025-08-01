@@ -392,6 +392,35 @@ function drawDebugGridLayer3() {
     ctx.restore();
 }
 
+// Nouvelle fonction pour afficher les coordonnées de chaque tile
+function drawTileCoordinates() {
+    if (!window.debugTileCoordinatesEnabled || !window.mapData) return;
+    
+    ctx.save();
+    ctx.font = '8px Arial';
+    ctx.fillStyle = 'yellow';
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 1;
+    
+    // Dessiner les coordonnées de chaque tile
+    for (let y = 0; y < window.mapData.height; y++) {
+        for (let x = 0; x < window.mapData.width; x++) {
+            const screenX = x * TILE_SIZE + window.mapOffsetX;
+            const screenY = y * TILE_SIZE + window.mapOffsetY;
+            
+            // Dessiner un petit rectangle de fond pour la lisibilité
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(screenX + 2, screenY + 2, 30, 12);
+            
+            // Afficher les coordonnées
+            ctx.fillStyle = 'yellow';
+            ctx.fillText(`${x},${y}`, screenX + 4, screenY + 11);
+        }
+    }
+    
+    ctx.restore();
+}
+
 function toggleDebugGrid() {
     window.debugGridEnabled = !window.debugGridEnabled;
 }
@@ -407,6 +436,11 @@ function toggleDebugGridLayer2() {
 
 function toggleDebugGridLayer3() {
     window.debugGridLayer3Enabled = !window.debugGridLayer3Enabled;
+}
+
+function toggleTileCoordinates() {
+    window.debugTileCoordinatesEnabled = !window.debugTileCoordinatesEnabled;
+    console.log(`Coordonnées des tiles: ${window.debugTileCoordinatesEnabled ? 'ACTIVÉES' : 'DÉSACTIVÉES'}`);
 }
 
 function drawMap() {
@@ -547,6 +581,8 @@ function drawMap() {
     drawDebugGridLayer1();
     drawDebugGridLayer2(); // Debug des collisions
     drawDebugGridLayer3();
+    drawTileCoordinates(); // Afficher les coordonnées des tiles
+    drawForbiddenSpawnZone(); // Afficher la zone interdite de spawn
     
     // Dessiner les informations de debug des collisions
     drawCollisionDebugInfo();
@@ -686,4 +722,45 @@ function startBlackScreenTransition() {
         clearBlackScreen();
     }, 2000);
 }
+
+// Fonction globale pour activer/désactiver l'affichage des coordonnées
+window.toggleTileCoordinates = toggleTileCoordinates;
+
+// Fonction pour afficher la zone interdite de spawn sur mapdonjonslime2
+function drawForbiddenSpawnZone() {
+    if (!window.debugForbiddenSpawnZoneEnabled || !window.mapData || window.currentMap !== "mapdonjonslime2") return;
+    
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; // Rouge semi-transparent
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 2;
+    
+    // Zone interdite: x=11-13, y=0-8
+    const zoneX = 11 * TILE_SIZE + window.mapOffsetX;
+    const zoneY = 0 * TILE_SIZE + window.mapOffsetY;
+    const zoneWidth = 3 * TILE_SIZE;
+    const zoneHeight = 9 * TILE_SIZE;
+    
+    // Dessiner le rectangle de la zone interdite
+    ctx.fillRect(zoneX, zoneY, zoneWidth, zoneHeight);
+    ctx.strokeRect(zoneX, zoneY, zoneWidth, zoneHeight);
+    
+    // Ajouter du texte
+    ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 1;
+    ctx.font = 'bold 12px Arial';
+    ctx.fillText('ZONE INTERDITE', zoneX + 5, zoneY + 20);
+    
+    ctx.restore();
+}
+
+// Fonction pour activer/désactiver l'affichage de la zone interdite
+function toggleForbiddenSpawnZone() {
+    window.debugForbiddenSpawnZoneEnabled = !window.debugForbiddenSpawnZoneEnabled;
+    console.log(`🚫 Zone interdite de spawn: ${window.debugForbiddenSpawnZoneEnabled ? 'AFFICHÉE' : 'MASQUÉE'}`);
+}
+
+// Export global
+window.toggleForbiddenSpawnZone = toggleForbiddenSpawnZone;
 

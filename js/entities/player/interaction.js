@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     pos.x >= 0 && pos.x < mapData.width &&
                     pos.y >= 0 && pos.y < mapData.height &&
                     !window.isBlocked(pos.x, pos.y) &&
-                    !monsters.some(m => m.x === pos.x && m.y === pos.y)
+                    !monsters.some(m => m.x === pos.x && m.y === pos.y && m.hp > 0)
                 );
                 
                 if (destinations.length) {
@@ -204,6 +204,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     const isBlockedWithPortals = (x, y) => {
                         if (window.isBlocked(x, y)) return true;
+                        // Vérifier s'il y a un monstre vivant à cette position
+                        if (monsters.some(monster => monster.x === x && monster.y === y && monster.hp > 0 && !monster.isDead)) {
+                            return true;
+                        }
                         if (window.mapData && window.mapData.layers && window.mapData.layers.length > 3) {
                             const layer4 = window.mapData.layers[3];
                             const tileIndex = y * layer4.width + x;
@@ -276,6 +280,10 @@ function handleBossChestClick(nx, ny) {
         if (typeof findPath === "function" && window.mapData) {
             const isBlockedWithPortals = (x, y) => {
                 if (window.isBlocked(x, y)) return true;
+                // Vérifier s'il y a un monstre vivant à cette position
+                if (monsters.some(monster => monster.x === x && monster.y === y && monster.hp > 0 && !monster.isDead)) {
+                    return true;
+                }
                 if (window.mapData && window.mapData.layers && window.mapData.layers.length > 3) {
                     const layer4 = window.mapData.layers[3];
                     const tileIndex = y * layer4.width + x;
@@ -331,6 +339,10 @@ function handleCraftTableClick(nx, ny, type) {
         if (typeof findPath === "function" && window.mapData) {
             const isBlockedWithPortals = (x, y) => {
                 if (window.isBlocked(x, y)) return true;
+                // Vérifier s'il y a un monstre vivant à cette position
+                if (monsters.some(monster => monster.x === x && monster.y === y && monster.hp > 0 && !monster.isDead)) {
+                    return true;
+                }
                 if (window.mapData && window.mapData.layers && window.mapData.layers.length > 3) {
                     const layer4 = window.mapData.layers[3];
                     const tileIndex = y * layer4.width + x;
@@ -386,8 +398,8 @@ function handleMovementClick(nx, ny) {
                         if (testX >= 0 && testX < window.mapData.width && 
                             testY >= 0 && testY < window.mapData.height) {
                             
-                            // Vérifier si la case est accessible (pas de collision ET pas de monstre)
-                            if (!window.isBlocked(testX, testY) && !monsters.some(monster => monster.x === testX && monster.y === testY && monster.hp > 0)) {
+                            // Vérifier si la case est accessible (pas de collision ET pas de monstre vivant)
+                            if (!window.isBlocked(testX, testY) && !monsters.some(monster => monster.x === testX && monster.y === testY && monster.hp > 0 && !monster.isDead)) {
                                 targetX = testX;
                                 targetY = testY;
                                 found = true;
@@ -414,8 +426,8 @@ function handleMovementClick(nx, ny) {
             if (window.isBlocked(x, y)) {
                 return true;
             }
-            // Vérifier s'il y a un monstre à cette position
-            if (monsters.some(monster => monster.x === x && monster.y === y && monster.hp > 0)) {
+            // Vérifier s'il y a un monstre vivant à cette position
+            if (monsters.some(monster => monster.x === x && monster.y === y && monster.hp > 0 && !monster.isDead)) {
                 return true;
             }
             // Vérifier si c'est un portail du calque 4 (éviter les portails)
@@ -525,7 +537,7 @@ function handleSpaceAttack() {
                     pos.x >= 0 && pos.x < mapData.width &&
                     pos.y >= 0 && pos.y < mapData.height &&
                     !window.isBlocked(pos.x, pos.y) &&
-                    !monsters.some(m => m !== attackTarget && m.x === pos.x && m.y === pos.y)
+                    !monsters.some(m => m !== attackTarget && m.x === pos.x && m.y === pos.y && m.hp > 0)
                 );
                 
                 if (destinations.length) {
@@ -538,26 +550,30 @@ function handleSpaceAttack() {
                             closestDistance = distance;
                             closestDestination = destinations[i];
                         }
-                    }
-                    
-                    const isBlockedWithPortals = (x, y) => {
-                        if (window.isBlocked(x, y)) return true;
-                        if (window.mapData && window.mapData.layers && window.mapData.layers.length > 3) {
-                            const layer4 = window.mapData.layers[3];
-                            const tileIndex = y * layer4.width + x;
-                            const tileId = layer4.data[tileIndex];
-                            if ([1, 2, 3, 4, 5, 6].includes(tileId)) return true;
-                        }
-                        return false;
-                    };
-                    
-                    player.path = findPath(
-                        { x: player.x, y: player.y },
-                        closestDestination,
-                        isBlockedWithPortals,
-                        mapData.width, mapData.height
-                    ) || [];
-                    nextStepToTarget();
+                                         }
+                     
+                     const isBlockedWithPortals = (x, y) => {
+                         if (window.isBlocked(x, y)) return true;
+                         // Vérifier s'il y a un monstre vivant à cette position
+                         if (monsters.some(monster => monster.x === x && monster.y === y && monster.hp > 0 && !monster.isDead)) {
+                             return true;
+                         }
+                         if (window.mapData && window.mapData.layers && window.mapData.layers.length > 3) {
+                             const layer4 = window.mapData.layers[3];
+                             const tileIndex = y * layer4.width + x;
+                             const tileId = layer4.data[tileIndex];
+                             if ([1, 2, 3, 4, 5, 6].includes(tileId)) return true;
+                         }
+                         return false;
+                     };
+                     
+                     player.path = findPath(
+                         { x: player.x, y: player.y },
+                         closestDestination,
+                         isBlockedWithPortals,
+                         mapData.width, mapData.height
+                     ) || [];
+                     nextStepToTarget();
                 }
             }
         }

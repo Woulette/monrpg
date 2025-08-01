@@ -5,6 +5,54 @@
 const PATROL_ZONE = { x: 0, y: 0, width: 48, height: 25 };
 const RESPAWN_DELAY = 30000; // 30 secondes en millisecondes
 
+// Zones interdites pour le spawn des monstres
+const FORBIDDEN_SPAWN_ZONES = {
+    // Zone interdite pour mapdonjonslime2
+    mapdonjonslime2: [{
+        x: 11,
+        y: 0,
+        width: 3, // 11, 12, 13
+        height: 9  // 0 à 8
+    }],
+    // Zone interdite pour map3
+    map3: [
+        // Zone 1: de 0,0 à 12,3 (rectangle 13x4)
+        {
+            x: 0,
+            y: 0,
+            width: 13, // 0 à 12
+            height: 4   // 0 à 3
+        },
+        // Zone 2: de 21,0 à 27,9 (rectangle 7x10)
+        {
+            x: 21,
+            y: 0,
+            width: 7,  // 21 à 27
+            height: 10 // 0 à 9
+        }
+    ]
+};
+
+// Fonction pour vérifier si une position est dans une zone interdite
+function isInForbiddenSpawnZone(x, y) {
+    const currentMap = window.currentMap;
+    const zones = FORBIDDEN_SPAWN_ZONES[currentMap];
+    
+    if (!zones) return false;
+    
+    // Vérifier toutes les zones interdites pour cette map
+    for (const zone of zones) {
+        if (x >= zone.x && 
+            x < zone.x + zone.width &&
+            y >= zone.y && 
+            y < zone.y + zone.height) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
 // Fonction pour créer des slimes (pour les maps dédiées)
 function createSlimes(count = 5) {
     console.log(`Création de ${count} slimes...`);
@@ -39,7 +87,9 @@ function createSlimes(count = 5) {
             attempts++;
         } while (
             attempts < maxAttempts && 
-            (window.isBlocked && window.isBlocked(sx, sy)) // Éviter les collisions
+            (window.isBlocked && window.isBlocked(sx, sy)) || // Éviter les collisions
+            (currentMap === "mapdonjonslime2" && isInForbiddenSpawnZone(sx, sy)) || // Éviter la zone interdite sur mapdonjonslime2
+            (currentMap === "map3" && isInForbiddenSpawnZone(sx, sy)) // Éviter la zone interdite pour map3
         );
         
         // Si on n'a pas trouvé de position libre, prendre une position aléatoire
@@ -396,7 +446,8 @@ function createCrows(count = 10) {
             attempts++;
         } while (
             attempts < maxAttempts && 
-            (window.isBlocked && window.isBlocked(sx, sy)) // Éviter les collisions
+            (window.isBlocked && window.isBlocked(sx, sy)) || // Éviter les collisions
+            isInForbiddenSpawnZone(sx, sy) // Éviter les zones interdites
         );
         
         // Si on n'a pas trouvé de position libre, prendre une position aléatoire
@@ -480,4 +531,21 @@ window.createSlimes = createSlimes;
 window.createCrows = createCrows;
 window.spawnMaitreCorbeau = spawnMaitreCorbeau;
 window.spawnCorbeauElite = spawnCorbeauElite;
-window.spawnSlimeBoss = spawnSlimeBoss; 
+window.spawnSlimeBoss = spawnSlimeBoss;
+
+// Fonction de debug pour afficher la zone interdite
+window.showForbiddenSpawnZone = function() {
+    const currentMap = window.currentMap;
+    const zones = FORBIDDEN_SPAWN_ZONES[currentMap];
+    
+    if (!zones) {
+        console.log(`🚫 Aucune zone interdite définie pour la map ${currentMap}`);
+        return;
+    }
+
+    for (let i = 0; i < zones.length; i++) {
+        const zone = zones[i];
+        console.log(`🚫 Zone interdite ${i + 1} pour ${currentMap}: x=${zone.x} à ${zone.x + zone.width - 1}, y=${zone.y} à ${zone.y + zone.height - 1}`);
+    }
+    console.log(`🗺️ Map actuelle: ${window.currentMap}`);
+}; 
