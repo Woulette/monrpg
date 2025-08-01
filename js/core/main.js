@@ -23,6 +23,14 @@ function startGameDirectly() {
         return;
     }
     
+    // Nettoyer l'écran noir au démarrage pour éviter les blocages sur Vercel
+    if (typeof clearBlackScreen === "function") {
+        clearBlackScreen();
+    } else if (window.blackScreenStartTime) {
+        window.blackScreenStartTime = null;
+        window.blackScreenDuration = 250;
+    }
+    
     // S'assurer que le canvas est visible
     if (canvas) {
         canvas.style.display = 'block';
@@ -941,5 +949,32 @@ window.reloadImages = function() {
             }
         });
     }
+};
+
+// Fonction d'urgence pour nettoyer tous les effets visuels problématiques
+window.emergencyClearAllVisualEffects = function() {
+    console.log('🚨 Nettoyage d\'urgence de tous les effets visuels');
+    
+    // Nettoyer l'écran noir
+    if (typeof clearBlackScreen === "function") {
+        clearBlackScreen();
+    }
+    
+    // Nettoyer les effets de combat
+    if (typeof clearAllDamageEffects === "function") {
+        clearAllDamageEffects();
+    }
+    
+    // Nettoyer les effets d'urgence spécifiques
+    if (typeof emergencyClearCombatEffects === "function") {
+        emergencyClearCombatEffects();
+    }
+    
+    // Forcer un redessinage complet
+    if (typeof drawMap === "function") {
+        drawMap();
+    }
+    
+    console.log('✅ Tous les effets visuels nettoyés');
 };
 

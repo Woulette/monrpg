@@ -217,6 +217,16 @@ function updateDamageEffects() {
 function drawDamageEffects(ctx) {
     ctx.save();
     
+    // Nettoyage intelligent des effets expirés seulement
+    const currentTime = Date.now();
+    for (let i = damageEffects.length - 1; i >= 0; i--) {
+        const effect = damageEffects[i];
+        const elapsed = currentTime - effect.startTime;
+        if (elapsed > effect.duration + 1000) { // +1 seconde de marge
+            damageEffects.splice(i, 1);
+        }
+    }
+    
     for (const effect of damageEffects) {
         if (effect.damage !== undefined) {
             // Dessiner le nombre de dégâts
@@ -333,6 +343,22 @@ function clearAllDamageEffects() {
     damageNumbers.length = 0;
     console.log('🧹 Tous les effets de dégâts nettoyés');
 }
+
+// Fonction d'urgence pour nettoyer les effets et forcer un redessinage
+window.emergencyClearCombatEffects = function() {
+    console.log('🚨 Nettoyage d\'urgence des effets de combat');
+    clearAllDamageEffects();
+    
+    // Forcer un redessinage complet
+    if (typeof drawMap === "function") {
+        drawMap();
+    }
+    
+    // Nettoyer aussi l'écran noir si nécessaire
+    if (typeof clearBlackScreen === "function") {
+        clearBlackScreen();
+    }
+};
 
 // Fonctions d'export
 window.displayDamage = displayDamage;

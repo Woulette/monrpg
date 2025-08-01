@@ -46,14 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Sinon, déplacement classique vers la case cliquée
-        // Vérifier d'abord si c'est une tile de téléportation
-        if (window.mapData && window.mapData.layers && window.mapData.layers.length > 0) {
-            const layer1 = window.mapData.layers[0];
-            const tileIndex = ny * layer1.width + nx;
-            const tileId = layer1.data[tileIndex];
+        // Vérifier d'abord si c'est une tile de téléportation (calque 4)
+        if (window.mapData && window.mapData.layers && window.mapData.layers.length > 3) {
+            const layer4 = window.mapData.layers[3]; // Calque 4
+            const tileIndex = ny * layer4.width + nx;
+            const tileId = layer4.data[tileIndex];
             
-            // Permettre de cliquer sur les tiles de téléportation (ID 0 et 1)
-            if (tileId === 0 || tileId === 1) {
+            // Permettre de cliquer sur les tiles de téléportation (IDs 1, 2, 3, 4, 5, 6)
+            if ([1, 2, 3, 4, 5, 6].includes(tileId)) {
                 // Retirer seulement l'encadrement rouge, pas la fiche
                 if (attackTarget) {
                     attackTarget.aggro = false;
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Désactiver le suivi automatique
                 player.autoFollow = false;
                 
-                // Créer un chemin vers la tile de téléportation
+                // Créer un chemin vers la tile de téléportation (clic direct autorisé)
                 if (typeof findPath === "function" && window.mapData) {
                     player.path = findPath(
                         { x: player.x, y: player.y },
@@ -202,10 +202,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                     
+                    const isBlockedWithPortals = (x, y) => {
+                        if (window.isBlocked(x, y)) return true;
+                        if (window.mapData && window.mapData.layers && window.mapData.layers.length > 3) {
+                            const layer4 = window.mapData.layers[3];
+                            const tileIndex = y * layer4.width + x;
+                            const tileId = layer4.data[tileIndex];
+                            if ([1, 2, 3, 4, 5, 6].includes(tileId)) return true;
+                        }
+                        return false;
+                    };
+                    
                     player.path = findPath(
                         { x: player.x, y: player.y },
                         closestDestination,
-                        window.isBlocked,
+                        isBlockedWithPortals,
                         mapData.width, mapData.height
                     ) || [];
                     nextStepToTarget();
@@ -261,12 +272,23 @@ function handleBossChestClick(nx, ny) {
     // Vérifier si le joueur est assez proche du coffre
     const distance = Math.sqrt((player.x - nx) ** 2 + (player.y - ny) ** 2);
     if (distance > 2) {
-        // Créer un chemin vers le coffre
+        // Créer un chemin vers le coffre (éviter les portails)
         if (typeof findPath === "function" && window.mapData) {
+            const isBlockedWithPortals = (x, y) => {
+                if (window.isBlocked(x, y)) return true;
+                if (window.mapData && window.mapData.layers && window.mapData.layers.length > 3) {
+                    const layer4 = window.mapData.layers[3];
+                    const tileIndex = y * layer4.width + x;
+                    const tileId = layer4.data[tileIndex];
+                    if ([1, 2, 3, 4, 5, 6].includes(tileId)) return true;
+                }
+                return false;
+            };
+            
             player.path = findPath(
                 { x: player.x, y: player.y },
                 { x: nx, y: ny },
-                window.isBlocked,
+                isBlockedWithPortals,
                 mapData.width, mapData.height
             ) || [];
             nextStepToTarget();
@@ -307,10 +329,21 @@ function handleCraftTableClick(nx, ny, type) {
         }
         window.pendingOpenCraftTable = {x: nx, y: ny, type: type};
         if (typeof findPath === "function" && window.mapData) {
+            const isBlockedWithPortals = (x, y) => {
+                if (window.isBlocked(x, y)) return true;
+                if (window.mapData && window.mapData.layers && window.mapData.layers.length > 3) {
+                    const layer4 = window.mapData.layers[3];
+                    const tileIndex = y * layer4.width + x;
+                    const tileId = layer4.data[tileIndex];
+                    if ([1, 2, 3, 4, 5, 6].includes(tileId)) return true;
+                }
+                return false;
+            };
+            
             player.path = findPath(
                 { x: player.x, y: player.y },
                 { x: closest.x, y: closest.y },
-                window.isBlocked,
+                isBlockedWithPortals,
                 mapData.width, mapData.height
             ) || [];
             nextStepToTarget();
@@ -375,14 +408,26 @@ function handleMovementClick(nx, ny) {
     }
     
     if (typeof findPath === "function" && window.mapData) {
-        // Créer une fonction de collision qui inclut les monstres
+        // Créer une fonction de collision qui inclut les monstres et évite les portails
         const isBlockedWithMonsters = (x, y) => {
             // Vérifier les collisions du calque 2
             if (window.isBlocked(x, y)) {
                 return true;
             }
             // Vérifier s'il y a un monstre à cette position
-            return monsters.some(monster => monster.x === x && monster.y === y && monster.hp > 0);
+            if (monsters.some(monster => monster.x === x && monster.y === y && monster.hp > 0)) {
+                return true;
+            }
+            // Vérifier si c'est un portail du calque 4 (éviter les portails)
+            if (window.mapData && window.mapData.layers && window.mapData.layers.length > 3) {
+                const layer4 = window.mapData.layers[3];
+                const tileIndex = y * layer4.width + x;
+                const tileId = layer4.data[tileIndex];
+                if ([1, 2, 3, 4, 5, 6].includes(tileId)) {
+                    return true;
+                }
+            }
+            return false;
         };
         
         player.path = findPath(
@@ -495,10 +540,21 @@ function handleSpaceAttack() {
                         }
                     }
                     
+                    const isBlockedWithPortals = (x, y) => {
+                        if (window.isBlocked(x, y)) return true;
+                        if (window.mapData && window.mapData.layers && window.mapData.layers.length > 3) {
+                            const layer4 = window.mapData.layers[3];
+                            const tileIndex = y * layer4.width + x;
+                            const tileId = layer4.data[tileIndex];
+                            if ([1, 2, 3, 4, 5, 6].includes(tileId)) return true;
+                        }
+                        return false;
+                    };
+                    
                     player.path = findPath(
                         { x: player.x, y: player.y },
                         closestDestination,
-                        window.isBlocked,
+                        isBlockedWithPortals,
                         mapData.width, mapData.height
                     ) || [];
                     nextStepToTarget();

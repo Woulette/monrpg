@@ -67,7 +67,9 @@ function respawnPlayer() {
     window.player = currentPlayer;
     
     // Nettoyer l'écran noir
-    if (window.blackScreenStartTime) {
+    if (typeof clearBlackScreen === "function") {
+        clearBlackScreen();
+    } else if (window.blackScreenStartTime) {
         window.blackScreenStartTime = null;
         window.blackScreenDuration = 250; // Restaurer la durée par défaut
     }

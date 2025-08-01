@@ -7,11 +7,13 @@ window.TILE_SIZE = 32;
 // Variables pour activer/désactiver les grilles de debug
 window.debugGridEnabled = false; // Désactivé par défaut
 window.debugGridLayer1Enabled = false;
+window.debugGridLayer2Enabled = false; // Debug des collisions
 window.debugGridLayer3Enabled = false;
 
 // Variable pour l'écran noir de transition
 window.blackScreenStartTime = null;
 window.blackScreenDuration = 250; // 250ms
+window.blackScreenTimeout = null; // Timeout de sécurité pour Vercel
 
 // Variables pour le centrage de la map
 window.mapOffsetX = 0;
@@ -60,7 +62,7 @@ async function loadMap(mapName) {
         window.currentMap = mapName;
         
         // Déclencher le fondu au noir pour la transition de map
-        window.blackScreenStartTime = Date.now();
+        startBlackScreenTransition();
         
         // Calculer le centrage de la map
         calculateMapCentering();
@@ -137,7 +139,7 @@ async function loadMap(mapName) {
         }
         
         // Démarrer l'écran noir de transition
-        window.blackScreenStartTime = Date.now();
+        startBlackScreenTransition();
         
         // Sauvegarder les monstres après un délai pour s'assurer qu'ils sont créés
         setTimeout(() => {
@@ -212,7 +214,18 @@ function teleportPlayer(mapName, spawnX, spawnY) {
 // Rendre les fonctions accessibles globalement
 window.loadMap = loadMap;
 window.teleportPlayer = teleportPlayer;
+window.clearBlackScreen = clearBlackScreen;
+window.startBlackScreenTransition = startBlackScreenTransition;
 
+// Fonction d'urgence pour nettoyer l'écran noir (à appeler manuellement si nécessaire)
+window.emergencyClearBlackScreen = function() {
+    console.log('🚨 Nettoyage d\'urgence de l\'écran noir');
+    clearBlackScreen();
+    // Forcer un redessinage
+    if (typeof drawMap === "function") {
+        drawMap();
+    }
+};
 
 
 function initMap() {
@@ -307,6 +320,44 @@ function drawDebugGridLayer1() {
     ctx.restore();
 }
 
+function drawDebugGridLayer2() {
+    if (!window.debugGridLayer2Enabled || !window.mapData) return;
+    
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)'; // Rouge pour les collisions
+    ctx.lineWidth = 2;
+    ctx.font = 'bold 12px Arial';
+    ctx.fillStyle = 'red';
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 1;
+    
+    // Trouver le calque 2 par son ID
+    const layer2 = window.mapData.layers.find(layer => layer.id === 2);
+    if (!layer2) return;
+    
+    // Dessiner la grille et les IDs du calque 2 avec les offsets de centrage
+    for (let y = 0; y < window.mapData.height; y++) {
+        for (let x = 0; x < window.mapData.width; x++) {
+            const idx = y * window.mapData.width + x;
+            const gid = layer2.data[idx];
+            
+            // Dessiner la grille avec les offsets
+            ctx.strokeRect(x * TILE_SIZE + window.mapOffsetX, y * TILE_SIZE + window.mapOffsetY, TILE_SIZE, TILE_SIZE);
+            
+            // Afficher l'ID de la tuile (seulement si collision)
+            if (gid !== 0) {
+                ctx.fillText(gid.toString(), x * TILE_SIZE + window.mapOffsetX + 2, y * TILE_SIZE + window.mapOffsetY + 12);
+                // Remplir la case en rouge pour bien voir les collisions
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+                ctx.fillRect(x * TILE_SIZE + window.mapOffsetX, y * TILE_SIZE + window.mapOffsetY, TILE_SIZE, TILE_SIZE);
+                ctx.fillStyle = 'red';
+            }
+        }
+    }
+    
+    ctx.restore();
+}
+
 function drawDebugGridLayer3() {
     if (!window.debugGridLayer3Enabled || !window.mapData) return;
     
@@ -349,6 +400,11 @@ function toggleDebugGridLayer1() {
     window.debugGridLayer1Enabled = !window.debugGridLayer1Enabled;
 }
 
+function toggleDebugGridLayer2() {
+    window.debugGridLayer2Enabled = !window.debugGridLayer2Enabled;
+    console.log(`Debug calque 2 (collisions): ${window.debugGridLayer2Enabled ? 'ACTIVÉ' : 'DÉSACTIVÉ'}`);
+}
+
 function toggleDebugGridLayer3() {
     window.debugGridLayer3Enabled = !window.debugGridLayer3Enabled;
 }
@@ -370,8 +426,7 @@ function drawMap() {
             return; // Ne pas dessiner la map pendant l'écran noir
         } else {
             // Fin de l'écran noir, nettoyer
-            window.blackScreenStartTime = null;
-            window.blackScreenDuration = 250; // Restaurer la durée par défaut
+            clearBlackScreen();
         }
     }
     
@@ -490,7 +545,11 @@ function drawMap() {
     // Dessiner les grilles de debug si activées
     drawDebugGrid();
     drawDebugGridLayer1();
+    drawDebugGridLayer2(); // Debug des collisions
     drawDebugGridLayer3();
+    
+    // Dessiner les informations de debug des collisions
+    drawCollisionDebugInfo();
     
     // Dessiner les indicateurs de téléportation
     drawTeleportationIndicators();
@@ -508,6 +567,78 @@ function drawMap() {
         ctx.restore();
     }
 }
+
+// Fonction pour afficher les informations de debug des collisions
+function drawCollisionDebugInfo() {
+    if (!window.debugGridLayer2Enabled) return;
+    
+    ctx.save();
+    ctx.font = 'bold 14px Arial';
+    ctx.fillStyle = 'red';
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    
+    // Position du joueur
+    const playerX = Math.floor(player.x);
+    const playerY = Math.floor(player.y);
+    const playerScreenX = player.px + window.mapOffsetX;
+    const playerScreenY = player.py + window.mapOffsetY;
+    
+    // Informations du joueur
+    ctx.fillText(`Joueur: (${playerX}, ${playerY})`, 10, 30);
+    
+    // Vérifier les collisions autour du joueur
+    for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+            const checkX = playerX + dx;
+            const checkY = playerY + dy;
+            const isBlocked = window.isBlocked ? window.isBlocked(checkX, checkY) : false;
+            
+            if (isBlocked) {
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+                ctx.fillRect(
+                    checkX * TILE_SIZE + window.mapOffsetX, 
+                    checkY * TILE_SIZE + window.mapOffsetY, 
+                    TILE_SIZE, TILE_SIZE
+                );
+                ctx.fillStyle = 'red';
+                ctx.fillText(`X`, checkX * TILE_SIZE + window.mapOffsetX + 12, checkY * TILE_SIZE + window.mapOffsetY + 20);
+            }
+        }
+    }
+    
+    // Afficher les GIDs bloquants
+    ctx.fillText(`GIDs bloquants: ${window.BLOCKED_GIDS ? window.BLOCKED_GIDS.join(', ') : 'Aucun'}`, 10, 50);
+    
+    ctx.restore();
+}
+
+// Fonctions globales pour le debug
+window.toggleCollisionDebug = function() {
+    window.debugGridLayer2Enabled = !window.debugGridLayer2Enabled;
+    console.log(`🔴 Debug des collisions: ${window.debugGridLayer2Enabled ? 'ACTIVÉ' : 'DÉSACTIVÉ'}`);
+    if (window.debugGridLayer2Enabled) {
+        console.log(`📊 GIDs bloquants actuels: ${window.BLOCKED_GIDS ? window.BLOCKED_GIDS.join(', ') : 'Aucun'}`);
+        console.log(`🗺️ Map actuelle: ${window.currentMap}`);
+    }
+};
+
+window.showPlayerPosition = function() {
+    if (player) {
+        console.log(`👤 Joueur position: (${Math.floor(player.x)}, ${Math.floor(player.y)})`);
+        console.log(`🎯 Coordonnées écran: (${player.px}, ${player.py})`);
+        
+        // Vérifier les collisions autour du joueur
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                const checkX = Math.floor(player.x) + dx;
+                const checkY = Math.floor(player.y) + dy;
+                const isBlocked = window.isBlocked ? window.isBlocked(checkX, checkY) : false;
+                console.log(`📍 Position (${checkX}, ${checkY}): ${isBlocked ? 'BLOQUÉ' : 'Libre'}`);
+            }
+        }
+    }
+};
 
 // Fonction pour dessiner les indicateurs de téléportation
 function drawTeleportationIndicators() {
@@ -533,5 +664,26 @@ function drawTeleportationIndicators() {
     }
     
     ctx.restore();
+}
+
+// Fonction pour nettoyer l'écran noir de transition
+function clearBlackScreen() {
+    window.blackScreenStartTime = null;
+    window.blackScreenDuration = 250;
+    if (window.blackScreenTimeout) {
+        clearTimeout(window.blackScreenTimeout);
+        window.blackScreenTimeout = null;
+    }
+}
+
+// Fonction pour démarrer l'écran noir de transition avec timeout de sécurité
+function startBlackScreenTransition() {
+    window.blackScreenStartTime = Date.now();
+    
+    // Timeout de sécurité pour Vercel - nettoyer après 2 secondes max
+    window.blackScreenTimeout = setTimeout(() => {
+        console.log('🔄 Timeout de sécurité - nettoyage de l\'écran noir');
+        clearBlackScreen();
+    }, 2000);
 }
 

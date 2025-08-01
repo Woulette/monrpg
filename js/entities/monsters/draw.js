@@ -111,7 +111,7 @@ function drawMonsters(ctx) {
                 offsetY = (TILE_SIZE / 2) - (monsterHeight / 2);
             }
 
-            // Affichage du nom et niveau si sélectionné
+            // Affichage du nom et niveau SEULEMENT si le monstre est sélectionné
             if (window.attackTarget === monster) {
                 ctx.save();
                 ctx.font = "bold 12px Arial";
@@ -119,10 +119,24 @@ function drawMonsters(ctx) {
                 ctx.textBaseline = "bottom";
                 const textX = monster.px + offsetX + monsterSize / 2 + (window.mapOffsetX || 0);
                 const textY = monster.py + offsetY - 8 + (window.mapOffsetY || 0);
-                const levelDiff = Math.abs((monster.level || 1) - (player.level || 1));
-                if (levelDiff < 5) ctx.fillStyle = "#ffffff";
-                else if (levelDiff <= 15) ctx.fillStyle = "#ffa500";
-                else ctx.fillStyle = "#ff0000";
+                
+                // Calcul de la différence de niveau (monstre - joueur)
+                const monsterLevel = monster.level || 1;
+                const playerLevel = player.level || 1;
+                const levelDiff = monsterLevel - playerLevel;
+                
+                // Couleur selon la différence de niveau
+                if (levelDiff <= 0) {
+                    // Monstre de niveau inférieur ou égal au joueur → Blanc
+                    ctx.fillStyle = "#ffffff";
+                } else if (levelDiff <= 14) {
+                    // Monstre de niveau supérieur de 1-14 niveaux → Orange
+                    ctx.fillStyle = "#ffa500";
+                } else {
+                    // Monstre de niveau supérieur de 15+ niveaux → Rouge
+                    ctx.fillStyle = "#ff0000";
+                }
+                
                 let nomAffiche = monster.name || (monster.type === "maitrecorbeau" ? "Maitrecorbeau" : monster.type === "corbeauelite" ? "Corbeau d'élite" : monster.type === "slimeboss" ? "SlimeBoss" : "Corbeau");
                 ctx.fillText(`${nomAffiche} Lv ${monster.level || 1}`, textX, textY);
                 ctx.restore();
