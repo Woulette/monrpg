@@ -64,12 +64,12 @@ function updatePlayer(ts) {
             
             // Ralentir le joueur sur les cartes du donjon slime pour compenser la petite taille
             if (window.currentMap && (window.currentMap.includes('mapdonjonslime'))) {
-                currentMoveSpeed *= 0.6; // Ralentir de 40%
+                currentMoveSpeed *= 0.8; // Ralentir de 20% (80% de vitesse restante)
             }
             
-            // Ralentir le joueur dans la maison de 40%
+            // Ralentir le joueur dans la maison de 20%
             if (window.currentMap === "maison") {
-                currentMoveSpeed *= 0.6; // Ralentir de 40%
+                currentMoveSpeed *= 0.8; // Ralentir de 20% (80% de vitesse restante)
             }
             if (dx !== 0) player.px += currentMoveSpeed * Math.sign(dx);
             if (dy !== 0) player.py += currentMoveSpeed * Math.sign(dy);
@@ -541,6 +541,8 @@ function updatePlayer(ts) {
                 }
             }
         }
+        // --- PORTAIL MAP3 → MAP2 --- (SUPPRIMÉ - CAUSE CONFLIT)
+        // Le système principal gère déjà correctement les portails map3 → map2
     }
 }
 
