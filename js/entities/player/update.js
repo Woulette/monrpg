@@ -64,12 +64,12 @@ function updatePlayer(ts) {
             
             // Ralentir le joueur sur les cartes du donjon slime pour compenser la petite taille
             if (window.currentMap && (window.currentMap.includes('mapdonjonslime'))) {
-                currentMoveSpeed *= 0.5; // Ralentir de 50%
+                currentMoveSpeed *= 0.6; // Ralentir de 40%
             }
             
-            // Ralentir le joueur dans la maison de 60%
+            // Ralentir le joueur dans la maison de 40%
             if (window.currentMap === "maison") {
-                currentMoveSpeed *= 0.4; // Ralentir de 60%
+                currentMoveSpeed *= 0.6; // Ralentir de 40%
             }
             if (dx !== 0) player.px += currentMoveSpeed * Math.sign(dx);
             if (dy !== 0) player.py += currentMoveSpeed * Math.sign(dy);
@@ -95,6 +95,14 @@ function updatePlayer(ts) {
 
         if (dist === PLAYER_ATTACK_RANGE) {
             const currentTime = Date.now();
+            
+            // Empêcher la superposition avec le SlimeBoss
+            if (attackTarget.type === "slimeboss" && dist === 0) {
+                // Si le joueur est sur la même case que le SlimeBoss, le repousser
+                console.log("⚠️ Empêcher la superposition avec le SlimeBoss");
+                return;
+            }
+            
             // Vérifie le cooldown visuel du sort de base
             const slot = document.getElementById('spell-slot-1');
             if (slot && slot.classList.contains('cooldown')) {

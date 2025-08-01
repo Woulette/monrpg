@@ -344,6 +344,13 @@ function clearAllDamageEffects() {
     console.log('🧹 Tous les effets de dégâts nettoyés');
 }
 
+// Fonction de nettoyage d'urgence pour les effets de dégâts
+function emergencyClearDamageEffects() {
+    console.log("🚨 Nettoyage d'urgence des effets de dégâts");
+    damageEffects.length = 0;
+    damageNumbers.length = 0;
+}
+
 // Fonction d'urgence pour nettoyer les effets et forcer un redessinage
 window.emergencyClearCombatEffects = function() {
     console.log('🚨 Nettoyage d\'urgence des effets de combat');
@@ -365,3 +372,4 @@ window.displayDamage = displayDamage;
 window.updateDamageEffects = updateDamageEffects;
 window.drawDamageEffects = drawDamageEffects;
 window.clearAllDamageEffects = clearAllDamageEffects; 
+window.emergencyClearDamageEffects = emergencyClearDamageEffects; 

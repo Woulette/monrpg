@@ -17,6 +17,11 @@ class SaveSystem {
 
     // Sauvegarde automatique
     autoSave() {
+        // Vérifier si les sauvegardes automatiques sont désactivées
+        if (window.autoSaveDisabled) {
+            return; // Sortir silencieusement si désactivé
+        }
+        
         // Vérifier que nous sommes en mode jeu et qu'un personnage est actif
         if (typeof player !== 'undefined' && 
             typeof window.currentMap !== 'undefined' && 
@@ -491,6 +496,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Sauvegarde automatique lors d'événements importants
 window.autoSaveOnEvent = function() {
+    // Vérifier si les sauvegardes automatiques sont désactivées
+    if (window.autoSaveDisabled) {
+        console.log('🚫 Sauvegarde automatique ignorée (désactivée temporairement)');
+        return;
+    }
+    
     if (saveSystem && window.gameState === "playing") {
         console.log('💾 Sauvegarde automatique déclenchée par événement');
         saveSystem.saveGame();
@@ -659,3 +670,32 @@ window.debugSaveState = function() {
     
     console.log('🔍 Débogage terminé');
 }; 
+
+// Variable pour désactiver temporairement les sauvegardes automatiques
+window.autoSaveDisabled = false;
+
+// Fonction pour désactiver temporairement les sauvegardes automatiques
+function disableAutoSave() {
+    window.autoSaveDisabled = true;
+    console.log('🚫 Sauvegardes automatiques désactivées temporairement');
+}
+
+// Fonction pour réactiver les sauvegardes automatiques
+function enableAutoSave() {
+    window.autoSaveDisabled = false;
+    console.log('✅ Sauvegardes automatiques réactivées');
+}
+
+// Fonction pour forcer une sauvegarde manuelle
+function forceManualSave() {
+    if (saveSystem && window.gameState === "playing") {
+        console.log('💾 Sauvegarde manuelle forcée');
+        saveSystem.saveGame();
+    } else {
+        console.log('⚠️ Impossible de sauvegarder manuellement - conditions non remplies');
+    }
+}
+
+// Export global
+window.disableAutoSave = disableAutoSave;
+window.enableAutoSave = enableAutoSave; 

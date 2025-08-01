@@ -131,9 +131,10 @@ function createSlimes(count = 5) {
             movePath: [],
             moving: false,
             moveTarget: { x: sx, y: sy },
-            moveSpeed: 0.2, // Plus lent que les corbeaux
+            moveSpeed: 0.5, // Vitesse normale pour les slimes
             moveCooldown: 0,
             patrolZone: slimePatrolZone,
+            aggroRange: 7, // Distance d'agression pour les slimes
             hp: Math.floor(baseHp * hpMultiplier),
             maxHp: Math.floor(baseHp * hpMultiplier),
             aggro: false,
@@ -390,7 +391,7 @@ function spawnSlimeBoss() {
         movePath: [],
         moving: false,
         moveTarget: { x: sx, y: sy },
-        moveSpeed: 0.6, // Plus lent que les autres monstres
+        moveSpeed: 0.8, // Plus rapide que les slimes normaux
         moveCooldown: 0,
         patrolZone: PATROL_ZONE,
         hp: baseHp,
@@ -489,7 +490,7 @@ function createCrows(count = 10) {
             movePath: [],
             moving: false,
             moveTarget: { x: sx, y: sy },
-            moveSpeed: 0.3,
+            moveSpeed: 0.5,
             moveCooldown: 0,
             patrolZone: PATROL_ZONE,
             hp: Math.floor(baseHp * hpMultiplier),

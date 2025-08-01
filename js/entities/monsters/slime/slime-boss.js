@@ -231,7 +231,7 @@ function spawnSlimeBossOnBossMap() {
         movePath: [],
         moving: false,
         moveTarget: { x: bossX, y: bossY },
-        moveSpeed: 0.2, // Plus lent que les slimes normaux
+        moveSpeed: 0.8, // Plus rapide que les slimes normaux
         moveCooldown: 0,
         patrolZone: { x: 8, y: 1, width: 8, height: 4 }, // Zone de patrouille limitée
         hp: 500,

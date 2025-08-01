@@ -52,6 +52,20 @@ window.corbeauEliteImg = corbeauEliteImg;
 window.slimeImg = slimeImg;
 window.slimeBossImg = slimeBossImg;
 
+// Fonction de synchronisation forcée des coordonnées des monstres
+function syncMonsterCoordinates() {
+    if (!window.monsters) return;
+    
+    window.monsters.forEach(monster => {
+        if (monster && !monster.isDead && !monster.moving) {
+            // Synchroniser seulement les monstres qui ne bougent pas
+            // Les monstres en mouvement gardent leurs coordonnées pixel fluides
+            monster.px = monster.x * TILE_SIZE;
+            monster.py = monster.y * TILE_SIZE;
+        }
+    });
+}
+
 // Fonction pour assigner l'image aux monstres
 function assignMonsterImages() {
     if (window.monsters) {
@@ -73,12 +87,51 @@ function assignMonsterImages() {
     }
 }
 
+// Fonction de diagnostic des coordonnées des monstres
+function diagnoseMonsterCoordinates() {
+    if (!window.monsters) {
+        console.log("❌ Aucun monstre trouvé");
+        return;
+    }
+    
+    console.log("🔍 Diagnostic des coordonnées des monstres:");
+    window.monsters.forEach((monster, index) => {
+        if (monster && !monster.isDead) {
+            const expectedPx = monster.x * TILE_SIZE;
+            const expectedPy = monster.y * TILE_SIZE;
+            const pxDiff = Math.abs(monster.px - expectedPx);
+            const pyDiff = Math.abs(monster.py - expectedPy);
+            
+            console.log(`Monstre ${index} (${monster.name || monster.type}):`);
+            console.log(`  Grille: (${monster.x}, ${monster.y})`);
+            console.log(`  Pixel actuel: (${monster.px}, ${monster.py})`);
+            console.log(`  Pixel attendu: (${expectedPx}, ${expectedPy})`);
+            console.log(`  Différence: (${pxDiff}, ${pyDiff})`);
+            console.log(`  En mouvement: ${monster.moving ? "OUI" : "NON"}`);
+            
+            if (pxDiff > 1 || pyDiff > 1) {
+                if (monster.moving) {
+                    console.log(`  ✅ DÉCALAGE NORMAL (monstre en mouvement)`);
+                } else {
+                    console.log(`  ⚠️ DÉCALAGE DÉTECTÉ! (monstre immobile)`);
+                }
+            }
+        }
+    });
+}
+
+// Export global
 window.assignMonsterImages = assignMonsterImages;
+window.syncMonsterCoordinates = syncMonsterCoordinates;
+window.diagnoseMonsterCoordinates = diagnoseMonsterCoordinates;
 
 function drawMonsters(ctx) {
     if (!monsters || monsters.length === 0 || !ctx) {
         return;
     }
+    
+    // Forcer la synchronisation des coordonnées avant le dessin
+    syncMonsterCoordinates();
     
     let monsterSize, monsterHeight, offsetX, offsetY;
     

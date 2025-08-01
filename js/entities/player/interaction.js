@@ -427,7 +427,12 @@ function handleMovementClick(nx, ny) {
                 return true;
             }
             // Vérifier s'il y a un monstre vivant à cette position
-            if (monsters.some(monster => monster.x === x && monster.y === y && monster.hp > 0 && !monster.isDead)) {
+            const monsterAtPosition = monsters.find(monster => monster.x === x && monster.y === y && monster.hp > 0 && !monster.isDead);
+            if (monsterAtPosition) {
+                // Empêcher la superposition avec le SlimeBoss
+                if (monsterAtPosition.type === "slimeboss") {
+                    return true;
+                }
                 return true;
             }
             // Vérifier si c'est un portail du calque 4 (éviter les portails)

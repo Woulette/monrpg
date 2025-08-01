@@ -464,7 +464,11 @@ function drawMap() {
         }
     }
     
+    // Nettoyage robuste du canvas avec reset des transformations
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset complet des transformations
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
     
     // Dessiner les calques 1, 2 et 4 en premier (sol, collisions et décors)
     for (let layerIndex = 0; layerIndex < window.mapData.layers.length; layerIndex++) {
@@ -763,4 +767,68 @@ function toggleForbiddenSpawnZone() {
 
 // Export global
 window.toggleForbiddenSpawnZone = toggleForbiddenSpawnZone;
+
+// Fonction de diagnostic pour détecter les problèmes de calques
+function diagnoseCanvasLayers() {
+    console.log("🔍 Diagnostic des calques de map:");
+    console.log(`- Map actuelle: ${window.currentMap}`);
+    console.log(`- Nombre de calques: ${window.mapData?.layers?.length || 0}`);
+    console.log(`- Offset X: ${window.mapOffsetX}, Offset Y: ${window.mapOffsetY}`);
+    
+    if (window.mapData?.layers) {
+        window.mapData.layers.forEach((layer, index) => {
+            console.log(`  Calque ${index} (ID: ${layer.id}): ${layer.name} - Visible: ${layer.visible}`);
+        });
+    }
+    
+    // Vérifier l'état du canvas
+    const canvas = document.getElementById('gameCanvas');
+    if (canvas) {
+        console.log(`- Canvas size: ${canvas.width}x${canvas.height}`);
+        console.log(`- Canvas style: ${canvas.style.width}x${canvas.style.height}`);
+    }
+}
+
+// Fonction de nettoyage forcé du canvas
+function forceClearCanvas() {
+    const canvas = document.getElementById('gameCanvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+        console.log("🧹 Canvas forcément nettoyé");
+    }
+}
+
+// Export global
+window.diagnoseCanvasLayers = diagnoseCanvasLayers;
+window.forceClearCanvas = forceClearCanvas;
+
+// Fonction de nettoyage d'urgence pour le voile sombre
+function emergencyClearMapLayers() {
+    console.log("🚨 Nettoyage d'urgence des calques de map");
+    
+    // Forcer un nettoyage complet du canvas
+    forceClearCanvas();
+    
+    // Nettoyer les variables de map
+    if (window.blackScreenStartTime) {
+        clearBlackScreen();
+    }
+    
+    // Forcer un redessinage complet
+    if (typeof drawMap === "function") {
+        drawMap();
+    }
+    
+    // Nettoyer aussi les effets de dégâts si nécessaire
+    if (typeof window.emergencyClearDamageEffects === "function") {
+        window.emergencyClearDamageEffects();
+    }
+}
+
+// Export global
+window.emergencyClearMapLayers = emergencyClearMapLayers;
 
