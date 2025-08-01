@@ -1,5 +1,3 @@
-console.log("Fichier js/inventory/items.js chargé");
-
 // Fonction pour ajouter un item à l'inventaire
 function addItemToInventory(itemId, category) {
     // Chercher d'abord dans equipmentDatabase, puis dans resourceDatabase
@@ -73,8 +71,6 @@ function addItemToInventory(itemId, category) {
                 }
             }
             
-            console.log(`Item ${item.name} empilé dans l'inventaire ${category} (quantité: ${targetInventory[existingSlot].item.quantity})`);
-            
             // Mettre à jour toutes les grilles
             updateAllGrids();
             
@@ -95,7 +91,6 @@ function addItemToInventory(itemId, category) {
             
             // Vérifier le progrès de la quête slimeBoss si le certificat a été obtenu
             if (itemId === 'certificat_corbeau' && typeof window.checkSlimeBossQuestProgress === 'function') {
-                console.log("📜 Certificat obtenu via inventaire, vérification du progrès de la quête slimeBoss...");
                 window.checkSlimeBossQuestProgress();
             }
             

@@ -1,86 +1,58 @@
-// js/monsters/draw.js
+// js/entities/monsters/draw.js
 
-// Chargement de l'image des corbeaux
+// Chargement des images des monstres
 const corbeauImg = new Image();
 corbeauImg.src = "assets/personnages/corbeau.png";
 corbeauImg.onload = () => { 
-    console.log("Image corbeau chargée avec succès");
-    // Assigner l'image aux monstres existants
     if (window.monsters && window.monsters.length > 0) {
         window.monsters.forEach(m => {
             if (m.type === "crow") {
                 m.img = corbeauImg;
             }
         });
-        console.log(`${window.monsters.length} monstres ont reçu l'image`);
-    } else {
-        console.log("Aucun monstre disponible pour recevoir l'image");
     }
 };
-corbeauImg.onerror = () => {
-    console.error("Erreur lors du chargement de l'image corbeau.png");
-};
 
-// Chargement de l'image du Maitrecorbeau
 const maitreCorbeauImg = new Image();
 maitreCorbeauImg.src = "assets/personnages/corbeauelite.png";
 maitreCorbeauImg.onload = () => {
-    console.log("Image Maitrecorbeau chargée avec succès");
     if (typeof assignMonsterImages === "function") {
         assignMonsterImages();
     }
 };
-maitreCorbeauImg.onerror = () => {
-    console.error("Erreur lors du chargement de l'image corbeauelite.png");
-};
 
-// Chargement de l'image du Corbeau d'élite
 const corbeauEliteImg = new Image();
 corbeauEliteImg.src = "assets/personnages/Corbeauchef.png";
 corbeauEliteImg.onload = () => {
-    console.log("Image Corbeau d'élite chargée avec succès");
     if (typeof assignMonsterImages === "function") {
         assignMonsterImages();
     }
 };
-corbeauEliteImg.onerror = () => {
-    console.error("Erreur lors du chargement de l'image Corbeauchef.png");
-};
 
-// Chargement de l'image du Slime
 const slimeImg = new Image();
 slimeImg.src = "assets/personnages/slime.png";
 slimeImg.onload = () => {
-    console.log("Image Slime chargée avec succès");
     if (typeof assignMonsterImages === "function") {
         assignMonsterImages();
     }
 };
-slimeImg.onerror = () => {
-    console.error("Erreur lors du chargement de l'image slime.png");
-};
 
-// Chargement de l'image du SlimeBoss
 const slimeBossImg = new Image();
 slimeBossImg.src = "assets/personnages/slimeboss.png";
 slimeBossImg.onload = () => {
-    console.log("Image SlimeBoss chargée avec succès");
     if (typeof assignMonsterImages === "function") {
         assignMonsterImages();
     }
 };
-slimeBossImg.onerror = () => {
-    console.error("Erreur lors du chargement de l'image slimeboss.png");
-};
 
-// Exporter toutes les images globalement
+// Export global des images
 window.corbeauImg = corbeauImg;
 window.maitreCorbeauImg = maitreCorbeauImg;
 window.corbeauEliteImg = corbeauEliteImg;
 window.slimeImg = slimeImg;
 window.slimeBossImg = slimeBossImg;
 
-// Fonction pour assigner l'image aux monstres (appelée après création des monstres)
+// Fonction pour assigner l'image aux monstres
 function assignMonsterImages() {
     if (window.monsters) {
         window.monsters.forEach(m => {
@@ -98,97 +70,25 @@ function assignMonsterImages() {
                 m.img = window.corbeauImg; // Fallback pour les autres types
             }
         });
-        console.log(`${window.monsters.length} monstres ont reçu leur image (assignMonsterImages)`);
     }
 }
 
-// Exporter la fonction globalement
 window.assignMonsterImages = assignMonsterImages;
 
-// Fonction pour diagnostiquer les images des monstres
-window.debugMonsterImages = function() {
-    console.log('🔍 Diagnostic des images des monstres...');
-    
-    // Vérifier les images globales
-    console.log('📸 Images globales:', {
-        corbeauImg: !!window.corbeauImg,
-        maitreCorbeauImg: !!window.maitreCorbeauImg,
-        corbeauEliteImg: !!window.corbeauEliteImg,
-        slimeImg: !!window.slimeImg,
-        slimeBossImg: !!window.slimeBossImg
-    });
-    
-    // Vérifier l'état de chargement des images
-    if (window.corbeauImg) {
-        console.log('🖼️ corbeauImg:', {
-            complete: window.corbeauImg.complete,
-            naturalWidth: window.corbeauImg.naturalWidth,
-            src: window.corbeauImg.src
-        });
-    }
-    
-    if (window.maitreCorbeauImg) {
-        console.log('🖼️ maitreCorbeauImg:', {
-            complete: window.maitreCorbeauImg.complete,
-            naturalWidth: window.maitreCorbeauImg.naturalWidth,
-            src: window.maitreCorbeauImg.src
-        });
-    }
-    
-    if (window.corbeauEliteImg) {
-        console.log('🖼️ corbeauEliteImg:', {
-            complete: window.corbeauEliteImg.complete,
-            naturalWidth: window.corbeauEliteImg.naturalWidth,
-            src: window.corbeauEliteImg.src
-        });
-    }
-    
-    // Vérifier les monstres
-    if (window.monsters && window.monsters.length > 0) {
-        console.log(`👹 ${window.monsters.length} monstres trouvés:`);
-        window.monsters.forEach((monster, index) => {
-            console.log(`👹 Monstre ${index}:`, {
-                type: monster.type,
-                hasImg: !!monster.img,
-                imgComplete: monster.img ? monster.img.complete : false,
-                hp: monster.hp,
-                isDead: monster.isDead
-            });
-        });
-    } else {
-        console.log('❌ Aucun monstre trouvé');
-    }
-    
-    console.log('🔍 Diagnostic terminé');
-};
-
 function drawMonsters(ctx) {
-    if (!monsters || monsters.length === 0) {
-        console.log("Aucun monstre à dessiner");
+    if (!monsters || monsters.length === 0 || !ctx) {
         return;
     }
     
-    // Vérifier que le contexte est disponible
-    if (!ctx) {
-        console.error("❌ Contexte canvas non disponible pour drawMonsters");
-        return;
-    }
-    
-    // Variables pour le centrage des monstres (définies au niveau de la fonction)
     let monsterSize, monsterHeight, offsetX, offsetY;
     
     monsters.forEach((monster, index) => {
-        if (!monster.img || !monster.img.complete) {
-            console.log(`Monstre ${index} n'a pas d'image ou image non chargée`);
-            return;
-        }
-        if (monster.hp <= 0 || monster.isDead) {
-            // console.log(`Monstre ${index} est mort (HP: ${monster.hp}, isDead: ${monster.isDead})`);
+        if (!monster.img || !monster.img.complete || monster.hp <= 0 || monster.isDead) {
             return;
         }
 
         try {
-            // Centrer le monstre dans sa case
+            // Configuration des tailles et offsets selon le type
             monsterSize = 32;
             monsterHeight = 32;
             if (monster.type === "maitrecorbeau") {
@@ -202,7 +102,6 @@ function drawMonsters(ctx) {
                 offsetX = (TILE_SIZE / 2) - (monsterSize / 2);
                 offsetY = TILE_SIZE - monsterHeight;
             } else if (monster.type === "slimeboss") {
-                // Gestion spéciale pour le SlimeBoss 64x64
                 monsterSize = 64;
                 monsterHeight = 64;
                 offsetX = (TILE_SIZE / 2) - (monsterSize / 2);
@@ -212,7 +111,7 @@ function drawMonsters(ctx) {
                 offsetY = (TILE_SIZE / 2) - (monsterHeight / 2);
             }
 
-            // Affichage du nom et niveau du monstre au-dessus de la tête UNIQUEMENT si sélectionné
+            // Affichage du nom et niveau si sélectionné
             if (window.attackTarget === monster) {
                 ctx.save();
                 ctx.font = "bold 12px Arial";
@@ -220,9 +119,7 @@ function drawMonsters(ctx) {
                 ctx.textBaseline = "bottom";
                 const textX = monster.px + offsetX + monsterSize / 2 + (window.mapOffsetX || 0);
                 const textY = monster.py + offsetY - 8 + (window.mapOffsetY || 0);
-                // Calculer la différence de niveau
                 const levelDiff = Math.abs((monster.level || 1) - (player.level || 1));
-                // Choisir la couleur selon la différence de niveau
                 if (levelDiff < 5) ctx.fillStyle = "#ffffff";
                 else if (levelDiff <= 15) ctx.fillStyle = "#ffa500";
                 else ctx.fillStyle = "#ff0000";
@@ -231,30 +128,20 @@ function drawMonsters(ctx) {
                 ctx.restore();
             }
             
+            // Dessin selon le type de monstre
             if (monster.type === "maitrecorbeau") {
                 // Afficher l'image entière, pas d'animation
-                if (monster.img && monster.img.complete) {
-                    ctx.drawImage(
-                        monster.img,
-                        0, 0, 48, 64,
-                        monster.px + offsetX + (window.mapOffsetX || 0), monster.py + offsetY + (window.mapOffsetY || 0), monsterSize, monsterHeight
-                    );
-                } else {
-                    console.log(`⚠️ Image non disponible pour maitrecorbeau ${index}`);
-                }
+                ctx.drawImage(
+                    monster.img,
+                    0, 0, 48, 64,
+                    monster.px + offsetX + (window.mapOffsetX || 0), monster.py + offsetY + (window.mapOffsetY || 0), monsterSize, monsterHeight
+                );
             } else if (monster.type === "corbeauelite") {
                 // Animation du Corbeau d'élite avec 8 frames (40x48 chaque frame)
                 // 1ère ligne (y=0) : 4 frames de marche (walk)
                 // 2ème ligne (y=48) : 4 frames d'idle
-                
-                if (!monster.img || !monster.img.complete) {
-                    console.log(`⚠️ Image non disponible pour corbeauelite ${index}`);
-                    return;
-                }
-                
                 const now = Date.now();
                 
-                // Initialiser les frames séparées si elles n'existent pas
                 if (monster.idleFrame === undefined) monster.idleFrame = 0;
                 if (monster.walkFrame === undefined) monster.walkFrame = 0;
                 
@@ -289,12 +176,6 @@ function drawMonsters(ctx) {
                 }
             } else if (monster.type === "slimeboss") {
                 // Gestion spéciale pour le SlimeBoss 64x64
-                if (!monster.img || !monster.img.complete) {
-                    console.log(`⚠️ Image non disponible pour slimeboss ${index}`);
-                    return;
-                }
-                
-                // Animation du SlimeBoss avec 4 frames (64x64 chaque frame)
                 const now = Date.now();
                 if (!monster.lastAnim || now - monster.lastAnim > monster.animDelay) {
                     monster.frame = (monster.frame + 1) % 4;
@@ -315,12 +196,6 @@ function drawMonsters(ctx) {
                     monster.lastAnim = now;
                 }
                 
-                // Vérifier l'image juste avant de l'utiliser
-                if (!monster.img || !monster.img.complete) {
-                    console.log(`⚠️ Image non disponible pour monstre ${index} (type: ${monster.type}) - skip dessin`);
-                    return;
-                }
-                
                 ctx.drawImage(
                     monster.img,
                     monster.frame * 32, 0, 32, 32,
@@ -328,7 +203,7 @@ function drawMonsters(ctx) {
                 );
             }
         } catch (error) {
-            console.error(`❌ Erreur lors du dessin du monstre ${index}:`, error);
+            console.error(`Erreur lors du dessin du monstre ${index}:`, error);
         }
 
         // Afficher la barre de vie SEULEMENT si le monstre est sélectionné/attaqué ou en aggro
@@ -340,7 +215,6 @@ function drawMonsters(ctx) {
             let hpRatio = monster.hp / monster.maxHp;
             ctx.fillStyle = "#44ff44";
             ctx.fillRect(barX + 1, barY + 1, (barWidth - 2) * hpRatio, barHeight - 2);
-            // Pas de texte !
         }
         
         // Effet de hover - bordure colorée quand la souris survole le monstre
@@ -381,7 +255,7 @@ function drawMonsterInfo(ctx) {
     const infoX = 650;
     const infoY = 827;
     const infoWidth = 300;
-    const infoHeight = 81; // Réduit pour que l'encadrement soit visible
+    const infoHeight = 81;
 
     // Fond de la fiche
     ctx.save();
@@ -460,27 +334,18 @@ function drawMonsterInfo(ctx) {
     ctx.restore();
 }
 
-// Le gestionnaire de clic pour la croix est maintenant dans player.js
-
-// Export global
 window.drawMonsters = drawMonsters;
 window.drawMonsterInfo = drawMonsterInfo; 
 
 // Fonction pour forcer la réassignation des images des monstres
 window.forceReassignMonsterImages = function() {
-    console.log('🔄 Réassignation forcée des images des monstres...');
-    
     if (!window.monsters || window.monsters.length === 0) {
-        console.log('❌ Aucun monstre à traiter');
         return;
     }
     
     let reassignedCount = 0;
     window.monsters.forEach((monster, index) => {
         if (!monster.img || !monster.img.complete) {
-            console.log(`🔄 Réassignation de l'image pour le monstre ${index} (type: ${monster.type})`);
-            
-            // Réassigner l'image selon le type
             if (monster.type === "crow") {
                 monster.img = window.corbeauImg;
             } else if (monster.type === "slime") {
@@ -492,10 +357,7 @@ window.forceReassignMonsterImages = function() {
             } else if (monster.type === "maitrecorbeau") {
                 monster.img = window.maitreCorbeauImg;
             }
-            
             reassignedCount++;
         }
     });
-    
-    console.log(`✅ ${reassignedCount} images de monstres réassignées`);
 }; 

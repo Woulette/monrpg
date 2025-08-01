@@ -1,9 +1,5 @@
-console.log("Fichier js/inventory/main.js chargé");
-
 // Fonction d'initialisation qui sera appelée après le chargement de tous les modules
 function initInventoryEvents() {
-    console.log("🔧 Initialisation des événements d'inventaire...");
-    
     const icon = document.getElementById("inventory-icon");
     const statsIcon = document.getElementById("stats-icon");
     const modal = document.getElementById("inventory-modal");
@@ -11,23 +7,12 @@ function initInventoryEvents() {
     const closeBtn = document.getElementById("close-inventory");
     const closeStatsBtn = document.getElementById("close-stats");
 
-    console.log("🔍 Éléments trouvés:", {
-        icon: !!icon,
-        statsIcon: !!statsIcon,
-        modal: !!modal,
-        statsModal: !!statsModal,
-        closeBtn: !!closeBtn,
-        closeStatsBtn: !!closeStatsBtn
-    });
-
     if (icon && modal && closeBtn) {
         icon.onclick = () => { 
             modal.style.display = "block"; 
-            console.log("Inventaire ouvert");
         };
         closeBtn.onclick = () => { modal.style.display = "none"; };
         modal.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
-        console.log("✅ Événements d'inventaire configurés");
     } else {
         console.error("❌ Éléments d'inventaire non trouvés:", { icon, modal, closeBtn });
     }
@@ -39,13 +24,11 @@ function initInventoryEvents() {
             if (typeof updateStatsModalDisplay === 'function') {
                 updateStatsModalDisplay();
             }
-            console.log("Statistiques ouvertes");
         };
 
         // Fermeture de la fenêtre des statistiques
         closeStatsBtn.onclick = () => { statsModal.style.display = "none"; };
         statsModal.onclick = (e) => { if (e.target === statsModal) statsModal.style.display = "none"; };
-        console.log("✅ Événements de statistiques configurés");
     } else {
         console.error("❌ Éléments de statistiques non trouvés:", { statsIcon, statsModal, closeStatsBtn });
     }
@@ -64,9 +47,7 @@ function initInventoryEvents() {
                         if (player.statPoints >= 5) {
                             player.baseVitesse++;
                             player.statPoints -= 5;
-                            console.log(`Vitesse de base augmentée à ${player.baseVitesse} (coût: 5 points)`);
                         } else {
-                            console.log(`Pas assez de points pour augmenter la vitesse (nécessite 5 points)`);
                             return;
                         }
                     } else {
@@ -101,7 +82,6 @@ function initInventoryEvents() {
                     if (statName === 'vitesse') {
                         player.baseVitesse--;
                         player.statPoints += 5;
-                        console.log(`Vitesse de base diminuée à ${player.baseVitesse} (remboursement: 5 points)`);
                     } else {
                         player[baseStatName]--;
                         player.statPoints++;
@@ -117,8 +97,6 @@ function initInventoryEvents() {
                     
                     updateStatsModalDisplay();
                     updateStatsDisplay(); // Mettre à jour aussi l'inventaire
-                } else {
-                    console.log(`Impossible de diminuer ${statName} : minimum atteint (${minValue} total)`);
                 }
             }
         }

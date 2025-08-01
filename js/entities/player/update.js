@@ -150,8 +150,8 @@ function updatePlayer(ts) {
                     alignMonsterToGrid(attackTarget);
                 }
 
-                // Riposte du monstre si vivant (sauf pour les slimes qui ont leur propre système d'attaque)
-                if (attackTarget.hp > 0 && attackTarget.type !== "slime") {
+                // Riposte du monstre si vivant (sauf pour les slimes et boss slime qui ont leur propre système d'attaque)
+                if (attackTarget.hp > 0 && attackTarget.type !== "slime" && attackTarget.type !== "slimeboss") {
                     // Calcul des dégâts du monstre : dégâts de base + force du monstre avec variation de 25%
                     const monsterBaseDamage = attackTarget.damage !== undefined ? attackTarget.damage : 3;
                     const monsterTotalDamage = monsterBaseDamage + (attackTarget.force || 0);
@@ -286,8 +286,6 @@ function updatePlayer(ts) {
 
         // Portail détecté
         if (portalFound) {
-            console.log(`Portail ID ${portalGid} détecté sur ${window.currentMap}`);
-            
             // Logique générale pour toutes les maps
             let destinationMap = null;
             let targetPortalId = null;
@@ -330,9 +328,7 @@ function updatePlayer(ts) {
                     if (typeof window.isPortal12008Accessible === "function" && window.isPortal12008Accessible()) {
                         destinationMap = "mapdonjonslime2";
                         targetPortalId = 12208;
-                        console.log("🚪 Accès au portail 12008 autorisé");
                     } else {
-                        console.log("🚫 Portail 12008 verrouillé - Tuez tous les slimes d'abord");
                         portalFound = false; // Empêcher le téléportement
                     }
                 }
@@ -346,9 +342,7 @@ function updatePlayer(ts) {
                         window.dungeonProgression.mapdonjonslime2.decorRemoved) {
                         destinationMap = "mapdonjonslimeboss";
                         targetPortalId = null; // Pas de portail à chercher, position fixe
-                        console.log("🚪 Accès au portail vers mapdonjonslimeboss autorisé");
                     } else {
-                        console.log("🚫 Portails 15408/15608 verrouillés - Tuez tous les slimes d'abord");
                         portalFound = false; // Empêcher le téléportement
                     }
                 }
@@ -358,7 +352,6 @@ function updatePlayer(ts) {
                 // Gestion spéciale pour mapdonjonslimeboss
                 // Pas de portail de sortie - le joueur doit tuer le SlimeBoss pour sortir
                 // Le boss sera implémenté plus tard
-                console.log("🏰 Vous êtes dans l'antre du SlimeBoss ! Tuez-le pour sortir.");
             } else if (window.currentMap === "maison") {
                 // Gestion spéciale pour la maison
                 if (portalGid === 7) {
@@ -411,7 +404,6 @@ function updatePlayer(ts) {
                     .then(mapData => {
                         // Gestion spéciale pour mapdonjonslimeboss - position fixe
                         if (destinationMap === "mapdonjonslimeboss") {
-                            console.log("🏰 Téléportation vers l'antre du SlimeBoss à la position (12, 17)");
                             if (typeof teleportPlayer === "function") {
                                 teleportPlayer(destinationMap, 12, 17);
                             }
@@ -420,7 +412,6 @@ function updatePlayer(ts) {
                         
                         // Chercher le portail de destination dans tous les calques
                         let targetPortal = null;
-                        console.log(`Recherche du portail ID ${targetPortalId} sur ${destinationMap}...`);
                         
                         for (let layerIndex = 0; layerIndex < mapData.layers.length; layerIndex++) {
                             const layer = mapData.layers[layerIndex];
@@ -429,17 +420,12 @@ function updatePlayer(ts) {
                                     const idx = y * layer.width + x;
                                     if (layer.data[idx] === targetPortalId) {
                                         targetPortal = {x, y};
-                                        console.log(`Portail ID ${targetPortalId} trouvé sur ${destinationMap} à la position (${x}, ${y})`);
                                         break;
                                     }
                                 }
                                 if (targetPortal) break;
                             }
                             if (targetPortal) break;
-                        }
-                        
-                        if (!targetPortal) {
-                            console.log(`Portail ID ${targetPortalId} non trouvé sur ${destinationMap}`);
                         }
                         
                         // Fallback : chercher tous les portails du même ID si pas trouvé

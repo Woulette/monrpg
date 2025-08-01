@@ -1,4 +1,5 @@
-console.log("Fichier js/map.js chargé");
+// Système de gestion des maps - Core
+// Nettoyé et validé le 30/07/2025 - par Cursor
 
 // Constante globale pour la taille des tuiles
 window.TILE_SIZE = 32;
@@ -31,12 +32,10 @@ function calculateMapCentering() {
     if (window.currentMap === "mapdonjonslime" || window.currentMap === "mapdonjonslime2" || window.currentMap === "mapdonjonslimeboss") {
         window.mapOffsetX = Math.max(0, (canvas.width - mapWidth) / 2);
         window.mapOffsetY = Math.max(0, (canvas.height - mapHeight) / 2);
-        console.log(`🎯 Centrage de ${window.currentMap}: offsetX=${window.mapOffsetX}, offsetY=${window.mapOffsetY}`);
     } else if (window.currentMap === "maison") {
         // Centrage spécial pour la maison - plus bas
         window.mapOffsetX = Math.max(0, (canvas.width - mapWidth) / 2);
         window.mapOffsetY = Math.max(0, (canvas.height - mapHeight) / 2) + 25; // 25px plus bas
-        console.log(`🏠 Centrage de la maison: offsetX=${window.mapOffsetX}, offsetY=${window.mapOffsetY}`);
     } else {
         // Pour les autres maps, pas de centrage
         window.mapOffsetX = 0;
@@ -47,7 +46,6 @@ function calculateMapCentering() {
 // Fonction pour charger une map
 async function loadMap(mapName) {
     try {
-        console.log(`Chargement de la map: ${mapName}`);
         const response = await fetch(`assets/maps/${mapName}.json`);
         if (!response.ok) {
             throw new Error(`Fichier ${mapName}.json introuvable !`);
@@ -63,7 +61,6 @@ async function loadMap(mapName) {
         
         // Déclencher le fondu au noir pour la transition de map
         window.blackScreenStartTime = Date.now();
-        console.log("🌑 Déclenchement du fondu au noir pour le changement de map");
         
         // Calculer le centrage de la map
         calculateMapCentering();
@@ -87,7 +84,6 @@ async function loadMap(mapName) {
         if (typeof loadMonstersForMap === "function") {
             const monstersLoaded = loadMonstersForMap(mapName);
             if (!monstersLoaded) {
-                console.log("Création de nouveaux monstres pour", mapName);
                 if (typeof initMonsters === "function") {
                     initMonsters();
                 }
@@ -101,25 +97,13 @@ async function loadMap(mapName) {
             // Forcer une deuxième réassignation après un délai pour s'assurer que les images sont chargées
             setTimeout(() => {
                 if (typeof window.assignMonsterImages === "function") {
-                    console.log("🔄 Réassignation différée des images des monstres...");
                     window.assignMonsterImages();
-                }
-                
-                // Diagnostic des monstres après chargement
-                if (window.monsters) {
-                    console.log(`📊 Diagnostic des monstres sur ${mapName}: ${window.monsters.length} monstres trouvés`);
-                    window.monsters.forEach((monster, index) => {
-                        console.log(`👹 Monstre ${index}: type=${monster.type}, hasImg=${!!monster.img}, imgComplete=${monster.img ? monster.img.complete : false}`);
-                    });
-                } else {
-                    console.log(`❌ Aucun monstre trouvé sur ${mapName}`);
                 }
             }, 500);
         }
         
         // Nettoyage spécial pour mapdonjonslimeboss - supprimer tous les slimes existants
         if (mapName === "mapdonjonslimeboss" && typeof window.forceCleanSlimesOnBossMap === "function") {
-            console.log("🏰 Map boss détectée - nettoyage FORCÉ des slimes...");
             // Nettoyage immédiat
             window.forceCleanSlimesOnBossMap();
             // Nettoyage après un délai pour s'assurer que tout est chargé
@@ -144,7 +128,6 @@ async function loadMap(mapName) {
         
         // Nettoyage spécial pour mapdonjonslimeboss - supprimer tous les slimes existants
         if (mapName === "mapdonjonslimeboss" && typeof window.forceCleanSlimesOnBossMap === "function") {
-            console.log("🏰 Map boss détectée - nettoyage FORCÉ des slimes...");
             // Nettoyage immédiat
             window.forceCleanSlimesOnBossMap();
             // Nettoyage après un délai pour s'assurer que tout est chargé
@@ -163,21 +146,16 @@ async function loadMap(mapName) {
             }
         }, 250);
         
-        console.log(`Map ${mapName} chargée avec succès !`);
         return true;
     } catch (error) {
-        console.error(`Erreur lors du chargement de ${mapName}:`, error);
         return false;
     }
 }
 
 // Fonction pour téléporter le joueur vers une nouvelle map
 function teleportPlayer(mapName, spawnX, spawnY) {
-    console.log(`🏠 Téléportation vers ${mapName} à la position (${spawnX}, ${spawnY})`);
-    
     // Sauvegarder les monstres de la map actuelle avant de partir
     if (typeof window.saveMonstersForMap === "function" && window.currentMap) {
-        console.log(`💾 Sauvegarde des monstres de ${window.currentMap} avant téléportation`);
         window.saveMonstersForMap(window.currentMap);
     }
     
@@ -196,8 +174,6 @@ function teleportPlayer(mapName, spawnX, spawnY) {
             player.py = spawnY * TILE_SIZE;
             player.spawnX = spawnX;
             player.spawnY = spawnY;
-            
-            console.log(`🏠 Joueur téléporté à la position (${player.x}, ${player.y}) avec pixels (${player.px}, ${player.py})`);
             
             // Réinitialiser l'état
             player.moving = false;
@@ -220,8 +196,6 @@ function teleportPlayer(mapName, spawnX, spawnY) {
             
             // Les monstres sont maintenant initialisés automatiquement dans loadMap()
             
-            console.log(`Joueur téléporté vers ${mapName} !`);
-            
             // Sauvegarde automatique lors du changement de map
             if (typeof autoSaveOnEvent === 'function') {
                 autoSaveOnEvent();
@@ -239,56 +213,10 @@ function teleportPlayer(mapName, spawnX, spawnY) {
 window.loadMap = loadMap;
 window.teleportPlayer = teleportPlayer;
 
-// Fonction de débogage pour forcer la réinitialisation du fondu au noir
-function forceResetBlackScreen() {
-    console.log("🔄 Forçage de la réinitialisation de l'écran noir");
-    window.blackScreenStartTime = null;
-    window.blackScreenDuration = 250;
-}
 
-// Fonction de débogage pour diagnostiquer le système de fondu
-function diagnoseBlackScreen() {
-    console.log("🔍 Diagnostic du système de fondu au noir:");
-    console.log("- blackScreenStartTime:", window.blackScreenStartTime);
-    console.log("- blackScreenDuration:", window.blackScreenDuration);
-    if (window.blackScreenStartTime) {
-        const elapsed = Date.now() - window.blackScreenStartTime;
-        console.log("- Temps écoulé:", elapsed, "ms");
-        console.log("- Temps restant:", Math.max(0, window.blackScreenDuration - elapsed), "ms");
-    }
-}
-
-window.forceResetBlackScreen = forceResetBlackScreen;
-window.diagnoseBlackScreen = diagnoseBlackScreen;
-
-// Fonction de test pour simuler un respawn
-function testRespawnSequence() {
-    console.log("🧪 Test de la séquence de respawn...");
-    
-    // Simuler la mort du joueur
-    if (window.player) {
-        window.player.isDead = true;
-        window.player.life = 0;
-        console.log("💀 Joueur marqué comme mort");
-    }
-    
-    // Attendre un peu puis déclencher le respawn
-    setTimeout(() => {
-        console.log("🔄 Déclenchement du respawn...");
-        if (typeof window.respawnPlayer === "function") {
-            window.respawnPlayer();
-        } else {
-            console.error("❌ respawnPlayer non trouvé");
-        }
-    }, 1000);
-}
-
-window.testRespawnSequence = testRespawnSequence;
 
 function initMap() {
-    console.log("Initialisation de la carte...");
     if (!window.mapData) {
-        console.error("mapData n'est pas disponible pour initMap");
         return;
     }
     
@@ -296,9 +224,6 @@ function initMap() {
     if (typeof initCollision === "function") {
         initCollision();
     }
-    
-    console.log("Carte initialisée avec succès");
-    console.log("Nombre de calques détectés:", window.mapData.layers.length);
 }
 
 function drawGameGrid() {
@@ -418,22 +343,18 @@ function drawDebugGridLayer3() {
 
 function toggleDebugGrid() {
     window.debugGridEnabled = !window.debugGridEnabled;
-    console.log("Grille de debug calque 2 " + (window.debugGridEnabled ? "activée" : "désactivée"));
 }
 
 function toggleDebugGridLayer1() {
     window.debugGridLayer1Enabled = !window.debugGridLayer1Enabled;
-    console.log("Grille de debug calque 1 " + (window.debugGridLayer1Enabled ? "activée" : "désactivée"));
 }
 
 function toggleDebugGridLayer3() {
     window.debugGridLayer3Enabled = !window.debugGridLayer3Enabled;
-    console.log("Grille de debug calque 3 " + (window.debugGridLayer3Enabled ? "activée" : "désactivée"));
 }
 
 function drawMap() {
     if (!window.mapData) {
-        console.log("drawMap appelé sans mapData !");
         return;
     }
     
@@ -446,11 +367,9 @@ function drawMap() {
             // Afficher l'écran noir de transition
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            console.log(`🌑 Écran noir actif: ${elapsed}/${window.blackScreenDuration}ms`);
             return; // Ne pas dessiner la map pendant l'écran noir
         } else {
             // Fin de l'écran noir, nettoyer
-            console.log("✅ Fin de l'écran noir de transition - nettoyage forcé");
             window.blackScreenStartTime = null;
             window.blackScreenDuration = 250; // Restaurer la durée par défaut
         }
@@ -475,7 +394,6 @@ function drawMap() {
                 if (gid === 0) continue;
                 let ts = getTilesetForGid(gid);
                 if (!ts) {
-                    console.warn(`GID ${gid} non trouvé dans les tilesets disponibles`);
                     continue;
                 }
 
@@ -490,8 +408,6 @@ function drawMap() {
                         sx, sy, ts.tilewidth, ts.tileheight,
                         x * TILE_SIZE + window.mapOffsetX, y * TILE_SIZE + window.mapOffsetY, TILE_SIZE, TILE_SIZE
                     );
-                } else {
-                    console.warn(`Image non chargée pour le tileset: ${ts.image ? ts.image.src : 'undefined'}`);
                 }
             }
         }
@@ -561,8 +477,6 @@ function drawMap() {
                         sx, sy, ts.tilewidth, ts.tileheight,
                         x * TILE_SIZE + window.mapOffsetX, y * TILE_SIZE + window.mapOffsetY, TILE_SIZE, TILE_SIZE
                     );
-                } else {
-                    console.warn(`Image non chargée pour le tileset (calque 3): ${ts.image ? ts.image.src : 'undefined'}`);
                 }
                 
                 // Restaurer l'opacité si elle a été modifiée

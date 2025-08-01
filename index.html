@@ -23,9 +23,32 @@
 
     <!-- Charger utils.js en tout premier pour les fonctions globales -->
     <script src="js/core/utils.js"></script>
-    <script src="js/entities/npcs/pnj.js"></script>
-    <script src="js/quests/quetes.js"></script>
+    
+    <!-- Charger les PNJ - ordre important pour les dépendances -->
+    <script src="js/entities/npcs/core/pnj-base.js"></script>
+    <script src="js/entities/npcs/core/pnj-dialogue.js"></script>
+    <script src="js/entities/npcs/papi.js"></script>
+    <!-- Système de quêtes modulaire -->
+    <script src="js/quests/quest-definitions.js"></script>
+    <script src="js/quests/quest-logic.js"></script>
+    <script src="js/quests/quest-ui.js"></script>
+    <script src="js/quests/quests.js"></script>
+    <!-- Charger les IA partagées des monstres -->
+    <script src="js/entities/monsters/ai/passiveAI.js"></script>
+    <script src="js/entities/monsters/ai/chasePlayerAI.js"></script>
+    <script src="js/entities/monsters/ai/rangedAI.js"></script>
+    <script src="js/entities/monsters/ai/flyingAI.js"></script>
+    
+    <!-- Charger les monstres spécifiques -->
+    <script src="js/entities/monsters/slime/slime-basic.js"></script>
+    <script src="js/entities/monsters/corbeau/corbeau.js"></script>
+    <script src="js/entities/monsters/slime/slime-boss.js"></script>
+    
     <!-- Charger la logique des monstres découpée -->
+    <script src="js/entities/monsters/counters.js"></script>
+    <script src="js/entities/monsters/spawn.js"></script>
+    <script src="js/entities/monsters/respawn.js"></script>
+    <script src="js/entities/monsters/combat.js"></script>
     <script src="js/entities/monsters/core.js"></script>
     <script src="js/entities/monsters/draw.js"></script>
     <script src="js/entities/monsters/ai.js"></script>
@@ -33,6 +56,7 @@
     <script src="js/dungeon/dungeon-progression.js"></script>
     <!-- Charger le système de sauvegarde -->
     <script src="js/save/save-system.js"></script>
+    <script src="js/save/saveQuests.js"></script>
     <script src="js/save/loader.js"></script>
     <!-- Charger le système de sauvegarde des monstres -->
     <script src="js/save/savemonster.js"></script>
@@ -603,6 +627,7 @@
 <script src="js/entities/player/main.js"></script>
 <script src="js/core/collision.js"></script>
 <script src="js/tools/tileset.js"></script>
+<script src="js/tools/test-slime-boss-persistence.js"></script>
 <script src="js/core/map.js"></script>
 <script src="js/core/main.js"></script>
 <script src="js/inventory/loader.js"></script>

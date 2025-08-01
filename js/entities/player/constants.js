@@ -1,7 +1,7 @@
 // Constantes liées au joueur
 const PLAYER_WIDTH = 32;
 const PLAYER_HEIGHT = 32;
-const TILE_SIZE = window.TILE_SIZE || 32;  // Utiliser la constante globale si possible
+const TILE_SIZE = window.TILE_SIZE || 32;
 const MOVE_SPEED = 4;
 
 // Constantes pour combat

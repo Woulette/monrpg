@@ -1,5 +1,3 @@
-console.log("Fichier js/inventory/stats-display.js chargé");
-
 // Fonction pour mettre à jour l'affichage des stats
 function updateStatsDisplay() {
     if (typeof player === 'undefined') return;

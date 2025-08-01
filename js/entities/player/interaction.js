@@ -249,12 +249,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Fonction pour gérer le clic sur le coffre du boss
 function handleBossChestClick(nx, ny) {
-    console.log(`🎁 Clic sur le coffre du SlimeBoss à la position (${nx}, ${ny})`);
-    
     // Vérifier si le SlimeBoss a été vaincu
     if (!window.slimeBossDefeated) {
-        console.log("❌ Le SlimeBoss doit être vaincu pour ouvrir le coffre");
-        
         // Afficher un message d'erreur
         if (typeof window.showMessage === "function") {
             window.showMessage("Vous devez d'abord vaincre le SlimeBoss pour ouvrir ce coffre !", "error");
@@ -265,8 +261,6 @@ function handleBossChestClick(nx, ny) {
     // Vérifier si le joueur est assez proche du coffre
     const distance = Math.sqrt((player.x - nx) ** 2 + (player.y - ny) ** 2);
     if (distance > 2) {
-        console.log("❌ Le joueur est trop loin du coffre");
-        
         // Créer un chemin vers le coffre
         if (typeof findPath === "function" && window.mapData) {
             player.path = findPath(
@@ -281,7 +275,6 @@ function handleBossChestClick(nx, ny) {
     }
     
     // Ouvrir le coffre
-    console.log("✅ Ouverture du coffre du SlimeBoss...");
     if (typeof window.openBossChest === "function") {
         window.openBossChest();
     }
@@ -377,7 +370,6 @@ function handleMovementClick(nx, ny) {
         
         // Si aucune case accessible n'est trouvée, ne rien faire
         if (!found) {
-            console.log("Aucune case accessible trouvée près de la destination");
             return;
         }
     }

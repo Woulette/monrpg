@@ -31,6 +31,9 @@ class GameStateSaveManager {
                 // Compteurs de corbeaux tués (si disponible)
                 crowKillCounts: window.crowKillCounts || { map1: 0, map2: 0, map3: 0 },
                 
+                // État de victoire du boss slime
+                slimeBossDefeated: window.slimeBossDefeated || false,
+                
                 // État des portails et accès
                 portalStates: this.getPortalStates(),
                 
@@ -95,6 +98,12 @@ class GameStateSaveManager {
             if (data.dungeonProgression) {
                 window.dungeonProgression = data.dungeonProgression;
                 console.log('🏰 Progression du donjon restaurée');
+            }
+            
+            // Restaurer l'état de victoire du boss slime
+            if (data.slimeBossDefeated !== undefined) {
+                window.slimeBossDefeated = data.slimeBossDefeated;
+                console.log('🐉 État de victoire du boss slime restauré:', window.slimeBossDefeated);
             }
             
             // Restaurer les compteurs de corbeaux

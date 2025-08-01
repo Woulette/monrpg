@@ -1,5 +1,3 @@
-console.log("Fichier js/inventory/core.js chargé");
-
 // INVENTAIRES SÉPARÉS PAR CATÉGORIE - CHACUN COMPLÈTEMENT INDÉPENDANT
 let inventoryAll = Array.from({ length: 80 }, () => ({ item: null, category: null }));
 let inventoryEquipement = Array.from({ length: 80 }, () => ({ item: null, category: 'equipement' }));
@@ -31,16 +29,11 @@ window.resetInventory = resetInventory;
 window.resetEquipment = resetEquipment;
 
 function initInventory() {
-    console.log("Initialisation de l'inventaire...");
-    
     // Inventaire vide au démarrage
-    console.log("Inventaire initialisé avec succès");
 }
 
 // Fonction pour réinitialiser complètement l'inventaire
 function resetInventory() {
-    console.log("Réinitialisation complète de l'inventaire...");
-    
     // Vider tous les inventaires en conservant la structure
     window.inventoryAll = Array.from({ length: 80 }, () => ({ item: null, category: null }));
     window.inventoryEquipement = Array.from({ length: 80 }, () => ({ item: null, category: 'equipement' }));
@@ -56,14 +49,10 @@ function resetInventory() {
     if (typeof resetEquipment === 'function') {
         resetEquipment();
     }
-    
-    console.log("Inventaire réinitialisé avec succès");
 }
 
 // Fonction pour réinitialiser l'équipement
 function resetEquipment() {
-    console.log("Réinitialisation de l'équipement...");
-    
     // Réinitialiser les slots d'équipement
     window.equippedItems = {
         coiffe: null,
@@ -78,8 +67,6 @@ function resetEquipment() {
     if (typeof updateEquipmentDisplay === 'function') {
         updateEquipmentDisplay();
     }
-    
-    console.log("Équipement réinitialisé avec succès");
 }
 
 // ===== SYSTÈME DE SAUVEGARDE/CHARGEMENT MULTI-PERSONNAGES =====
@@ -184,12 +171,8 @@ function deleteInventoryForCharacter(characterId) {
 }
 
 function initStats() {
-    console.log("Initialisation des statistiques...");
-    
     // Les statistiques sont déjà initialisées dans player.js
     // Cette fonction peut être utilisée pour des initialisations supplémentaires si nécessaire
-    
-    console.log("Statistiques initialisées avec succès");
 }
 
 // Fonction pour obtenir l'inventaire selon la catégorie
@@ -227,8 +210,6 @@ function reorganizeInventory(inventory) {
     
     // Remplacer l'inventaire original
     Object.assign(inventory, reorganized);
-    
-    console.log(`Inventaire réorganisé: ${nonEmptySlots.length} items conservés`);
 }
 
 // Exporter les nouvelles fonctions

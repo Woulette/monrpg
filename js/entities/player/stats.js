@@ -15,7 +15,6 @@ window.recalculateTotalStats = recalculateTotalStats;
 
 // Fonctions pour l'augmentation des stats
 function gainStatXP(statName, amount) {
-    
     const xpProp = statName + 'Xp';
     const xpToNextProp = statName + 'XpToNext';
     
@@ -34,7 +33,6 @@ function gainStatXP(statName, amount) {
             
             // Augmenter l'XP nécessaire pour le prochain niveau (courbe exponentielle)
             player[xpToNextProp] = Math.floor(player[xpToNextProp] * 1.2);
-            
             
             // Mettre à jour l'affichage et animer
             if (typeof updateStatsDisplay === "function") {
@@ -72,7 +70,6 @@ function gainXP(amount) {
         
         // Ajouter 3 points de caractéristiques à distribuer
         player.statPoints += 3;
-        
         
         // Afficher le message flottant de niveau
         if (typeof showLevelUp === 'function') {

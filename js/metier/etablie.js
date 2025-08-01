@@ -345,141 +345,140 @@ function openWorkshopModal({
   
   // Rendre la fonction accessible globalement
   if (typeof window.updateEtabliesInventory === 'function') {
-    console.log("✓ Fonction updateEtabliesInventory disponible");
-  }
-  // Fermer en cliquant à l'extérieur
-  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-  document.body.appendChild(modal);
-  // Fermer avec Échap
-  function handleEscapeModal(e) {
-    if (e.key === 'Escape') {
-      modal.remove();
-      document.removeEventListener('keydown', handleEscapeModal);
+    // Fermer en cliquant à l'extérieur
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    document.body.appendChild(modal);
+    // Fermer avec Échap
+    function handleEscapeModal(e) {
+      if (e.key === 'Escape') {
+        modal.remove();
+        document.removeEventListener('keydown', handleEscapeModal);
+      }
     }
-  }
-  document.addEventListener('keydown', handleEscapeModal);
-  // Bouton CRAFTER
-  setTimeout(() => {
-    const btn = document.getElementById(`${cssPrefix}craft-btn-debug`);
-    if (btn) {
-      btn.onclick = () => {
-        // Récupérer les ingrédients dans les slots de craft
-        let usedIngredients = [];
-        for (let i = 0; i < craftGrid.children.length; i++) {
-          let slot = craftGrid.children[i];
-          let img = slot.querySelector('img');
-          let qtySpan = slot.querySelector('span');
-          if (img && qtySpan) {
-            let iconPath = img.src.split('assets/').pop();
-            iconPath = 'assets/' + iconPath;
-            usedIngredients.push({
-              icon: iconPath,
-              quantity: parseInt(qtySpan.textContent.replace('x',''))
-            });
-          }
-        }
-        // Trouver la recette correspondante
-        let recipe = recipes.find(r => {
-          if (r.ingredients.length !== usedIngredients.length) return false;
-          return r.ingredients.every((ing, idx) => {
-            return usedIngredients[idx] && (usedIngredients[idx].icon.endsWith(ing.icon) || ing.icon.endsWith(usedIngredients[idx].icon)) && ing.quantity === usedIngredients[idx].quantity;
-          });
-        });
-        if (!recipe) {
-          alert('Aucune recette ne correspond à la combinaison dans les slots de craft.');
-          return;
-        }
-        // Vérifier que le joueur a bien les ressources
-        let hasAll = recipe.ingredients.every(ing => {
-          let total = 0;
-          for (let slot of window.inventoryAll) {
-            if (slot.item && (slot.item.icon.endsWith(ing.icon) || ing.icon.endsWith(slot.item.icon))) {
-              total += slot.item.quantity || 1;
+    document.addEventListener('keydown', handleEscapeModal);
+    // Bouton CRAFTER
+    setTimeout(() => {
+      const btn = document.getElementById(`${cssPrefix}craft-btn-debug`);
+      if (btn) {
+        btn.onclick = () => {
+          // Récupérer les ingrédients dans les slots de craft
+          let usedIngredients = [];
+          for (let i = 0; i < craftGrid.children.length; i++) {
+            let slot = craftGrid.children[i];
+            let img = slot.querySelector('img');
+            let qtySpan = slot.querySelector('span');
+            if (img && qtySpan) {
+              let iconPath = img.src.split('assets/').pop();
+              iconPath = 'assets/' + iconPath;
+              usedIngredients.push({
+                icon: iconPath,
+                quantity: parseInt(qtySpan.textContent.replace('x',''))
+              });
             }
           }
-          return total >= ing.quantity;
-        });
-        if (!hasAll) {
-          alert("Tu n'as pas assez de ressources pour ce craft !");
-          return;
-        }
-        // Retirer les ressources de l'inventaire
-        recipe.ingredients.forEach(ing => {
-          let qtyToRemove = ing.quantity;
-          for (let slot of window.inventoryAll) {
-            if (slot.item && (slot.item.icon.endsWith(ing.icon) || ing.icon.endsWith(slot.item.icon)) && qtyToRemove > 0) {
-              let removeQty = Math.min(qtyToRemove, slot.item.quantity || 1);
-              if (slot.item.type === 'ressource' || slot.item.id === 'patte_corbeau' || slot.item.id === 'plume_corbeau') {
-                for (let slotRes of window.inventoryRessources) {
-                  if (slotRes.item && slotRes.item.id === slot.item.id) {
-                    if (slotRes.item.quantity) {
-                      slotRes.item.quantity -= removeQty;
-                      if (slotRes.item.quantity <= 0) slotRes.item = null;
-                    } else {
-                      slotRes.item = null;
+          // Trouver la recette correspondante
+          let recipe = recipes.find(r => {
+            if (r.ingredients.length !== usedIngredients.length) return false;
+            return r.ingredients.every((ing, idx) => {
+              return usedIngredients[idx] && (usedIngredients[idx].icon.endsWith(ing.icon) || ing.icon.endsWith(usedIngredients[idx].icon)) && ing.quantity === usedIngredients[idx].quantity;
+            });
+          });
+          if (!recipe) {
+            alert('Aucune recette ne correspond à la combinaison dans les slots de craft.');
+            return;
+          }
+          // Vérifier que le joueur a bien les ressources
+          let hasAll = recipe.ingredients.every(ing => {
+            let total = 0;
+            for (let slot of window.inventoryAll) {
+              if (slot.item && (slot.item.icon.endsWith(ing.icon) || ing.icon.endsWith(slot.item.icon))) {
+                total += slot.item.quantity || 1;
+              }
+            }
+            return total >= ing.quantity;
+          });
+          if (!hasAll) {
+            alert("Tu n'as pas assez de ressources pour ce craft !");
+            return;
+          }
+          // Retirer les ressources de l'inventaire
+          recipe.ingredients.forEach(ing => {
+            let qtyToRemove = ing.quantity;
+            for (let slot of window.inventoryAll) {
+              if (slot.item && (slot.item.icon.endsWith(ing.icon) || ing.icon.endsWith(slot.item.icon)) && qtyToRemove > 0) {
+                let removeQty = Math.min(qtyToRemove, slot.item.quantity || 1);
+                if (slot.item.type === 'ressource' || slot.item.id === 'patte_corbeau' || slot.item.id === 'plume_corbeau') {
+                  for (let slotRes of window.inventoryRessources) {
+                    if (slotRes.item && slotRes.item.id === slot.item.id) {
+                      if (slotRes.item.quantity) {
+                        slotRes.item.quantity -= removeQty;
+                        if (slotRes.item.quantity <= 0) slotRes.item = null;
+                      } else {
+                        slotRes.item = null;
+                      }
                     }
                   }
                 }
+                if (slot.item.quantity) {
+                  slot.item.quantity -= removeQty;
+                  if (slot.item.quantity <= 0) slot.item = null;
+                } else {
+                  slot.item = null;
+                }
+                qtyToRemove -= removeQty;
               }
-              if (slot.item.quantity) {
-                slot.item.quantity -= removeQty;
-                if (slot.item.quantity <= 0) slot.item = null;
-              } else {
-                slot.item = null;
+            }
+          });
+          // Ajouter l'équipement à l'inventaire
+          let equipId = '';
+          switch (recipe.name) {
+            case 'Corbacape': equipId = 'cape_corbeau'; break;
+            case 'Corbacoiffe': equipId = 'coiffe_corbeau'; break;
+            case 'Corbobotte': equipId = 'bottes_corbeau'; break;
+            case 'Corbature': equipId = 'ceinture_corbeau'; break;
+            case 'Corbolier': equipId = 'amulette_corbeau'; break;
+            case 'Corbaneau': equipId = 'anneau_corbeau'; break;
+            default: equipId = ''; break;
+          }
+          if (equipId) {
+            if (typeof addItemToInventory === 'function') {
+              const result = addItemToInventory(equipId, 'equipement');
+              if (result === false) {
+                alert("Inventaire plein, impossible d'ajouter l'équipement !");
+                return;
               }
-              qtyToRemove -= removeQty;
             }
           }
-        });
-        // Ajouter l'équipement à l'inventaire
-        let equipId = '';
-        switch (recipe.name) {
-          case 'Corbacape': equipId = 'cape_corbeau'; break;
-          case 'Corbacoiffe': equipId = 'coiffe_corbeau'; break;
-          case 'Corbobotte': equipId = 'bottes_corbeau'; break;
-          case 'Corbature': equipId = 'ceinture_corbeau'; break;
-          case 'Corbolier': equipId = 'amulette_corbeau'; break;
-          case 'Corbaneau': equipId = 'anneau_corbeau'; break;
-          default: equipId = ''; break;
-        }
-        if (equipId) {
-          if (typeof addItemToInventory === 'function') {
-            const result = addItemToInventory(equipId, 'equipement');
-            if (result === false) {
-              alert("Inventaire plein, impossible d'ajouter l'équipement !");
-              return;
-            }
+          // Vider les slots de craft
+          for (let i = 0; i < craftGrid.children.length; i++) {
+            let slot = craftGrid.children[i];
+            slot.innerHTML = `<div class='${cssPrefix}empty-indicator'>+</div>`;
           }
-        }
-        // Vider les slots de craft
-        for (let i = 0; i < craftGrid.children.length; i++) {
-          let slot = craftGrid.children[i];
-          slot.innerHTML = `<div class='${cssPrefix}empty-indicator'>+</div>`;
-        }
-        // Mettre à jour l'inventaire
-        if (typeof updateAllGrids === 'function') updateAllGrids();
-        if (typeof updateCraftInventoryGrid === 'function') updateCraftInventoryGrid();
-        if (typeof window.enableInventoryDragAndDrop === 'function') window.enableInventoryDragAndDrop();
-        // Afficher la fiche de l'item créé
-        if (equipId && window.equipmentDatabase && window.equipmentDatabase[equipId]) {
-          const item = window.equipmentDatabase[equipId];
-          craftPreviewDiv.innerHTML = `
-            <div class='item-preview'>
-              <div class='item-preview-card'>
-                <img src='${item.icon}' alt='${item.name}' class='item-preview-icon'>
-                <div class='item-preview-infos'>
-                  <div class='item-preview-title'>${item.name}</div>
-                  <div class='item-preview-stats'>
-                    ${Object.entries(item.stats||{}).map(([k,v])=>`<span class='item-preview-stat'><span class='item-preview-stat-icon'>${window.getStatIcon(k)}</span> <span class='item-preview-stat-name'>${k}</span> : <b class='item-preview-stat-value'>${v}</b></span>`).join('')}
+          // Mettre à jour l'inventaire
+          if (typeof updateAllGrids === 'function') updateAllGrids();
+          if (typeof updateCraftInventoryGrid === 'function') updateCraftInventoryGrid();
+          if (typeof window.enableInventoryDragAndDrop === 'function') window.enableInventoryDragAndDrop();
+          // Afficher la fiche de l'item créé
+          if (equipId && window.equipmentDatabase && window.equipmentDatabase[equipId]) {
+            const item = window.equipmentDatabase[equipId];
+            craftPreviewDiv.innerHTML = `
+              <div class='item-preview'>
+                <div class='item-preview-card'>
+                  <img src='${item.icon}' alt='${item.name}' class='item-preview-icon'>
+                  <div class='item-preview-infos'>
+                    <div class='item-preview-title'>${item.name}</div>
+                    <div class='item-preview-stats'>
+                      ${Object.entries(item.stats||{}).map(([k,v])=>`<span class='item-preview-stat'><span class='item-preview-stat-icon'>${window.getStatIcon(k)}</span> <span class='item-preview-stat-name'>${k}</span> : <b class='item-preview-stat-value'>${v}</b></span>`).join('')}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          `;
-        }
-      };
-    }
-  }, 0);
+            `;
+          }
+        };
+      }
+    }, 0);
+  }
 }
 
 // Table du tailleur

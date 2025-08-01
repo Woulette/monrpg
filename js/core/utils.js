@@ -1,4 +1,5 @@
-console.log("Fichier js/utils.js chargé");
+// Utilitaires globaux - Core
+// Nettoyé et validé le 30/07/2025 - par Cursor
 
 // Constante globale tile size
 window.TILE_SIZE = 32;

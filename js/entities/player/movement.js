@@ -15,8 +15,6 @@ function nextStepToTarget() {
                     openBijoutierWorkshopModal();
                 } else if (typeof openTailorWorkshopModal === 'function') {
                     openTailorWorkshopModal();
-                } else {
-                    console.log('ERREUR: aucune fonction d\'atelier trouvée !');
                 }
                 window.pendingOpenCraftTable = null;
             }

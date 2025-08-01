@@ -1,5 +1,3 @@
-console.log("Fichier js/inventory/tooltips.js chargé");
-
 // Fonctions pour les tooltips d'équipement
 function showEquipmentTooltip(item, element) {
     // Supprimer l'ancien tooltip s'il existe

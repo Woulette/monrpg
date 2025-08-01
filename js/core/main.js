@@ -1,50 +1,18 @@
+// Moteur principal du jeu - Core
+// Nettoyé et validé le 30/07/2025 - par Cursor
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-
-// Fonction de débogage simple pour identifier les erreurs
-window.debugError = function() {
-    console.log('🔍 Débogage d\'erreur...');
-    console.log('📊 État du jeu:', {
-        gameState: window.gameState,
-        currentMap: window.currentMap,
-        playerImg: window.playerImg ? 'défini' : 'non défini',
-        mapData: window.mapData ? 'défini' : 'non défini',
-        canvas: canvas ? 'défini' : 'non défini',
-        ctx: ctx ? 'défini' : 'non défini'
-    });
-    
-    if (window.playerImg) {
-        console.log('👤 playerImg:', {
-            complete: window.playerImg.complete,
-            width: window.playerImg.width,
-            height: window.playerImg.height,
-            src: window.playerImg.src
-        });
-    }
-    
-    if (window.mapData) {
-        console.log('🗺️ mapData:', {
-            layers: window.mapData.layers ? window.mapData.layers.length : 0,
-            tilesets: window.mapData.tilesets ? window.mapData.tilesets.length : 0
-        });
-    }
-    
-    console.log('🔍 Débogage terminé');
-};
-
-// Système d'affichage des dégâts - Mon RPG 2D
 
 // Attendre que tous les scripts soient chargés
 document.addEventListener('DOMContentLoaded', () => {
     // Vérifier si le système de menu multi-personnages est actif
     if (typeof window.gameState !== 'undefined' && window.gameState === "menu") {
-        console.log('🎮 Menu multi-personnages actif, main.js ne se lance PAS du tout');
         // Ne rien initialiser, ne pas lancer la boucle de jeu
         return;
     }
     
     // Si pas de menu actif, démarrer le jeu directement (mode legacy)
-    console.log('🎮 Mode legacy : démarrage direct du jeu');
     startGameDirectly();
 });
 
@@ -52,16 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
 function startGameDirectly() {
     // Vérifier qu'on est bien en mode jeu
     if (window.gameState !== "playing") {
-        console.log('⚠️ startGameDirectly appelée mais pas en mode jeu, annulation');
         return;
     }
-    
-    console.log('🎮 Démarrage complet du jeu en mode playing...');
     
     // S'assurer que le canvas est visible
     if (canvas) {
         canvas.style.display = 'block';
-        console.log('🎨 Canvas rendu visible');
     }
     
     try {
@@ -69,11 +33,9 @@ function startGameDirectly() {
         let targetMap = 'map1'; // Map par défaut
         
         if (typeof window.loadGame === "function") {
-            console.log('📂 Chargement de la sauvegarde...');
             const loadSuccess = window.loadGame();
             if (loadSuccess && window.currentMap) {
                 targetMap = window.currentMap;
-                console.log('🗺️ Map de sauvegarde détectée:', targetMap);
             }
         }
         
@@ -89,14 +51,8 @@ function startGameDirectly() {
                         // Vérifier que playerImg est défini et chargé
                         if (window.playerImg && window.playerImg.complete && 
                             window.mapData && window.mapData.layers) {
-                            console.log('✅ Toutes les images sont chargées');
                             resolve();
                         } else {
-                            console.log('⏳ Attente du chargement des images...', {
-                                playerImg: window.playerImg ? window.playerImg.complete : false,
-                                mapData: !!window.mapData,
-                                mapLayers: window.mapData ? window.mapData.layers : false
-                            });
                             setTimeout(checkImages, 100);
                         }
                     };
@@ -138,6 +94,12 @@ function startGameDirectly() {
                 // Nettoyage des données corrompues au démarrage
                 if (typeof window.cleanCorruptedSaveData === "function") {
                     window.cleanCorruptedSaveData();
+                }
+                
+                // Initialiser l'état du boss slime
+                if (window.slimeBossDefeated === undefined) {
+                    window.slimeBossDefeated = false;
+                    console.log('🐉 État du boss slime initialisé à false');
                 }
                 
                 // Initialiser l'inventaire
@@ -199,8 +161,6 @@ window.enableGameSystems = enableGameSystems;
 
 // Fonction pour désactiver les systèmes en mode menu
 function disableGameSystems() {
-    console.log('🔒 Désactivation des systèmes de jeu en mode menu');
-    
     // Désactiver les touches du jeu
     if (typeof window.disableGameInputs === 'function') {
         window.disableGameInputs();
@@ -225,8 +185,6 @@ function disableGameSystems() {
 
 // Fonction pour activer les systèmes en mode jeu
 function enableGameSystems() {
-    console.log('🔓 Activation des systèmes de jeu');
-    
     // Activer les touches du jeu
     if (typeof window.enableGameInputs === 'function') {
         window.enableGameInputs();
@@ -236,7 +194,6 @@ function enableGameSystems() {
 // Fonction pour dessiner le jeu (séparée de la boucle)
 function drawGame() {
     if (!canvas || !ctx) { 
-        console.error('❌ Canvas ou contexte non disponible'); 
         return; 
     }
     
@@ -246,10 +203,8 @@ function drawGame() {
             try { 
                 drawMap(); 
             } catch (error) { 
-                console.error('❌ Erreur lors du dessin de la map:', error); 
+                // Erreur silencieuse
             } 
-        } else { 
-            console.log('⚠️ Map non disponible pour le rendu'); 
         }
         
         // Dessiner les effets de dégâts (pas inclus dans drawMap)
@@ -257,7 +212,7 @@ function drawGame() {
             try {
                 window.drawDamageEffects(ctx);
             } catch (error) {
-                console.error('❌ Erreur lors du dessin des effets de dégâts:', error);
+                // Erreur silencieuse
             }
         }
         
@@ -266,12 +221,12 @@ function drawGame() {
             try {
                 drawHUD(ctx);
             } catch (error) {
-                console.error('❌ Erreur lors du dessin du HUD:', error);
+                // Erreur silencieuse
             }
         }
         
     } catch (error) {
-        console.error('❌ Erreur critique dans drawGame:', error);
+        // Erreur silencieuse
     }
 }
 
@@ -883,8 +838,8 @@ window.showBossChestWindow = function() {
                 
                 // Sauvegarde immédiate après téléportation
                 setTimeout(() => {
-                    if (typeof window.saveGameState === "function") {
-                        window.saveGameState();
+                    if (typeof window.saveGameStateData === "function" && window.currentCharacterId) {
+                        window.saveGameStateData(window.currentCharacterId);
                         console.log("💾 Sauvegarde automatique effectuée après sélection de la récompense");
                     }
                 }, 500);
@@ -965,170 +920,26 @@ window.addEventListener('keydown', (e) => {
 window.disableGameInputs = disableGameInputs;
 window.enableGameInputs = enableGameInputs;
 
-// Fonction de débogage pour forcer un rendu
+// Fonction utilitaire pour forcer un rendu
 window.forceRender = function() {
-    console.log('🎨 Forçage du rendu du jeu...');
-    console.log('📊 État du jeu:', {
-        gameState: window.gameState,
-        currentMap: window.currentMap,
-        playerExists: typeof player !== 'undefined',
-        canvasExists: !!canvas,
-        ctxExists: !!ctx
-    });
-    
     if (window.gameState === "playing" && canvas && ctx) {
         drawGame();
-        console.log('✅ Rendu forcé effectué');
-    } else {
-        console.log('❌ Impossible de forcer le rendu - conditions non remplies');
-    }
-};
-
-// Fonction pour diagnostiquer les problèmes d'images
-window.debugImages = function() {
-    console.log('🖼️ Diagnostic des images...');
-    
-    const images = {
-        playerImg: window.playerImg,
-        mapData: window.mapData,
-        canvas: canvas,
-        ctx: ctx
-    };
-    
-    Object.entries(images).forEach(([name, img]) => {
-        if (img) {
-            if (name === 'playerImg') {
-                if (img.complete) {
-                    console.log(`✅ ${name}: chargée (${img.width}x${img.height})`);
-                } else {
-                    console.log(`⏳ ${name}: en cours de chargement`);
-                }
-            } else if (name === 'mapData') {
-                console.log(`✅ ${name}: disponible (${img.layers ? img.layers.length : 0} calques)`);
-            } else {
-                console.log(`✅ ${name}: disponible`);
-            }
-        } else {
-            console.log(`❌ ${name}: non définie`);
-        }
-    });
-    
-    // Vérifier les erreurs de chargement
-    if (window.playerImg && window.playerImg.naturalWidth === 0) {
-        console.log('❌ playerImg: erreur de chargement');
-    }
-    
-    // Vérifier les tilesets
-    if (window.mapData && window.mapData.tilesets) {
-        window.mapData.tilesets.forEach((tileset, index) => {
-            if (tileset.image) {
-                if (tileset.image.complete) {
-                    console.log(`✅ Tileset ${index}: chargé (${tileset.image.width}x${tileset.image.height})`);
-                } else {
-                    console.log(`⏳ Tileset ${index}: en cours de chargement`);
-                }
-            }
-        });
     }
 };
 
 // Fonction pour forcer le rechargement des images
+// Fonction utilitaire pour recharger les images
 window.reloadImages = function() {
-    console.log('🔄 Rechargement des images...');
-    
     if (window.playerImg) {
         window.playerImg.src = window.playerImg.src;
     }
     
-    // Recharger les tilesets si nécessaire
     if (window.mapData && window.mapData.tilesets) {
         window.mapData.tilesets.forEach((tileset, index) => {
             if (tileset.image) {
                 tileset.image.src = tileset.image.src;
-                console.log(`🔄 Rechargement du tileset ${index}`);
             }
         });
     }
-    
-    console.log('✅ Rechargement des images initié');
-};
-
-// Fonction pour identifier l'erreur drawImage
-window.debugDrawImageError = function() {
-    console.log('🔍 Diagnostic de l\'erreur drawImage...');
-    
-    // Vérifier le contexte
-    if (!ctx) {
-        console.error('❌ Contexte canvas non disponible');
-        return;
-    }
-    
-    // Vérifier les images principales
-    const images = {
-        playerImg: window.playerImg,
-        mapData: window.mapData,
-        monsters: window.monsters
-    };
-    
-    Object.entries(images).forEach(([name, img]) => {
-        if (img) {
-            if (name === 'playerImg') {
-                console.log(`✅ ${name}: ${img.complete ? 'chargée' : 'en cours'} (${img.width}x${img.height})`);
-            } else if (name === 'mapData') {
-                console.log(`✅ ${name}: disponible (${img.layers ? img.layers.length : 0} calques)`);
-                if (img.tilesets) {
-                    img.tilesets.forEach((tileset, index) => {
-                        if (tileset.image) {
-                            console.log(`  - Tileset ${index}: ${tileset.image.complete ? 'chargé' : 'en cours'} (${tileset.image.width}x${tileset.image.height})`);
-                        }
-                    });
-                }
-            } else if (name === 'monsters') {
-                console.log(`✅ ${name}: ${img.length} monstres`);
-                img.forEach((monster, index) => {
-                    if (monster.img) {
-                        console.log(`  - Monstre ${index}: ${monster.img.complete ? 'chargé' : 'en cours'} (${monster.img.width}x${monster.img.height})`);
-                    } else {
-                        console.log(`  - Monstre ${index}: pas d'image`);
-                    }
-                });
-            }
-        } else {
-            console.log(`❌ ${name}: non défini`);
-        }
-    });
-    
-    // Tester le dessin de chaque élément
-    console.log('🧪 Test de dessin...');
-    
-    try {
-        // Test du joueur
-        if (window.playerImg && window.playerImg.complete) {
-            ctx.drawImage(window.playerImg, 0, 0, 10, 10, 0, 0, 10, 10);
-            console.log('✅ Test drawImage joueur: OK');
-        } else {
-            console.log('❌ Test drawImage joueur: échec - image non chargée');
-        }
-    } catch (error) {
-        console.error('❌ Test drawImage joueur: erreur', error);
-    }
-    
-    // Test des tilesets
-    if (window.mapData && window.mapData.tilesets) {
-        window.mapData.tilesets.forEach((tileset, index) => {
-            try {
-                if (tileset.image && tileset.image.complete) {
-                    ctx.drawImage(tileset.image, 0, 0, 10, 10, 0, 0, 10, 10);
-                    console.log(`✅ Test drawImage tileset ${index}: OK`);
-                } else {
-                    console.log(`❌ Test drawImage tileset ${index}: échec - image non chargée`);
-                }
-            } catch (error) {
-                console.error(`❌ Test drawImage tileset ${index}: erreur`, error);
-            }
-        });
-    }
-    
-    console.log('🔍 Diagnostic terminé');
 };
 

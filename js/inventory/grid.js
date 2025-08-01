@@ -1,5 +1,3 @@
-console.log("Fichier js/inventory/grid.js chargé");
-
 // Fonction pour créer les grilles séparées
 function createSeparateGrids() {
     const container = document.getElementById("inventory-grid-container");

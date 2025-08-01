@@ -1,4 +1,5 @@
-console.log("Fichier js/collision.js chargé");
+// Système de collision - Core
+// Nettoyé et validé le 30/07/2025 - par Cursor
 
 // GIDs bloquants - sera mis à jour automatiquement selon la map
 window.BLOCKED_GIDS = [];

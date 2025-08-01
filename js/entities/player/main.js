@@ -89,7 +89,6 @@ recalculateTotalStats();
 window.resetPlayer = resetPlayer;
 
 function initPlayer() {
-    
     // Initialiser la position du joueur
     player.px = player.x * TILE_SIZE;
     player.py = player.y * TILE_SIZE;
@@ -98,13 +97,10 @@ function initPlayer() {
     if (typeof occupy === "function") {
         occupy(player.x, player.y);
     }
-    
 }
 
 // Fonction pour réinitialiser complètement le joueur
 function resetPlayer() {
-    console.log("Réinitialisation complète du joueur...");
-    
     // Réinitialiser les propriétés de base
     player.x = 25;
     player.y = 12;
@@ -191,17 +187,15 @@ function resetPlayer() {
     
     // Recalculer les stats totales
     recalculateTotalStats();
-    
-    console.log("Joueur réinitialisé avec succès");
 }
 
 // Chargement de l'image du joueur
 const playerImg = new Image();
 playerImg.onload = () => {
-    console.log('✓ Image du joueur chargée avec succès');
+    // Image chargée avec succès
 };
 playerImg.onerror = () => {
-    console.error('✗ Erreur de chargement de l\'image du joueur: assets/personnages/player.png');
+    console.error('Erreur de chargement de l\'image du joueur: assets/personnages/player.png');
 };
 playerImg.src = 'assets/personnages/player.png';
 
@@ -217,13 +211,6 @@ function drawPlayer(ctx) {
     const currentPlayer = window.player || player;
     
     if (!window.playerImg || !window.playerImg.complete || currentPlayer.isDead) {
-        // Log désactivé temporairement pour éviter le spam
-        // console.log('⚠️ drawPlayer: image non disponible ou joueur mort', {
-        //     playerImg: !!window.playerImg,
-        //     complete: window.playerImg ? window.playerImg.complete : false,
-        //     isDead: currentPlayer.isDead,
-        //     playerReference: currentPlayer === window.player ? 'window.player' : 'local player'
-        // });
         return;
     }
     
@@ -237,21 +224,21 @@ function drawPlayer(ctx) {
             TILE_SIZE, TILE_SIZE
         );
     } catch (error) {
-        console.error('❌ Erreur lors du dessin du joueur:', error);
+        console.error('Erreur lors du dessin du joueur:', error);
     }
 }
 
 // Fonction de diagnostic du joueur
 function diagnosePlayer() {
-    console.log("[RESPAWN] 🔍 Diagnostic du joueur:");
-    console.log("[RESPAWN] - window.player:", window.player);
-    console.log("[RESPAWN] - local player:", player);
-    console.log("[RESPAWN] - isDead (window):", window.player ? window.player.isDead : "N/A");
-    console.log("[RESPAWN] - isDead (local):", player.isDead);
-    console.log("[RESPAWN] - life (window):", window.player ? window.player.life : "N/A");
-    console.log("[RESPAWN] - life (local):", player.life);
-    console.log("[RESPAWN] - deathTime:", player.deathTime);
-    console.log("[RESPAWN] - respawnTime:", player.respawnTime);
+    console.log("Diagnostic du joueur:");
+    console.log("- window.player:", window.player);
+    console.log("- local player:", player);
+    console.log("- isDead (window):", window.player ? window.player.isDead : "N/A");
+    console.log("- isDead (local):", player.isDead);
+    console.log("- life (window):", window.player ? window.player.life : "N/A");
+    console.log("- life (local):", player.life);
+    console.log("- deathTime:", player.deathTime);
+    console.log("- respawnTime:", player.respawnTime);
 }
 
 // Export des fonctions principales

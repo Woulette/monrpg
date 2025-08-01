@@ -144,7 +144,8 @@ class SaveSystem {
             },
             gameState: {
                 currentMap: window.currentMap,
-                lastSaveTime: Date.now()
+                lastSaveTime: Date.now(),
+                slimeBossDefeated: window.slimeBossDefeated || false
             }
         };
 
@@ -337,6 +338,12 @@ class SaveSystem {
             if (data.gameState) {
                 window.currentMap = data.gameState.currentMap || 'map1';
                 console.log('✅ État du jeu restauré, map actuelle:', window.currentMap);
+                
+                // Restaurer l'état de victoire du boss slime
+                if (data.gameState.slimeBossDefeated !== undefined) {
+                    window.slimeBossDefeated = data.gameState.slimeBossDefeated;
+                    console.log('🐉 État de victoire du boss slime restauré:', window.slimeBossDefeated);
+                }
             }
 
             console.log('✅ Chargement complet réussi');

@@ -1,13 +1,9 @@
-// js/pathfinding.js
-// A* pathfinding pour grille (4 directions)
+// Système de pathfinding A* - Core
+// Nettoyé et validé le 30/07/2025 - par Cursor
 
 function initPathfinding() {
-    console.log("Initialisation du pathfinding...");
-    
     // Le pathfinding est déjà configuré avec la fonction findPath
     // Cette fonction peut être utilisée pour des initialisations supplémentaires si nécessaire
-    
-    console.log("Pathfinding initialisé avec succès");
 }
 
 function findPath(start, end, isBlocked, width, height) {

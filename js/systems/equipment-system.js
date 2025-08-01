@@ -184,8 +184,13 @@ function unequipItem(slot) {
 
 // Appliquer les stats de l'équipement
 function applyEquipmentStats() {
-    // Réinitialiser les stats de base
-    player.maxLife = 50; // Stats de base originales
+    // Calculer la vie de base en tenant compte des bonus de niveau
+    const baseLife = 50; // Vie de base au niveau 1
+    const lifeFromLevels = (player.level - 1) * 5; // +5 PV par niveau
+    const baseMaxLife = baseLife + lifeFromLevels;
+    
+    // Réinitialiser la vie maximale avec les bonus de niveau
+    player.maxLife = baseMaxLife;
     
     // Réinitialiser les stats d'équipement
     player.equipForce = 0;
@@ -250,7 +255,12 @@ function removeEquipmentStats(item) {
     player.chance = Math.max(player.baseChance, player.chance);
     player.intelligence = Math.max(player.baseIntelligence, player.intelligence);
     player.vitesse = Math.max(player.baseVitesse, player.vitesse);
-    player.maxLife = Math.max(50, player.maxLife);
+    
+    // Calculer la vie de base avec les bonus de niveau
+    const baseLife = 50; // Vie de base au niveau 1
+    const lifeFromLevels = (player.level - 1) * 5; // +5 PV par niveau
+    const baseMaxLife = baseLife + lifeFromLevels;
+    player.maxLife = Math.max(baseMaxLife, player.maxLife);
     
     // Ajuster la vie si nécessaire
     if (player.life > player.maxLife) {
