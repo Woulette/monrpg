@@ -209,8 +209,13 @@ function drawMonsters(ctx) {
                 // 2ème ligne (y=48) : 4 frames d'idle
                 const now = Date.now();
                 
+                // Initialiser les propriétés d'animation si elles n'existent pas
                 if (monster.idleFrame === undefined) monster.idleFrame = 0;
                 if (monster.walkFrame === undefined) monster.walkFrame = 0;
+                if (monster.lastIdleAnim === undefined) monster.lastIdleAnim = 0;
+                if (monster.lastWalkAnim === undefined) monster.lastWalkAnim = 0;
+                if (monster.idleAnimDelay === undefined) monster.idleAnimDelay = 200; // 200ms pour l'idle
+                if (monster.walkAnimDelay === undefined) monster.walkAnimDelay = 150; // 150ms pour la marche
                 
                 if (monster.moving) {
                     // Animation de marche - mettre à jour la frame de marche
@@ -234,7 +239,7 @@ function drawMonsters(ctx) {
                     }
                     // Utiliser la frame d'idle
                     let frameX = monster.idleFrame * 40;
-                    let frameY = 48;
+                    let frameY = 48; // 2ème ligne pour l'idle
                     ctx.drawImage(
                         monster.img,
                         frameX, frameY, 40, 48,

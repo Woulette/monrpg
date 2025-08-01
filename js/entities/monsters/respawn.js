@@ -52,7 +52,7 @@ function updateMonsterRespawn() {
                 }
             } else if (currentMap === "map1" || currentMap === "map2" || currentMap === "map3") {
                 // Sur les maps 1, 2 et 3, seuls les corbeaux peuvent respawn
-                if (monster.type !== "crow" && monster.type !== "maitrecorbeau") {
+                if (monster.type !== "crow" && monster.type !== "maitrecorbeau" && monster.type !== "corbeauelite") {
                     monstersToRemove.push(monster);
                     return;
                 }
@@ -165,6 +165,10 @@ function updateMonsterRespawn() {
             monster.moveTarget = { x: newSpawnX, y: newSpawnY };
             monster.movePath = [];
             monster.moving = false;
+            monster.frame = 0; // Reset de l'animation
+            monster.lastAnim = 0; // Reset du timer d'animation
+            monster.stuckSince = 0; // Reset du blocage
+            monster.moveCooldown = 0; // Reset du cooldown de mouvement
             
             // Marquer la nouvelle position comme occupée
             if (typeof occupy === "function") {
@@ -197,5 +201,29 @@ function updateMonsterRespawn() {
     }
 }
 
+// Fonction de diagnostic pour vérifier le système de respawn
+function diagnoseRespawnSystem() {
+    console.log("🔍 Diagnostic du système de respawn:");
+    console.log(`- Map actuelle: ${window.currentMap}`);
+    console.log(`- Nombre de monstres: ${window.monsters ? window.monsters.length : 0}`);
+    
+    if (window.monsters) {
+        window.monsters.forEach((monster, index) => {
+            if (monster) {
+                const timeSinceDeath = monster.isDead ? Date.now() - monster.deathTime : 0;
+                const timeUntilRespawn = monster.respawnTime - timeSinceDeath;
+                
+                console.log(`  Monstre ${index} (${monster.type}):`, {
+                    isDead: monster.isDead,
+                    timeSinceDeath: timeSinceDeath,
+                    respawnTime: monster.respawnTime,
+                    timeUntilRespawn: timeUntilRespawn > 0 ? timeUntilRespawn : "Prêt à respawn"
+                });
+            }
+        });
+    }
+}
+
 // Export global
 window.updateMonsterRespawn = updateMonsterRespawn; 
+window.diagnoseRespawnSystem = diagnoseRespawnSystem; 
