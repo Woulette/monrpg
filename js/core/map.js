@@ -138,8 +138,7 @@ async function loadMap(mapName) {
             }, 500);
         }
         
-        // Démarrer l'écran noir de transition
-        startBlackScreenTransition();
+        // Sauvegarder les monstres après un délai pour s'assurer qu'ils sont créés
         
         // Sauvegarder les monstres après un délai pour s'assurer qu'ils sont créés
         setTimeout(() => {

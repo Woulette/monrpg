@@ -1,4 +1,35 @@
 /* ===== hud.css (icône inventaire & tooltip) ===== */
+
+/* Icône de la mini-carte */
+#minimap-icon {
+    position: absolute;
+    top: 800px; /* Juste au-dessus de l'inventaire */
+    left: 1660px; /* Même position horizontale que l'inventaire */
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #4CAF50 60%, #45a049 100%);
+    border-radius: 10px;
+    border: 2px solid #2E7D32;
+    box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+    color: white;
+    font-weight: bold;
+}
+
+#minimap-icon:hover {
+    box-shadow: 0 4px 32px rgba(76, 175, 80, 0.5);
+    transform: translateY(-2px);
+}
+
+#minimap-icon:active {
+    transform: translateY(0);
+}
+
 #inventory-icon {
     position: absolute;
     top: 850px;
@@ -123,6 +154,27 @@
     box-shadow: 0 4px 32px #ffd95299;
 }
 
+/* Icône de carte dans le HUD */
+#map-icon {
+    position: absolute;
+    top: 849px;
+    left: 1335px; /* À gauche de #quetes-icon */
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(145deg, #2E8B57, #228B22);
+    border: 2px solid #006400;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: box-shadow 0.2s;
+}
+#map-icon:hover {
+    box-shadow: 0 4px 32px #ffd95299;
+}
+
 /* Assurer que l'emoji de l'icône des quêtes se redimensionne correctement */
 #quetes-icon span {
     font-size: 2em !important;
@@ -177,6 +229,10 @@
     width: 36px;
     height: 36px;
   }
+  #map-icon {
+    width: 36px;
+    height: 36px;
+  }
   #metier-icon {
     top: 780px;
     left: 80px;
@@ -192,6 +248,12 @@
   #quetes-icon {
     top: 780px;
     left: 160px;
+    width: 36px;
+    height: 36px;
+  }
+  #map-icon {
+    top: 780px;
+    left: 200px;
     width: 36px;
     height: 36px;
   }
@@ -228,6 +290,12 @@
   #quetes-icon {
     top: 700px;
     left: 130px;
+    width: 28px;
+    height: 28px;
+  }
+  #map-icon {
+    top: 700px;
+    left: 170px;
     width: 28px;
     height: 28px;
   }

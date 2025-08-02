@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="assets/css/menu.css">
     <link rel="stylesheet" href="assets/css/pnj.css">
     <link rel="stylesheet" href="assets/css/quetes.css">
+    <link rel="stylesheet" href="assets/css/map.css">
     
 
     <!-- Charger utils.js en tout premier pour les fonctions globales -->
@@ -160,6 +161,7 @@
     <div id="canvas-wrapper" style="position: relative; width: fit-content; margin: 0 auto;">
         <canvas id="gameCanvas" width="1536" height="910"></canvas>
         <div id="hud-layer">
+            <div id="minimap-icon"><span style="font-size: 1.5em; line-height: 1;">➕</span></div>
             <div id="inventory-icon"></div>
             <div id="stats-icon">⭐</div>
             <div id="metier-icon">
@@ -171,6 +173,7 @@
             </div>
             <div id="quetes-icon"><span>📋</span></div>
             <div id="sort-icon"><span style="font-size: 2em; line-height: 1;">✨</span></div>
+            <div id="map-icon"><span style="font-size: 2em; line-height: 1;">🗺️</span></div>
         </div>
     </div>
 
@@ -642,6 +645,8 @@
 <script src="js/systems/damage-display.js"></script>
 <script src="js/systems/equipment-system.js"></script>
 <script src="js/systems/loot-system.js"></script>
+<script src="js/systems/minimap.js"></script>
+<script src="js/systems/map-system.js"></script>
 <script src="js/metier/etablie.js"></script>
 <script src="js/metier/niveaudemetier.js"></script>
 

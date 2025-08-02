@@ -428,8 +428,8 @@ function createPapi4() {
                         papi4.dialogues = [
                             "Incroyable ! Tu as vaincu le boss terrifiant !",
                             "Tu as sauvé notre monde d'une menace d'un autre univers.",
-                            "Voici ta récompense spéciale pour cette victoire héroïque !",
-                            "Tu as reçu un nouveau sort et une orbe spéciale."
+                            "Tu as prouvé ta valeur. Approche et ouvre le coffre à ma droite !",
+                            "Le coffre à ma droite renferme une récompense à la hauteur de ta bravoure."
                         ];
                     }
                     papi4.currentDialogue = 0;
@@ -443,8 +443,10 @@ function createPapi4() {
                             // Toutes les quêtes sont terminées et on est dans la maison
                             papi4.dialogues = [
                                 "Formidable ! À croire que tu es l'enfant de la prophétie !",
-                                "Je n'ai pas les mots... Rejoins-moi dans la maison, tu m'y trouveras !",
-                                "Une récompense t'attend."
+                                "Je n'ai pas les mots... ",
+                                "Une longue déstiné t'attend, retrouve moi sur la map à droite.",
+                                "C’est ici que s’achèvera notre tout dernier échange."
+                                
                             ];
                         } else {
                             // Utiliser les dialogues de la brèche dimensionnelle par défaut

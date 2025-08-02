@@ -115,10 +115,7 @@ function createQuestsInstance() {
             reward: {
                 xp: 300,
                 pecka: 500,
-                items: [
-                    { id: 'nouveau_sort', name: 'Nouveau Sort', quantity: 1 },
-                    { id: 'orbe_speciale', name: 'Orbe Spéciale', quantity: 1 }
-                ]
+                items: []
             }
         }
     };

@@ -323,6 +323,7 @@ function updatePlayer(ts) {
             
             // Gestion spéciale pour la map 3
             if (window.currentMap === "map3") {
+                console.log(`🎯 PORTAL DEBUG - Using MAP3 SPECIAL LOGIC for portal ${portalGid}`);
                 if (portalGid === 1) {
                     // Portail ID 1 → Map Slime
                     destinationMap = "mapdonjonslime";
@@ -388,6 +389,7 @@ function updatePlayer(ts) {
                     targetPortalId = 6;
                 }
             } else {
+                console.log(`🎯 PORTAL DEBUG - Using GENERAL LOGIC for map ${window.currentMap}, portal ${portalGid}`);
                 // Logique générale pour les autres maps
                 if (portalGid === 1) {
                     // Portail ID 1 → Map suivante, portail ID 2

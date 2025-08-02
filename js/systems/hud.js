@@ -112,6 +112,18 @@ function positionHudIcons() {
     const canvas = document.getElementById('gameCanvas');
     const rect = canvas.getBoundingClientRect();
 
+    // Mini-carte (juste au-dessus de l'inventaire)
+    const minimapIcon = document.getElementById('minimap-icon');
+    if (minimapIcon) {
+        minimapIcon.style.left = (rect.width * 1) + 'px';
+        minimapIcon.style.top = (rect.height * 0.82) + 'px'; // Juste au-dessus de l'inventaire
+    }
+
+    // Positionner la mini-carte elle-même
+    if (window.worldMapSystem && window.worldMapSystem.minimap) {
+        window.worldMapSystem.minimap.updatePosition();
+    }
+
     // Inventaire (en bas à droite)
     const inventoryIcon = document.getElementById('inventory-icon');
     if (inventoryIcon) {
@@ -147,6 +159,34 @@ function positionHudIcons() {
         quetesIcon.style.top = (rect.height * 0.91) + 'px';
     }
 
+            // Carte (à gauche des quêtes)
+        const mapIcon = document.getElementById('map-icon');
+        if (mapIcon) {
+            mapIcon.style.left = (rect.width * 0.76) + 'px';
+            mapIcon.style.top = (rect.height * 0.91) + 'px';
+        }
+        
+        // Initialiser l'événement de clic pour l'icône de carte
+        if (mapIcon && !mapIcon.hasEventListener) {
+            mapIcon.addEventListener('click', function() {
+                if (window.worldMapSystem) {
+                    window.worldMapSystem.toggle();
+                }
+            });
+            mapIcon.hasEventListener = true;
+        }
+
+        // Initialiser l'événement de clic pour l'icône de mini-carte
+        if (minimapIcon && !minimapIcon.hasEventListener) {
+            minimapIcon.addEventListener('click', function() {
+                toggleMinimap();
+            });
+            minimapIcon.hasEventListener = true;
+        }
+        
+        // Initialiser les contrôles de la mini-carte
+        initMinimapControls();
+
     // Barre de sorts
     const spellBar = document.getElementById('spell-shortcut-bar');
     if (spellBar && canvas) {
@@ -162,5 +202,81 @@ function positionHudIcons() {
     }
 }
 
-// Exporter la fonction pour qu'elle soit accessible depuis main.js
+// Variable globale pour l'état de la mini-carte
+let minimapVisible = false;
+let minimapFirstOpen = true; // Pour afficher les instructions une seule fois
+
+// Fonction pour basculer l'affichage de la mini-carte
+function toggleMinimap() {
+    minimapVisible = !minimapVisible;
+    
+    const minimapIcon = document.getElementById('minimap-icon');
+    
+    if (minimapIcon) {
+        // Changer l'icône selon l'état
+        const span = minimapIcon.querySelector('span');
+        if (span) {
+            span.textContent = minimapVisible ? '➖' : '➕';
+        }
+    }
+    
+    // Utiliser la référence directe à la mini-carte si disponible
+    if (window.worldMapSystem && window.worldMapSystem.minimap) {
+        window.worldMapSystem.minimap.canvas.style.display = minimapVisible ? 'block' : 'none';
+        
+        // Forcer le recentrage et le rechargement des quêtes quand la minimap s'ouvre
+        if (minimapVisible) {
+            window.worldMapSystem.minimap.centerOnPlayerMap();
+            // Recharger les quêtes pour actualiser la minimap
+            if (window.worldMapSystem.loadAvailableQuests) {
+                window.worldMapSystem.loadAvailableQuests();
+            }
+        }
+        
+        // Afficher les instructions lors de la première ouverture
+        if (minimapVisible && minimapFirstOpen) {
+            setTimeout(() => {
+                window.worldMapSystem.minimap.showInstructions();
+                minimapFirstOpen = false;
+            }, 500);
+        }
+    } else {
+        // Fallback : chercher le canvas par sélecteur
+        const minimapCanvas = document.querySelector('canvas[style*="z-index: 1000"]');
+        if (minimapCanvas) {
+            minimapCanvas.style.display = minimapVisible ? 'block' : 'none';
+        }
+    }
+    
+    console.log('🗺️ Mini-carte:', minimapVisible ? 'affichée' : 'masquée');
+}
+
+// Fonction pour ouvrir les contrôles de la mini-carte
+function openMinimapControls() {
+    if (window.worldMapSystem && window.worldMapSystem.minimap) {
+        window.worldMapSystem.minimap.toggleControls();
+    }
+}
+
+// Ajouter un événement de clic droit sur l'icône de mini-carte pour ouvrir les contrôles
+function initMinimapControls() {
+    const minimapIcon = document.getElementById('minimap-icon');
+    if (minimapIcon) {
+        // Clic droit pour ouvrir les contrôles
+        minimapIcon.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            openMinimapControls();
+        });
+        
+        // Double-clic pour ouvrir les contrôles aussi
+        minimapIcon.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            openMinimapControls();
+        });
+    }
+}
+
+// Exporter les fonctions pour qu'elles soient accessibles depuis main.js
 window.positionHudIcons = positionHudIcons;
+window.toggleMinimap = toggleMinimap;
+window.openMinimapControls = openMinimapControls;
