@@ -233,6 +233,15 @@ function drawGame() {
             }
         }
         
+        // Dessiner les autres joueurs (multijoueur)
+        if (typeof drawMultiplayerPlayers === "function") {
+            try {
+                drawMultiplayerPlayers(ctx);
+            } catch (error) {
+                // Erreur silencieuse
+            }
+        }
+        
     } catch (error) {
         // Erreur silencieuse
     }

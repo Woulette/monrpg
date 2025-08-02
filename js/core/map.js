@@ -165,6 +165,11 @@ function teleportPlayer(mapName, spawnX, spawnY) {
         release(player.x, player.y);
     }
     
+    // Notifier le système multijoueur du changement de carte
+    if (window.multiplayerManager && window.multiplayerManager.connected) {
+        window.multiplayerManager.changeMap(mapName);
+    }
+    
     // Charger la nouvelle map
     loadMap(mapName).then(success => {
         if (success) {

@@ -33,6 +33,12 @@ window.addEventListener('DOMContentLoaded', function() {
     document.body.classList.add('menu-active');
     gameMenuBtn.style.display = 'none';
     
+    // Cacher le bouton multijoueur aussi
+    const multiplayerBtn = document.getElementById('multiplayer-btn');
+    if (multiplayerBtn) {
+        multiplayerBtn.style.display = 'none';
+    }
+    
     // Charger les personnages sauvegardés
     loadCharacterSlots();
     
@@ -618,6 +624,27 @@ function initializeGame(character) {
     
     // Afficher le bouton menu
     gameMenuBtn.style.display = 'block';
+    
+    // Afficher le bouton multijoueur
+    const multiplayerBtn = document.getElementById('multiplayer-btn');
+    if (multiplayerBtn) {
+        multiplayerBtn.style.display = 'block';
+        
+        // Gestion du clic sur le bouton multijoueur
+        multiplayerBtn.onclick = () => {
+            if (window.multiplayerManager && !window.multiplayerManager.connected) {
+                // Activer le multijoueur
+                enableMultiplayer();
+                multiplayerBtn.textContent = 'Multijoueur ON';
+                multiplayerBtn.style.background = '#f44336';
+            } else if (window.multiplayerManager && window.multiplayerManager.connected) {
+                // Désactiver le multijoueur
+                disableMultiplayer();
+                multiplayerBtn.textContent = 'Multijoueur OFF';
+                multiplayerBtn.style.background = '#4CAF50';
+            }
+        };
+    }
     
     // Activer les systèmes de jeu
     if (typeof window.enableGameSystems === 'function') {

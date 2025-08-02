@@ -309,26 +309,17 @@ class WorldMapSystem {
         // Identifier les quêtes disponibles dynamiquement depuis le système de quêtes
         this.availableQuests = [];
         
-        console.log('🔍 Recherche des quêtes disponibles...');
-        console.log('window.quests:', window.quests);
         
         // Attendre que window.quests soit disponible
         if (!window.quests) {
-            console.log('⏳ window.quests n\'est pas encore disponible, réessai dans 100ms...');
+
             setTimeout(() => this.loadAvailableQuests(), 100);
             return;
         }
         
-        console.log('📋 Quêtes trouvées:', Object.keys(window.quests));
         
         Object.values(window.quests).forEach(quest => {
-            console.log('🔍 Vérification quête:', quest.name, {
-                id: quest.id,
-                completed: quest.completed,
-                accepted: quest.accepted,
-                availableOn: quest.availableOn,
-                validationOn: quest.validationOn
-            });
+
             
             // Vérifier si la quête est disponible (non acceptée, non complétée, et accessible)
             if (quest && !quest.completed && !quest.accepted && quest.availableOn) {
@@ -338,24 +329,20 @@ class WorldMapSystem {
                 // Vérifier les prérequis spécifiques
                 if (quest.id === 'crowCraft' && window.quests.crowHunt && !window.quests.crowHunt.completed) {
                     isAvailable = false;
-                    console.log('❌ crowCraft non disponible: crowHunt pas terminée');
                 }
                 
                 if (quest.id === 'slimeBoss' && window.quests.crowCraft && !window.quests.crowCraft.completed) {
                     isAvailable = false;
-                    console.log('❌ slimeBoss non disponible: crowCraft pas terminée');
                 }
                 
                 if (quest.id === 'slimeBossFinal' && window.quests.slimeBoss && !window.quests.slimeBoss.completed) {
                     isAvailable = false;
-                    console.log('❌ slimeBossFinal non disponible: slimeBoss pas terminée');
                 }
                 
                 if (isAvailable) {
                     const mapName = `map${quest.availableOn.map}`;
                     const position = quest.availableOn.pnjPosition;
                     
-                    console.log('✅ Quête disponible trouvée:', quest.name, 'sur', mapName, 'à', position);
                     
                     this.availableQuests.push({
                         x: position.x,
@@ -369,12 +356,6 @@ class WorldMapSystem {
                 }
             }
             
-            // Vérifier si la quête est prête à être validée (objectifs remplis mais pas encore validée)
-            console.log('🔍 Vérification quête à valider:', quest.name, {
-                readyToComplete: quest.readyToComplete,
-                completed: quest.completed,
-                validationOn: quest.validationOn
-            });
             
             if (quest && quest.readyToComplete && !quest.completed && quest.validationOn) {
                 const mapName = `map${quest.validationOn.map}`;
@@ -396,30 +377,15 @@ class WorldMapSystem {
                     questId: quest.id,
                     type: 'validation'
                 });
-            } else {
-                console.log('❌ Quête ne correspond pas aux critères de validation:', {
-                    name: quest.name,
-                    readyToComplete: quest.readyToComplete,
-                    completed: quest.completed,
-                    hasValidationOn: !!quest.validationOn
-                });
+         
             }
             
 
         });
-        
-        console.log(`🗺️ ${this.availableQuests.length} quêtes disponibles détectées sur la carte:`, this.availableQuests);
+    
         
         // Debug: afficher les détails de chaque quête trouvée
-        this.availableQuests.forEach((quest, index) => {
-            console.log(`🗺️ Quête ${index + 1}:`, {
-                name: quest.name,
-                type: quest.type,
-                mapName: quest.mapName,
-                position: { x: quest.x, y: quest.y },
-                questId: quest.questId
-            });
-        });
+
         
         // Redessiner la carte pour afficher les nouvelles quêtes
         if (this.isOpen) {
@@ -442,7 +408,6 @@ class WorldMapSystem {
             ];
             
             image.onload = () => {
-                console.log(`✅ Image chargée pour ${mapName}: ${imagePaths[currentPathIndex]}`);
                 this.mapImages.set(mapName, image);
                 // Redessiner la carte quand l'image est chargée
                 if (this.isOpen) {
@@ -458,7 +423,7 @@ class WorldMapSystem {
                     image.src = imagePaths[currentPathIndex];
                 } else {
                     // Tous les formats ont échoué
-                    console.log(`❌ Aucune image trouvée pour ${mapName} - utilisation du fallback`);
+
                 }
             };
             
