@@ -6,10 +6,17 @@ class MonsterSyncManager {
     constructor() {
         this.syncedMonsters = new Map(); // Monstres synchronisés des autres joueurs
         this.localMonsterUpdates = new Map(); // Mises à jour de nos monstres à envoyer
+        this.localMonsters = new Map(); // Références aux monstres locaux par syncId
         this.isEnabled = false;
         this.updateInterval = null;
+        this.nextSyncId = 1; // Compteur pour les syncId uniques
         
         console.log('🐉 Système de synchronisation des monstres initialisé');
+    }
+    
+    // Générer un syncId unique pour un monstre
+    generateSyncId() {
+        return `local_${Date.now()}_${this.nextSyncId++}`;
     }
     
     // Activer la synchronisation des monstres
@@ -38,6 +45,13 @@ class MonsterSyncManager {
         
         // Nettoyer les monstres synchronisés
         this.syncedMonsters.clear();
+        this.localMonsters.clear();
+    }
+    
+    // Nettoyer les monstres synchronisés lors du changement de map
+    clearSyncedMonsters() {
+        this.syncedMonsters.clear();
+        console.log('🗺️ Monstres synchronisés nettoyés lors du changement de map');
     }
     
     // Démarrer les mises à jour périodiques
@@ -68,12 +82,69 @@ class MonsterSyncManager {
         });
     }
     
+    // Synchroniser un monstre spécifique (appelé quand il bouge)
+    syncMonster(monster) {
+        if (!this.isEnabled || !monster) return;
+        
+        this.addLocalMonster(monster);
+    }
+    
+    // Synchroniser une attaque sur un monstre
+    syncMonsterAttack(monster, damage) {
+        if (!this.isEnabled || !monster) {
+            console.log(`⚠️ Impossible de synchroniser l'attaque: isEnabled=${this.isEnabled}, monster=${!!monster}`);
+            return;
+        }
+        
+        // Trouver le syncId du monstre
+        let syncId = monster.syncId;
+        if (!syncId) {
+            // Si le monstre n'a pas de syncId, l'ajouter à la synchronisation
+            console.log(`🔄 Monstre sans syncId, ajout à la synchronisation: ${monster.type}`);
+            this.addLocalMonster(monster);
+            syncId = monster.syncId;
+        }
+        
+        if (!syncId) {
+            console.error('⚠️ Impossible de synchroniser l\'attaque : monstre sans syncId');
+            return;
+        }
+        
+        const attackData = {
+            monsterId: syncId,
+            type: 'attack',
+            damage: damage,
+            monsterType: monster.type,
+            monsterX: monster.x,
+            monsterY: monster.y,
+            timestamp: Date.now()
+        };
+        
+        // Envoyer immédiatement l'attaque
+        if (window.multiplayerManager && window.multiplayerManager.connected) {
+            window.multiplayerManager.socket.send(JSON.stringify({
+                type: 'monster_attack',
+                data: attackData
+            }));
+            
+            console.log(`⚔️ Attaque synchronisée: ${damage} dégâts sur ${monster.type} (${syncId}) - Position: (${monster.x}, ${monster.y})`);
+        } else {
+            console.log(`⚠️ Impossible d'envoyer l'attaque: multiplayerManager=${!!window.multiplayerManager}, connected=${window.multiplayerManager?.connected}`);
+        }
+    }
+
     // Ajouter un monstre local à la synchronisation
     addLocalMonster(monster) {
         if (!this.isEnabled) return;
         
+        // Assigner un syncId si le monstre n'en a pas
+        if (!monster.syncId) {
+            monster.syncId = this.generateSyncId();
+            console.log(`🐉 SyncId assigné au monstre ${monster.type}: ${monster.syncId}`);
+        }
+        
         const monsterData = {
-            id: monster.id || `local_${Date.now()}_${Math.random()}`,
+            id: monster.syncId,
             type: monster.type,
             x: monster.x,
             y: monster.y,
@@ -82,11 +153,15 @@ class MonsterSyncManager {
             frame: monster.frame || 0,
             moving: monster.moving || false,
             level: monster.level || 1,
-            isDead: monster.isDead || false
+            isDead: monster.isDead || false,
+            hp: monster.hp || 100
         };
         
-        this.localMonsterUpdates.set(monsterData.id, monsterData);
-        console.log(`🐉 Monstre local ajouté à la synchronisation: ${monsterData.type} (${monsterData.id})`);
+        // Stocker la référence au monstre local
+        this.localMonsters.set(monster.syncId, monster);
+        this.localMonsterUpdates.set(monster.syncId, monsterData);
+        
+        console.log(`🐉 Monstre local ajouté à la synchronisation: ${monsterData.type} (${monsterData.id}) - Position: (${monster.x}, ${monster.y})`);
     }
     
     // Envoyer les mises à jour des monstres au serveur
@@ -116,11 +191,64 @@ class MonsterSyncManager {
         });
     }
     
+    // Recevoir une attaque d'un autre joueur
+    handleMonsterAttack(attackData) {
+        if (!this.isEnabled) return;
+        
+        console.log(`⚔️ Attaque reçue: ${attackData.damage} dégâts sur ${attackData.monsterType} (${attackData.monsterId})`);
+        
+        // Chercher le monstre local par syncId d'abord
+        let localMonster = this.localMonsters.get(attackData.monsterId);
+        
+        // Si pas trouvé par syncId, chercher par position et type
+        if (!localMonster) {
+            localMonster = window.monsters.find(m => 
+                m.type === attackData.monsterType && 
+                m.x === attackData.monsterX && 
+                m.y === attackData.monsterY &&
+                m.hp > 0
+            );
+        }
+        
+        if (localMonster) {
+            // Appliquer les dégâts au monstre local
+            localMonster.hp -= attackData.damage;
+            
+            // Afficher les dégâts
+            if (typeof displayDamage === 'function') {
+                displayDamage(localMonster.px, localMonster.py, attackData.damage, 'damage', false);
+            }
+            
+            console.log(`⚔️ Dégâts appliqués au monstre local: ${localMonster.hp} HP restants`);
+            
+            // Vérifier si le monstre est mort
+            if (localMonster.hp <= 0) {
+                if (typeof release === "function") release(localMonster.x, localMonster.y);
+                if (typeof killMonster === "function") killMonster(localMonster);
+                
+                // Retirer le monstre de la synchronisation
+                if (localMonster.syncId) {
+                    this.localMonsters.delete(localMonster.syncId);
+                }
+                
+                console.log(`💀 Monstre local tué par un autre joueur`);
+            }
+        } else {
+            console.log(`⚠️ Monstre local non trouvé pour l'attaque reçue`);
+        }
+    }
+
     // Dessiner les monstres synchronisés
     drawSyncedMonsters(ctx) {
         if (!this.isEnabled || this.syncedMonsters.size === 0) return;
         
         this.syncedMonsters.forEach((monsterData, id) => {
+            // Ne pas dessiner les monstres morts
+            if (monsterData.isDead) {
+                this.syncedMonsters.delete(id);
+                return;
+            }
+            
             this.drawSyncedMonster(ctx, monsterData);
         });
     }
@@ -207,10 +335,31 @@ function disableMonsterSync() {
     }
 }
 
-// Fonction pour dessiner les monstres synchronisés
+            // Fonction pour dessiner les monstres synchronisés
 function drawSyncedMonsters(ctx) {
     if (window.monsterSyncManager) {
         window.monsterSyncManager.drawSyncedMonsters(ctx);
+    }
+}
+
+// Fonction pour synchroniser un monstre spécifique
+function syncMonster(monster) {
+    if (window.monsterSyncManager) {
+        window.monsterSyncManager.syncMonster(monster);
+    }
+}
+
+// Fonction pour synchroniser une attaque sur un monstre
+function syncMonsterAttack(monster, damage) {
+    if (window.monsterSyncManager) {
+        window.monsterSyncManager.syncMonsterAttack(monster, damage);
+    }
+}
+
+// Fonction pour nettoyer les monstres synchronisés lors du changement de map
+function clearSyncedMonsters() {
+    if (window.monsterSyncManager) {
+        window.monsterSyncManager.clearSyncedMonsters();
     }
 }
 

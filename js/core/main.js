@@ -249,6 +249,15 @@ function drawGame() {
             }
         }
         
+        // Dessiner les monstres synchronisés (multijoueur)
+        if (typeof drawSyncedMonsters === "function") {
+            try {
+                drawSyncedMonsters(ctx);
+            } catch (error) {
+                // Erreur silencieuse
+            }
+        }
+        
         // Dessiner les tooltips au survol
         if (typeof drawAllTooltips === "function") {
             try {

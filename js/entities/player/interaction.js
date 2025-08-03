@@ -580,6 +580,14 @@ function handleSpaceAttack() {
                 const finalDamage = Math.max(1, baseDamage - (attackTarget.defense || 0));
                 attackTarget.hp -= finalDamage;
                 
+                // Synchroniser l'attaque en multijoueur
+                if (typeof syncMonsterAttack === 'function') {
+                    console.log(`⚔️ Tentative de synchronisation d'attaque: ${finalDamage} dégâts sur ${attackTarget.type} (syncId: ${attackTarget.syncId || 'non défini'})`);
+                    syncMonsterAttack(attackTarget, finalDamage);
+                } else {
+                    console.log('⚠️ Fonction syncMonsterAttack non disponible');
+                }
+                
                 // Afficher les dégâts
                 if (typeof displayDamage === 'function') {
                     displayDamage(attackTarget.px, attackTarget.py, finalDamage, isCrit ? 'critique' : 'damage', false);

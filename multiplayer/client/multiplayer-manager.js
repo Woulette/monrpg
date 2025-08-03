@@ -10,7 +10,9 @@ class MultiplayerManager {
         this.currentMap = 'map1';
         
         // Configuration
-        this.serverUrl = 'ws://localhost:3001'; // Utiliser le serveur local pour tester
+        this.serverUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'ws://localhost:3001' 
+            : 'wss://monrpg.onrender.com'; // URL de votre serveur Render
         this.updateInterval = null;
         
         console.log('🎮 Système multijoueur initialisé');
@@ -30,6 +32,11 @@ class MultiplayerManager {
                     this.sendPlayerName();
                 }, 100);
                 
+                // Activer la synchronisation des monstres
+                if (typeof enableMonsterSync === "function") {
+                    enableMonsterSync();
+                }
+                
                 // S'assurer que la carte actuelle est synchronisée
                 if (window.currentMap && this.currentMap !== window.currentMap) {
                     this.currentMap = window.currentMap;
@@ -48,6 +55,11 @@ class MultiplayerManager {
                 this.connected = false;
                 this.otherPlayers.clear();
                 this.stopPositionUpdates();
+                
+                // Désactiver la synchronisation des monstres
+                if (typeof disableMonsterSync === "function") {
+                    disableMonsterSync();
+                }
             };
             
             this.socket.onerror = (error) => {
@@ -137,6 +149,20 @@ class MultiplayerManager {
                     }
                 });
                 break;
+                
+                            case 'monster_updates':
+                    // Recevoir les mises à jour des monstres d'autres joueurs
+                    if (typeof window.monsterSyncManager !== 'undefined') {
+                        window.monsterSyncManager.handleMonsterUpdates(message.data);
+                    }
+                    break;
+                    
+                case 'monster_attack':
+                    // Recevoir une attaque d'un autre joueur
+                    if (typeof window.monsterSyncManager !== 'undefined') {
+                        window.monsterSyncManager.handleMonsterAttack(message.data);
+                    }
+                    break;
         }
     }
     
@@ -183,6 +209,11 @@ class MultiplayerManager {
             const oldMap = this.currentMap;
             this.otherPlayers.clear();
             console.log(`🧹 Liste des joueurs nettoyée pour ${oldMap} → ${mapName}`);
+            
+            // Nettoyer les monstres synchronisés lors du changement de map
+            if (typeof clearSyncedMonsters === 'function') {
+                clearSyncedMonsters();
+            }
             
             this.currentMap = mapName;
             this.socket.send(JSON.stringify({

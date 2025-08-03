@@ -202,6 +202,32 @@ wss.on('connection', (socket) => {
                     
                     console.log(`📡 Liste des joueurs envoyée pour ${requestedMap}: ${mapPlayers.length} joueurs`);
                     break;
+                    
+                case 'monster_updates':
+                    // Réception des mises à jour des monstres d'un joueur
+                    console.log(`🐉 Réception de ${data.data.length} mises à jour de monstres de ${playerData.name} (${playerData.id})`);
+                    
+                    // Diffuser les mises à jour aux autres joueurs sur la même carte
+                    broadcastToMap(playerData.map, {
+                        type: 'monster_updates',
+                        data: data.data
+                    }, socket);
+                    
+                    console.log(`🐉 Mises à jour des monstres diffusées à ${playerData.map}`);
+                    break;
+                    
+                case 'monster_attack':
+                    // Réception d'une attaque sur un monstre
+                    console.log(`⚔️ Attaque reçue: ${data.data.damage} dégâts sur ${data.data.monsterType} par ${playerData.name} (${playerData.id})`);
+                    
+                    // Diffuser l'attaque aux autres joueurs sur la même carte
+                    broadcastToMap(playerData.map, {
+                        type: 'monster_attack',
+                        data: data.data
+                    }, socket);
+                    
+                    console.log(`⚔️ Attaque diffusée à ${playerData.map}`);
+                    break;
             }
         } catch (error) {
             console.error('❌ Erreur parsing message:', error);

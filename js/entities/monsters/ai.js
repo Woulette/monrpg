@@ -79,6 +79,12 @@ function moveMonsters(ts) {
             monster.moving = false;
             monster.frame = 0;
             monster.stuckSince = 0;
+            
+            // Synchroniser le monstre en multijoueur
+            if (typeof syncMonster === 'function') {
+                syncMonster(monster);
+            }
+            
             // Appeler nextStepMonster seulement s'il y a encore un chemin
             if (monster.movePath && monster.movePath.length > 0) {
                 nextStepMonster(monster, ts);
