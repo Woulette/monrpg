@@ -4,11 +4,8 @@
 // Fonction pour permettre au boss d'invoquer des slimes sur mapdonjonslimeboss
 window.spawnSlimeForBoss = function(x, y, level = 7) {
     if (window.currentMap !== "mapdonjonslimeboss") {
-        console.log("❌ Erreur: spawnSlimeForBoss ne peut être utilisé que sur mapdonjonslimeboss");
         return null;
     }
-    
-    console.log(`🐸 Invocation d'un slime par le boss à la position (${x}, ${y}) - Niveau ${level}`);
     
     const newSlime = {
         id: Date.now() + Math.random(), // ID unique
@@ -64,14 +61,12 @@ window.spawnSlimeForBoss = function(x, y, level = 7) {
         window.assignMonsterImages();
     }
     
-    console.log(`✅ Slime du boss invoqué avec succès - ID: ${newSlime.id}`);
     return newSlime;
 };
 
 // Fonction pour nettoyer tous les slimes du boss
 window.cleanBossSlimes = function() {
     if (window.currentMap !== "mapdonjonslimeboss") {
-        console.log("❌ Erreur: cleanBossSlimes ne peut être utilisé que sur mapdonjonslimeboss");
         return;
     }
     
@@ -85,15 +80,11 @@ window.cleanBossSlimes = function() {
         });
         
         window.monsters = window.monsters.filter(monster => !monster.isBossSlime);
-        console.log(`🧹 ${bossSlimes.length} slimes du boss nettoyés (les slimes normaux restent intacts)`);
     }
 };
 
 // Fonction pour forcer le nettoyage des slimes sur mapdonjonslimeboss
 window.forceCleanSlimesOnBossMap = function() {
-    console.log("🧹 FORÇAGE du nettoyage des slimes normaux sur mapdonjonslimeboss...");
-    
-    // Supprimer UNIQUEMENT les slimes normaux si on est sur mapdonjonslimeboss
     if (window.currentMap === "mapdonjonslimeboss") {
         // Nettoyer d'abord le localStorage
         if (typeof window.clearBossMapMonsterData === "function") {
@@ -106,8 +97,6 @@ window.forceCleanSlimesOnBossMap = function() {
                 monster.type === "slime" && !monster.isBossSlime
             );
             
-            console.log(`🗑️ Suppression forcée de ${normalSlimesToRemove.length} slimes normaux sur mapdonjonslimeboss`);
-            
             // Libérer les positions des slimes normaux
             normalSlimesToRemove.forEach(slime => {
                 if (typeof window.release === "function") {
@@ -119,20 +108,15 @@ window.forceCleanSlimesOnBossMap = function() {
             window.monsters = window.monsters.filter(monster => 
                 !(monster.type === "slime" && !monster.isBossSlime)
             );
-            
-            console.log(`✅ ${normalSlimesToRemove.length} slimes normaux supprimés, ${window.monsters.length} autres monstres conservés`);
-        } else {
-            console.log("✅ Aucun monstre à supprimer sur mapdonjonslimeboss");
         }
     } else {
-        console.log("❌ Erreur: forceCleanSlimesOnBossMap ne peut être utilisé que sur mapdonjonslimeboss");
+        return;
     }
 };
 
 // Fonction pour nettoyer TOUS les slimes normaux sur mapdonjonslimeboss
 window.cleanAllSlimesOnBossMap = function() {
     if (window.currentMap !== "mapdonjonslimeboss") {
-        console.log("❌ Erreur: cleanAllSlimesOnBossMap ne peut être utilisé que sur mapdonjonslimeboss");
         return;
     }
     
@@ -151,14 +135,11 @@ window.cleanAllSlimesOnBossMap = function() {
         window.monsters = window.monsters.filter(monster => 
             !(monster.type === "slime" && !monster.isBossSlime)
         );
-        console.log(`🧹 ${normalSlimes.length} slimes normaux supprimés de mapdonjonslimeboss (les slimes du boss restent intacts)`);
     }
 };
 
 // Fonction pour gérer la mort du SlimeBoss et les récompenses
 window.handleSlimeBossDeath = function() {
-    console.log("🏆 SlimeBoss vaincu ! Système de récompense activé...");
-    
     // Afficher la popup de félicitations
     if (typeof window.showBossVictoryPopup === "function") {
         window.showBossVictoryPopup();
@@ -171,23 +152,17 @@ window.handleSlimeBossDeath = function() {
     if (typeof window.saveGameStateData === "function" && window.currentCharacterId) {
         window.saveGameStateData(window.currentCharacterId);
     }
-    
-    console.log("✅ État de victoire du SlimeBoss sauvegardé");
 };
 
 // Fonction pour ouvrir le coffre du boss
 window.openBossChest = function() {
     if (window.currentMap !== "mapdonjonslimeboss") {
-        console.log("❌ Erreur: Le coffre ne peut être ouvert que sur mapdonjonslimeboss");
         return;
     }
     
     if (!window.slimeBossDefeated) {
-        console.log("❌ Erreur: Le SlimeBoss doit être vaincu pour ouvrir le coffre");
         return;
     }
-    
-    console.log("🎁 Ouverture du coffre du SlimeBoss...");
     
     // Afficher la fenêtre de sélection (la téléportation se fera après sélection d'un objet)
     if (typeof window.showBossChestWindow === "function") {
@@ -197,16 +172,9 @@ window.openBossChest = function() {
 
 // Fonction pour créer le SlimeBoss sur mapdonjonslimeboss
 function spawnSlimeBossOnBossMap() {
-    console.log("🔍 === DÉBUT SPAWN SLIMEBOSS ===");
-    console.log("🗺️ Map actuelle:", window.currentMap);
-    console.log("📊 Monstres avant spawn:", window.monsters ? window.monsters.length : 0);
-    
     if (window.currentMap !== "mapdonjonslimeboss") {
-        console.log("❌ Erreur: spawnSlimeBossOnBossMap ne peut être utilisé que sur mapdonjonslimeboss");
         return null;
     }
-    
-    console.log("🐉 Création du SlimeBoss sur mapdonjonslimeboss à la position (12, 4)...");
     
     // Position du boss 64x64 (12,4) comme demandé
     const bossX = 12; // Position X du boss
@@ -266,22 +234,16 @@ function spawnSlimeBossOnBossMap() {
         maxSummonedSlimes: 3
     };
     
-    console.log("📦 SlimeBoss créé:", slimeBoss);
-    
     // S'assurer que window.monsters existe
     if (!window.monsters) {
-        console.log("⚠️ window.monsters n'existe pas, création...");
         window.monsters = [];
     }
     
     // Ajouter le boss au tableau des monstres
     window.monsters.push(slimeBoss);
-    console.log("📦 SlimeBoss ajouté à window.monsters");
-    console.log("📊 Monstres après ajout:", window.monsters.length);
     
     // Vérifier que le boss est bien dans le tableau
     const bossInArray = window.monsters.find(m => m.id === "slimeboss_001");
-    console.log("🔍 Boss trouvé dans le tableau:", !!bossInArray);
     
     // Marquer la position comme occupée (zone 2x2 pour le boss 64x64)
     if (typeof window.occupy === "function") {
@@ -289,22 +251,18 @@ function spawnSlimeBossOnBossMap() {
         window.occupy(bossX + 1, bossY);
         window.occupy(bossX, bossY + 1);
         window.occupy(bossX + 1, bossY + 1);
-        console.log("📍 Positions marquées comme occupées");
     } else {
-        console.log("⚠️ Fonction window.occupy non disponible");
+        return;
     }
     
     // Assigner l'image du boss
     if (typeof window.assignMonsterImages === "function") {
-        console.log("🖼️ Utilisation de assignMonsterImages...");
         window.assignMonsterImages();
     } else {
-        console.log("🖼️ Chargement manuel de l'image du boss...");
         // Charger l'image du boss manuellement
         const bossImg = new Image();
         bossImg.onload = function() {
             slimeBoss.img = bossImg;
-            console.log("✅ Image du SlimeBoss chargée avec succès");
         };
         bossImg.onerror = function() {
             console.error("❌ Erreur lors du chargement de l'image du SlimeBoss");
@@ -312,21 +270,17 @@ function spawnSlimeBossOnBossMap() {
         bossImg.src = "assets/personnages/slimeboss.png";
     }
     
-    console.log(`✅ SlimeBoss créé avec succès - ID: ${slimeBoss.id}, HP: ${slimeBoss.hp}/${slimeBoss.maxHp}`);
-    console.log("🔍 === FIN SPAWN SLIMEBOSS ===");
     return slimeBoss;
 }
 
 // Fonction pour forcer la recréation du SlimeBoss si nécessaire
 function ensureSlimeBossExists() {
     if (window.currentMap !== "mapdonjonslimeboss") {
-        console.log("❌ ensureSlimeBossExists ne peut être utilisé que sur mapdonjonslimeboss");
         return false;
     }
     
     // Vérifier si le boss a déjà été vaincu
     if (window.slimeBossDefeated) {
-        console.log("🏆 SlimeBoss déjà vaincu, pas de recréation");
         return false;
     }
     
@@ -334,13 +288,11 @@ function ensureSlimeBossExists() {
     if (window.monsters && window.monsters.length > 0) {
         const existingBoss = window.monsters.find(m => m.type === 'slimeboss');
         if (existingBoss) {
-            console.log("✅ SlimeBoss existe déjà:", existingBoss.id);
             return true;
         }
     }
     
     // Le boss n'existe pas et n'a pas été vaincu, le créer
-    console.log("🐉 SlimeBoss manquant, création...");
     const boss = spawnSlimeBossOnBossMap();
     return !!boss;
 }
@@ -377,7 +329,6 @@ function updateSlimeBoss(monster, ts) {
         monster.aggro = true;
         monster.aggroTarget = player;
         monster.lastCombat = ts;
-        console.log("🐉 SlimeBoss entre en mode aggro !");
     }
     
     // Déclencher l'aggro si le boss a été attaqué
@@ -447,8 +398,6 @@ function updateSlimeBoss(monster, ts) {
                     gainStatXP('defense', 2); // Plus d'XP pour un boss
                 }
                 
-                console.log(`🐉 SlimeBoss attaque ! Dégâts: ${bossDamage}`);
-                
                 // Réinitialiser le flag d'attaque après un délai
                 setTimeout(() => {
                     if (monster && typeof monster === 'object') {
@@ -484,7 +433,6 @@ function updateSlimeBoss(monster, ts) {
                     if (typeof spawnSlimeForBoss === 'function') {
                         spawnSlimeForBoss(summonPos.x, summonPos.y, 8);
                         monster.lastSummonTime = ts;
-                        console.log(`🐸 SlimeBoss invoque un slime à (${summonPos.x}, ${summonPos.y})`);
                     }
                 }
             }

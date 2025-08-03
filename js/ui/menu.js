@@ -14,7 +14,6 @@ let gameMenuBtn;
 
 // ===== INITIALISATION =====
 window.addEventListener('DOMContentLoaded', function() {
-    console.log('🎮 Initialisation du système multi-personnages...');
     
     // Initialiser les éléments DOM
     characterSelectionMenu = document.getElementById('character-selection-menu');
@@ -53,15 +52,12 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // Charger les personnages depuis localStorage
 function loadCharacterSlots() {
-    console.log('📂 Chargement des slots de personnages...');
     
     try {
         const savedSlots = localStorage.getItem('monrpg_character_slots');
         if (savedSlots) {
             window.characterSlots = JSON.parse(savedSlots);
-            console.log('✅ Slots chargés:', window.characterSlots);
         } else {
-            console.log('🆕 Aucun slot sauvegardé, initialisation avec des slots vides');
             window.characterSlots = [null, null, null, null, null];
         }
     } catch (error) {
@@ -74,7 +70,6 @@ function loadCharacterSlots() {
 function saveCharacterSlots() {
     try {
         localStorage.setItem('monrpg_character_slots', JSON.stringify(window.characterSlots));
-        console.log('💾 Slots sauvegardés');
     } catch (error) {
         console.error('❌ Erreur lors de la sauvegarde des slots:', error);
     }
@@ -82,7 +77,6 @@ function saveCharacterSlots() {
 
 // Créer un nouveau personnage
 function createCharacter(slotIndex, name, avatar) {
-    console.log(`👤 Création du personnage ${name} dans le slot ${slotIndex}`);
     
     const character = {
         id: Date.now() + Math.random(),
@@ -164,36 +158,29 @@ function createCharacter(slotIndex, name, avatar) {
     window.characterSlots[slotIndex] = character;
     saveCharacterSlots();
     
-    console.log('✅ Personnage créé et sauvegardé');
-    
     // Réinitialiser les quêtes pour le nouveau personnage
     if (typeof window.resetQuestsToInitial === 'function') {
         window.resetQuestsToInitial();
-        console.log('🔄 Quêtes réinitialisées pour le nouveau personnage');
     }
     
     // Réinitialiser l'inventaire pour le nouveau personnage
     if (typeof window.resetInventory === 'function') {
         window.resetInventory();
-        console.log('🔄 Inventaire réinitialisé pour le nouveau personnage');
     }
     
     // Forcer la réinitialisation complète de toutes les données
     if (typeof window.forceResetAllQuests === 'function') {
         window.forceResetAllQuests();
-        console.log('🔄 Toutes les données de quêtes réinitialisées');
     }
     
     // Réinitialiser le joueur global
     if (typeof window.resetPlayer === 'function') {
         window.resetPlayer();
-        console.log('🔄 Joueur global réinitialisé');
     }
     
     // Réinitialiser les propriétés des PNJ
     if (typeof window.resetPNJProperties === 'function') {
         window.resetPNJProperties();
-        console.log('🔄 Propriétés des PNJ réinitialisées');
     }
     
     // Démarrer automatiquement le jeu avec le nouveau personnage
@@ -204,12 +191,9 @@ function createCharacter(slotIndex, name, avatar) {
 
 // Supprimer un personnage
 function deleteCharacter(slotIndex) {
-    console.log(`🗑️ Suppression du personnage du slot ${slotIndex}`);
     
     if (window.characterSlots[slotIndex]) {
         const character = window.characterSlots[slotIndex];
-        
-        console.log(`🗑️ Suppression de toutes les données pour le personnage ${character.name} (ID: ${character.id})`);
         
         // Supprimer toutes les données liées à ce personnage
         localStorage.removeItem(`monrpg_save_${character.id}`);
@@ -237,7 +221,6 @@ function deleteCharacter(slotIndex) {
         window.characterSlots[slotIndex] = null;
         saveCharacterSlots();
         
-        console.log('✅ Personnage et toutes ses données supprimés complètement');
         return true;
     }
     
@@ -248,7 +231,6 @@ function deleteCharacter(slotIndex) {
 
 // Afficher le menu de sélection
 function showCharacterSelectionMenu() {
-    console.log('🎮 Affichage du menu de sélection');
     
     gameState = "menu";
     characterSelectionMenu.style.display = 'flex';
@@ -267,7 +249,6 @@ function showCharacterSelectionMenu() {
 
 // Afficher le menu de création
 function showCharacterCreationMenu(slotIndex) {
-    console.log(`🎮 Affichage du menu de création pour le slot ${slotIndex}`);
     
     gameState = "creation";
     window.currentCharacterSlot = slotIndex;
@@ -288,7 +269,6 @@ function showCharacterCreationMenu(slotIndex) {
 
 // Afficher l'écran de chargement
 function showLoadingScreen() {
-    console.log('⏳ Affichage de l\'écran de chargement');
     
     loadingScreen.style.display = 'flex';
     characterSelectionMenu.style.display = 'none';
@@ -377,21 +357,12 @@ function initializeEvents() {
     // Bouton de création
     if (createCharacterBtn) {
         createCharacterBtn.addEventListener('click', function() {
-            console.log('🎯 Bouton de création cliqué');
             const name = characterNameInput.value.trim();
             const selectedAvatar = document.querySelector('.avatar-option.selected');
             
-            console.log('📝 Nom saisi:', name);
-            console.log('🖼️ Avatar sélectionné:', selectedAvatar);
-            
             if (name && selectedAvatar) {
                 const avatar = selectedAvatar.dataset.avatar;
-                console.log('🎮 Création du personnage avec avatar:', avatar);
                 createCharacter(window.currentCharacterSlot, name, avatar);
-            } else {
-                console.log('❌ Données manquantes pour la création');
-                if (!name) console.log('❌ Nom manquant');
-                if (!selectedAvatar) console.log('❌ Avatar non sélectionné');
             }
         });
     }
@@ -523,7 +494,6 @@ function formatPlayTime(timestamp) {
 
 // Démarrer le jeu
 function startGame(slotIndex) {
-    console.log(`🎮 Démarrage du jeu avec le personnage du slot ${slotIndex}`);
     
     const character = window.characterSlots[slotIndex];
     if (!character) {
@@ -575,7 +545,6 @@ function saveCurrentCharacter(character) {
             window.saveQuestsForCharacter(character.id);
         }
         
-        console.log('💾 Personnage sauvegardé pour le jeu');
     } catch (error) {
         console.error('❌ Erreur lors de la sauvegarde du personnage:', error);
     }
@@ -583,7 +552,6 @@ function saveCurrentCharacter(character) {
 
 // Initialiser le jeu
 function initializeGame(character) {
-    console.log('🎮 Initialisation du jeu...');
     
     // Définir les variables globales
     window.playerName = character.name;
@@ -591,7 +559,6 @@ function initializeGame(character) {
     window.currentCharacterId = character.id;
     
     // Réinitialiser les quêtes pour ce personnage spécifique
-    console.log('🔄 Réinitialisation des quêtes pour le nouveau personnage...');
     if (typeof window.switchCharacterQuests === 'function') {
         window.switchCharacterQuests(character.id);
     } else {
@@ -605,7 +572,6 @@ function initializeGame(character) {
     }
     
     // Réinitialiser le compteur de corbeaux pour ce personnage
-    console.log('🔄 Réinitialisation du compteur de corbeaux pour le nouveau personnage...');
     if (typeof window.resetCrowKillCounts === 'function') {
         window.resetCrowKillCounts();
     }
@@ -625,10 +591,10 @@ function initializeGame(character) {
     // Afficher le bouton menu
     gameMenuBtn.style.display = 'block';
     
-    // Afficher le bouton multijoueur
+    // Afficher le bouton multijoueur (caché car remplacé par le panneau MMO)
     const multiplayerBtn = document.getElementById('multiplayer-btn');
     if (multiplayerBtn) {
-        multiplayerBtn.style.display = 'block';
+        multiplayerBtn.style.display = 'none'; // Caché car remplacé par le panneau MMO
         
         // Gestion du clic sur le bouton multijoueur
         multiplayerBtn.onclick = () => {
@@ -652,7 +618,6 @@ function initializeGame(character) {
     }
     
     // LANCER VRAIMENT LE JEU maintenant
-    console.log('🚀 Lancement complet du jeu...');
     
     // Initialiser tous les systèmes de jeu
     if (typeof window.startGameDirectly === 'function') {
@@ -670,7 +635,6 @@ function initializeGame(character) {
 
 // Fonction pour retourner au menu (depuis le jeu)
 window.returnToMenu = function() {
-    console.log('🏠 Retour au menu principal - arrêt complet du jeu');
     
     // Sauvegarder l'état actuel si on est en jeu
     if (gameState === "playing" && window.currentCharacterId) {
@@ -712,11 +676,9 @@ window.returnToMenu = function() {
     // Afficher le menu de sélection
     showCharacterSelectionMenu();
     
-    console.log('✅ Jeu complètement arrêté, retour au menu');
 };
 
 // Fonction pour réinitialiser le dialogue de création
 window.resetCharacterCreationDialog = function() {
     window.characterCreationDialogShown = false;
-    console.log('🎮 Flag du dialogue de création de personnage réinitialisé');
 };

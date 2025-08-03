@@ -8,7 +8,6 @@ let chatElements = {};
 
 // Fonction d'initialisation
 function initChat() {
-    console.log("Initialisation du chat...");
     
     // Créer le HTML du chat directement
     createChatHTML();
@@ -19,7 +18,6 @@ function initChat() {
     // Ajouter les event listeners
     setupEventListeners();
     
-    console.log("Chat initialisé");
 }
 
 // Créer le HTML du chat

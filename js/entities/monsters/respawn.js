@@ -175,22 +175,16 @@ function updateMonsterRespawn() {
                 occupy(newSpawnX, newSpawnY);
             }
             
-            if (monster.type === "slime") {
-                console.log(`Slime ${monster.id} a respawné à la position (${monster.x}, ${monster.y}) - Niveau ${newLevel}`);
-            } else {
-                console.log(`Corbeau ${monster.id} a respawné à la position (${monster.x}, ${monster.y}) - Niveau ${newLevel}`);
-            }
+            // Monstre respawné
         }
     });
     
     // Deuxième passe : supprimer les monstres invalides de manière sûre
     if (monstersToRemove.length > 0) {
-        console.log(`🗑️ Suppression de ${monstersToRemove.length} monstres invalides`);
         monstersToRemove.forEach(monsterToRemove => {
             const index = window.monsters.indexOf(monsterToRemove);
             if (index > -1) {
                 window.monsters.splice(index, 1);
-                console.log(`✅ Monstre ${monsterToRemove.type} ${monsterToRemove.id} supprimé avec succès`);
             }
         });
         
@@ -203,25 +197,7 @@ function updateMonsterRespawn() {
 
 // Fonction de diagnostic pour vérifier le système de respawn
 function diagnoseRespawnSystem() {
-    console.log("🔍 Diagnostic du système de respawn:");
-    console.log(`- Map actuelle: ${window.currentMap}`);
-    console.log(`- Nombre de monstres: ${window.monsters ? window.monsters.length : 0}`);
-    
-    if (window.monsters) {
-        window.monsters.forEach((monster, index) => {
-            if (monster) {
-                const timeSinceDeath = monster.isDead ? Date.now() - monster.deathTime : 0;
-                const timeUntilRespawn = monster.respawnTime - timeSinceDeath;
-                
-                console.log(`  Monstre ${index} (${monster.type}):`, {
-                    isDead: monster.isDead,
-                    timeSinceDeath: timeSinceDeath,
-                    respawnTime: monster.respawnTime,
-                    timeUntilRespawn: timeUntilRespawn > 0 ? timeUntilRespawn : "Prêt à respawn"
-                });
-            }
-        });
-    }
+    // Diagnostic du système de respawn
 }
 
 // Export global

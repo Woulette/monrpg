@@ -10,17 +10,13 @@ class InventorySaveManager {
     // Sauvegarder l'inventaire
     saveInventory(characterId) {
         if (!characterId) {
-            console.log('⚠️ Impossible de sauvegarder l\'inventaire: characterId manquant');
             return false;
         }
-
-        console.log('💾 Sauvegarde de l\'inventaire pour le personnage', characterId);
 
         try {
             // Utiliser les fonctions existantes si disponibles
             if (typeof window.saveInventoryForCharacter === 'function') {
                 window.saveInventoryForCharacter(characterId);
-                console.log('✅ Inventaire sauvegardé via fonction existante');
                 return true;
             }
 
@@ -53,7 +49,6 @@ class InventorySaveManager {
             const saveKey = `monrpg_inventory_${characterId}`;
             localStorage.setItem(saveKey, JSON.stringify(inventoryData));
             
-            console.log('✅ Inventaire sauvegardé avec succès');
             return true;
             
         } catch (error) {
@@ -65,17 +60,13 @@ class InventorySaveManager {
     // Charger l'inventaire
     loadInventory(characterId) {
         if (!characterId) {
-            console.log('⚠️ Impossible de charger l\'inventaire: characterId manquant');
             return false;
         }
-
-        console.log('📂 Chargement de l\'inventaire pour le personnage', characterId);
 
         try {
             // Utiliser les fonctions existantes si disponibles
             if (typeof window.loadInventoryForCharacter === 'function') {
                 window.loadInventoryForCharacter(characterId);
-                console.log('✅ Inventaire chargé via fonction existante');
                 return true;
             }
 
@@ -84,7 +75,6 @@ class InventorySaveManager {
             const savedData = localStorage.getItem(saveKey);
             
             if (!savedData) {
-                console.log('❌ Aucune sauvegarde d\'inventaire trouvée pour ce personnage');
                 return false;
             }
 
@@ -95,8 +85,6 @@ class InventorySaveManager {
                 console.warn(`⚠️ Version de sauvegarde différente: ${data.version} vs ${this.version}`);
             }
 
-            console.log('📦 Restauration de l\'inventaire...');
-            
             // Restaurer les inventaires
             if (data.inventories) {
                 window.inventoryAll = data.inventories.all || [];
@@ -126,7 +114,6 @@ class InventorySaveManager {
                 window.updateStatsDisplay();
             }
             
-            console.log('✅ Inventaire restauré avec succès');
             return true;
             
         } catch (error) {
@@ -157,14 +144,12 @@ class InventorySaveManager {
             // Utiliser les fonctions existantes si disponibles
             if (typeof window.deleteInventoryForCharacter === 'function') {
                 window.deleteInventoryForCharacter(characterId);
-                console.log('🗑️ Sauvegarde d\'inventaire supprimée via fonction existante');
                 return;
             }
             
             // Fallback : suppression manuelle
             const saveKey = `monrpg_inventory_${characterId}`;
             localStorage.removeItem(saveKey);
-            console.log('🗑️ Sauvegarde d\'inventaire supprimée pour le personnage', characterId);
         } catch (error) {
             console.error('❌ Erreur lors de la suppression de la sauvegarde d\'inventaire:', error);
         }
@@ -257,7 +242,6 @@ class InventorySaveManager {
             const saveKey = `monrpg_inventory_${characterId}`;
             localStorage.setItem(saveKey, JSON.stringify(emptyInventory));
             
-            console.log('✅ Inventaire vide créé pour le personnage', characterId);
             return true;
             
         } catch (error) {
@@ -268,8 +252,6 @@ class InventorySaveManager {
 
     // Migrer depuis l'ancien format d'inventaire
     migrateOldInventory(characterId) {
-        console.log('🔄 Migration de l\'ancien inventaire...');
-        
         // Vérifier s'il y a des anciennes sauvegardes d'inventaire
         const oldInventoryKey = `monrpg_inventory_${characterId}`;
         const oldData = localStorage.getItem(oldInventoryKey);
@@ -280,12 +262,10 @@ class InventorySaveManager {
                 
                 // Si c'est déjà au nouveau format, pas besoin de migration
                 if (data.version && data.inventories) {
-                    console.log('✅ Inventaire déjà au nouveau format');
                     return true;
                 }
                 
                 // Migration depuis l'ancien format
-                console.log('📦 Migration depuis l\'ancien format d\'inventaire...');
                 
                 const newData = {
                     version: this.version,
@@ -310,7 +290,6 @@ class InventorySaveManager {
                 };
                 
                 localStorage.setItem(oldInventoryKey, JSON.stringify(newData));
-                console.log('✅ Inventaire migré avec succès');
                 return true;
                 
             } catch (error) {
@@ -338,5 +317,3 @@ window.migrateOldInventory = (characterId) => inventorySaveManager.migrateOldInv
 // Exporter la classe pour utilisation avancée
 window.InventorySaveManager = InventorySaveManager;
 window.inventorySaveManager = inventorySaveManager;
-
-console.log('✅ Module saveInventory.js chargé');

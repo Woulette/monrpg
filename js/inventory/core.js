@@ -95,7 +95,6 @@ function saveInventoryForCharacter(characterId) {
         };
         
         localStorage.setItem(`monrpg_inventory_${characterId}`, JSON.stringify(inventoryData));
-        console.log(`💾 Inventaire sauvegardé pour le personnage ${characterId}`);
     } catch (error) {
         console.error('❌ Erreur lors de la sauvegarde de l\'inventaire:', error);
     }
@@ -113,7 +112,6 @@ function loadInventoryForCharacter(characterId) {
         const savedData = localStorage.getItem(saveKey);
         
         if (!savedData) {
-            console.log(`📭 Aucun inventaire sauvegardé trouvé pour le personnage ${characterId}`);
             return false;
         }
         
@@ -149,7 +147,6 @@ function loadInventoryForCharacter(characterId) {
             updateEquipmentDisplay();
         }
         
-        console.log(`✅ Inventaire chargé pour le personnage ${characterId}`);
         return true;
         
     } catch (error) {
@@ -164,7 +161,6 @@ function deleteInventoryForCharacter(characterId) {
     
     try {
         localStorage.removeItem(`monrpg_inventory_${characterId}`);
-        console.log(`🗑️ Inventaire supprimé pour le personnage ${characterId}`);
     } catch (error) {
         console.error('❌ Erreur lors de la suppression de l\'inventaire:', error);
     }

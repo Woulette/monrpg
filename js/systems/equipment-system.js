@@ -149,8 +149,6 @@ function equipItem(itemId) {
     // Appliquer les bonus de stats
     applyEquipmentStats();
     
-    console.log(`Équipé: ${item.name}`);
-    
     // Sauvegarde automatique lors de l'équipement
     if (typeof autoSaveOnEvent === 'function') {
         autoSaveOnEvent();
@@ -171,8 +169,6 @@ function unequipItem(slot) {
     
     // Retirer l'équipement
     window.equippedItems[slot] = null;
-    
-    console.log(`Déséquipé: ${item.name}`);
     
     // Sauvegarde automatique lors du déséquipement
     if (typeof autoSaveOnEvent === 'function') {
@@ -287,8 +283,6 @@ function getItemInSlot(slot) {
 
 // Fonction d'initialisation
 function initEquipmentSystem() {
-    console.log("Initialisation du système d'équipement...");
-    
     // S'assurer que window.equippedItems existe
     if (!window.equippedItems) {
         window.equippedItems = {

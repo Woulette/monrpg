@@ -99,7 +99,6 @@ function updatePlayer(ts) {
             // Empêcher la superposition avec le SlimeBoss
             if (attackTarget.type === "slimeboss" && dist === 0) {
                 // Si le joueur est sur la même case que le SlimeBoss, le repousser
-                console.log("⚠️ Empêcher la superposition avec le SlimeBoss");
                 return;
             }
             
@@ -308,12 +307,6 @@ function updatePlayer(ts) {
 
         // Portail détecté
         if (portalFound) {
-            console.log(`🎯 PORTAL DEBUG - Map: ${window.currentMap}, Portal ID: ${portalGid}`);
-            console.log(`🎯 PORTAL DEBUG - Player pos: (${player.x}, ${player.y}), Direction: ${player.direction}`);
-            if (player.path && player.path.length > 0) {
-                console.log(`🎯 PORTAL DEBUG - Path length: ${player.path.length}`);
-            }
-            
             // Logique générale pour toutes les maps
             let destinationMap = null;
             let targetPortalId = null;
@@ -323,7 +316,6 @@ function updatePlayer(ts) {
             
             // Gestion spéciale pour la map 3
             if (window.currentMap === "map3") {
-                console.log(`🎯 PORTAL DEBUG - Using MAP3 SPECIAL LOGIC for portal ${portalGid}`);
                 if (portalGid === 1) {
                     // Portail ID 1 → Map Slime
                     destinationMap = "mapdonjonslime";
@@ -389,7 +381,6 @@ function updatePlayer(ts) {
                     targetPortalId = 6;
                 }
             } else {
-                console.log(`🎯 PORTAL DEBUG - Using GENERAL LOGIC for map ${window.currentMap}, portal ${portalGid}`);
                 // Logique générale pour les autres maps
                 if (portalGid === 1) {
                     // Portail ID 1 → Map suivante, portail ID 2
@@ -410,8 +401,6 @@ function updatePlayer(ts) {
                 }
             }
             if (destinationMap) {
-                console.log(`🎯 PORTAL DEBUG - Destination: ${destinationMap}, Target Portal: ${targetPortalId}`);
-                
                 // Détecter la direction d'entrée dans le portail
                 let dx = 0, dy = 0;
                 if (player.path && player.path.length > 0) {
@@ -420,7 +409,6 @@ function updatePlayer(ts) {
                     if (prev) {
                         dx = player.x - prev.x;
                         dy = player.y - prev.y;
-                        console.log(`🎯 PORTAL DEBUG - From path: dx=${dx}, dy=${dy}`);
                     }
                 }
                 // Si pas de chemin, on regarde la direction du joueur
@@ -429,17 +417,14 @@ function updatePlayer(ts) {
                     else if (player.direction === 1) dx = -1; // Droite
                     else if (player.direction === 2) dy = -1; // Haut
                     else if (player.direction === 3) dx = 1; // Gauche
-                    console.log(`🎯 PORTAL DEBUG - From direction: dx=${dx}, dy=${dy}`);
                 }
                 const originX = player.x;
                 const originY = player.y;
                 fetch(`assets/maps/${destinationMap}.json`)
                     .then(response => {
-                        console.log(`🎯 PORTAL DEBUG - Fetch status: ${response.status}`);
                         return response.json();
                     })
                     .then(mapData => {
-                        console.log(`🎯 PORTAL DEBUG - Map data loaded: ${destinationMap}`);
                         
                         // Gestion spéciale pour mapdonjonslimeboss - position fixe
                         if (destinationMap === "mapdonjonslimeboss") {
@@ -485,7 +470,6 @@ function updatePlayer(ts) {
                         if (targetPortal || portals.length > 0) {
                             // Utiliser le portail cible trouvé ou le plus proche en fallback
                             let closest = targetPortal || portals[0];
-                            console.log(`🎯 PORTAL DEBUG - Target portal found: (${closest.x}, ${closest.y})`);
                             
                             if (!targetPortal && portals.length > 1) {
                                 // Trouver le portail le plus proche de la position d'origine
@@ -501,7 +485,6 @@ function updatePlayer(ts) {
                             // Calculer la case d'arrivée en fonction de la direction
                             let destX = closest.x + dx;
                             let destY = closest.y + dy;
-                            console.log(`🎯 PORTAL DEBUG - Final destination: (${destX}, ${destY})`);
                             
                             // Vérifier que la case d'arrivée est dans la map et pas un portail
                             if (destX < 0) destX = 0;

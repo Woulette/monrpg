@@ -161,6 +161,24 @@
     <!-- Bouton Multijoueur en haut à gauche du jeu -->
     <button id="multiplayer-btn" style="position:fixed;top:18px;left:24px;z-index:1001;display:none;background:#4CAF50;color:white;font-weight:bold;font-size:1.1rem;padding:8px 18px;border-radius:8px;border:none;box-shadow:0 2px 8px #0005;cursor:pointer;">Multijoueur OFF</button>
 
+                                    <!-- Panneau MMO du joueur -->
+                <div id="player-mmo-panel" style="display:none; position:fixed; top:14px; left:5px; z-index:999; background:linear-gradient(135deg, #2c3e50, #34495e); border:2px solid #3498db; border-left:none; border-radius:0 10px 10px 0; padding:8px; width:162px; box-shadow:2px 0 8px rgba(0,0,0,0.3);">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <img id="player-mmo-avatar" src="assets/ui/playerinventaire.png" style="width:50px; height:50px; border-radius:50%; border:1px solid #3498db;">
+                        <div style="flex:1; min-width:0;">
+                            <div id="player-mmo-name" style="color:white; font-weight:bold; font-size:18px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Nom du joueur</div>
+                            <div id="player-mmo-level" style="color:#3498db; font-size:18px;">Niveau 1</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:6px; padding-top:6px; border-top:1px solid #34495e;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="color:#95a5a6; font-size:9px;">Multi:</span>
+                            <span id="player-mmo-status" style="color:#e74c3c; font-size:9px; font-weight:bold;">OFF</span>
+                        </div>
+                    </div>
+                </div>
+
+    <!-- Canvas du jeu -->
     <div id="canvas-wrapper" style="position: relative; width: fit-content; margin: 0 auto;">
         <canvas id="gameCanvas" width="1536" height="910"></canvas>
         <div id="hud-layer">
@@ -279,7 +297,7 @@
             <div id="inventory-grid-container">
                 <div id="inventory-categories">
                     <button class="inventory-tab active" data-category="all" title="Tout">
-                        <img src="assets/ui/tout.png" alt="Tout" style="width:32px;height:32px;">
+                        <img src="assets/ui/tout.png" alt="Tout" style="width:40px;height:32px;">
                     </button>
                     <button class="inventory-tab" data-category="equipement" title="Équipements">🗡️</button>
                     <button class="inventory-tab" data-category="potions" title="Potions">🧪</button>
@@ -651,8 +669,9 @@
 <script src="js/systems/minimap.js"></script>
 <script src="js/systems/map-system.js"></script>
 <script src="js/metier/etablie.js"></script>
-<script src="js/metier/niveaudemetier.js"></script>
-<script src="js/systems/multiplayer.js"></script>
+        <script src="js/metier/niveaudemetier.js"></script>
+        <script src="multiplayer/client/player-name-manager.js"></script>
+        <script src="multiplayer/client/multiplayer-manager.js"></script>
 
 
 </body>

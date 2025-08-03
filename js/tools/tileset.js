@@ -1,10 +1,7 @@
-console.log("Fichier js/tileset.js chargé");
-
 let tilesetImages = [];
 let tilesets = [];
 
 function loadTilesets(tilesetDefs) {
-    console.log("Appel à loadTilesets");
     let promises = tilesetDefs.map(ts => {
         let img = new Image();
         // Gérer les différents chemins de tilesets
@@ -35,7 +32,6 @@ function loadTilesets(tilesetDefs) {
 
         return new Promise((resolve, reject) => {
             img.onload = () => {
-                console.log(`✓ Tileset chargé: ${tilesetPath}`);
                 resolve();
             };
             img.onerror = () => {

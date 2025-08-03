@@ -55,7 +55,6 @@ function createPapi() {
         occupy(papi.x, papi.y);
     }
     
-    console.log("Papi créé sur la map 1");
     return papi;
 }
 
@@ -98,12 +97,10 @@ function createPapi2() {
         interactionRange: 2,
         // Callback spécial pour la validation de quête
         onInteraction: function() {
-            console.log("Papi2 onInteraction appelé");
             
             // Vérifier si le joueur a une quête prête à être validée
             if (typeof canValidateQuestWithPNJ === 'function') {
                 const questToValidate = canValidateQuestWithPNJ('papi2');
-                console.log("Quête à valider:", questToValidate);
                 
                 if (questToValidate) {
                     // Si une quête peut être validée, utiliser les dialogues de validation
@@ -118,7 +115,6 @@ function createPapi2() {
                         "Utilise les ressources que je t'ai données pour crafter tes items, et retrouve moi plus haut !"
                     ];
                     papi2.currentDialogue = 0;
-                    console.log("Dialogues de validation définis pour Papi2");
                     
                     // Valider la quête
                     if (typeof validateQuestWithPNJ === 'function') {
@@ -133,7 +129,6 @@ function createPapi2() {
                         // Utiliser les dialogues alternatifs
                         papi2.dialogues = papi2.alternativeDialogues;
                         papi2.currentDialogue = 0;
-                        console.log("Dialogues alternatifs définis pour Papi2");
                     } else {
                         // Utiliser les dialogues par défaut
                         papi2.dialogues = [
@@ -156,7 +151,6 @@ function createPapi2() {
         occupy(papi2.x, papi2.y);
     }
     
-    console.log("Papi2 créé sur la map 2");
     return papi2;
 }
 
@@ -167,10 +161,8 @@ function loadPapiImage() {
     
     papi.img = new Image();
     papi.img.onload = function() {
-        console.log("Image de Papi chargée avec succès");
     };
     papi.img.onerror = function() {
-        console.error("Erreur lors du chargement de l'image de Papi");
     };
     papi.img.src = 'assets/pnj/papi.png';
 }
@@ -182,10 +174,8 @@ function loadPapi2Image() {
     
     papi2.img = new Image();
     papi2.img.onload = function() {
-        console.log("Image de Papi2 chargée avec succès");
     };
     papi2.img.onerror = function() {
-        console.error("Erreur lors du chargement de l'image de Papi2");
     };
     papi2.img.src = 'assets/pnj/papi.png'; // Utilise la même image que Papi
 }
@@ -227,7 +217,6 @@ function createPapi3() {
         // Propriété pour suivre si la quête slimeBoss a été proposée dans cette session
         slimeBossQuestOffered: false,
         onInteraction: function() {
-            console.log("Papi3 onInteraction appelé");
             
             // Vérifier si le joueur a le certificat du donjon slime
             const hasSlimeCertificate = typeof getItemQuantity === 'function' && getItemQuantity('certificat_corbeau') >= 1;
@@ -235,7 +224,6 @@ function createPapi3() {
             // Vérifier si une quête peut être validée
             if (typeof canValidateQuestWithPNJ === 'function') {
                 const questToValidate = canValidateQuestWithPNJ('papi3');
-                console.log("Quête à valider:", questToValidate);
                 
                 if (questToValidate) {
                     // Définir les dialogues de validation selon la quête
@@ -254,7 +242,6 @@ function createPapi3() {
                         ];
                     }
                     papi3.currentDialogue = 0;
-                    console.log("Dialogues de validation définis pour Papi3:", questToValidate.id);
                 } else if (hasSlimeCertificate) {
                     // Le joueur a le certificat, Papi 3 se déplace et retire un certificat
                     if (!papi3.hasMoved) {
@@ -273,7 +260,6 @@ function createPapi3() {
                         // Retirer un certificat de l'inventaire
                         if (typeof window.removeItemFromAllInventories === 'function') {
                             window.removeItemFromAllInventories('certificat_corbeau');
-                            console.log("📜 Un certificat_corbeau retiré de l'inventaire");
                         }
 
                         // Sauvegarder le jeu après le déplacement de Papi 3
@@ -281,7 +267,6 @@ function createPapi3() {
                             window.autoSaveOnEvent();
                         }
 
-                        console.log("Papi3 s'est déplacé vers la droite pour laisser accès au donjon slime");
                     }
 
                     // Dialogue pour le certificat
@@ -291,7 +276,6 @@ function createPapi3() {
                         "Je vais te laisser passer pour accéder au donjon slime."
                     ];
                     papi3.currentDialogue = 0;
-                    console.log("Dialogues de certificat définis pour Papi3");
                 } else {
                     // Vérifier l'état des quêtes pour déterminer le dialogue approprié
                     if (typeof window.quests !== 'undefined') {
@@ -362,7 +346,6 @@ function createPapi3() {
                         papi3.dialogues = papi3.alternativeDialogues;
                     }
                     papi3.currentDialogue = 0;
-                    console.log("Dialogues alternatifs définis pour Papi3");
                 }
             }
             
@@ -378,7 +361,6 @@ function createPapi3() {
         occupy(papi3.x, papi3.y);
     }
     
-    console.log("Papi3 créé sur la map 3");
     return papi3;
 }
 
@@ -415,12 +397,10 @@ function createPapi4() {
         talkDuration: 4000,
         interactionRange: 2,
         onInteraction: function() {
-            console.log("Papi4 onInteraction appelé");
             
             // Vérifier si une quête peut être validée
             if (typeof canValidateQuestWithPNJ === 'function') {
                 const questToValidate = canValidateQuestWithPNJ('papi4');
-                console.log("Quête à valider:", questToValidate);
                 
                 if (questToValidate) {
                     // Définir les dialogues de validation pour la quête finale
@@ -433,7 +413,6 @@ function createPapi4() {
                         ];
                     }
                     papi4.currentDialogue = 0;
-                    console.log("Dialogues de validation définis pour Papi4:", questToValidate.id);
                 } else {
                     // Vérifier l'état des quêtes pour déterminer le dialogue approprié
                     if (typeof window.quests !== 'undefined') {
@@ -457,7 +436,6 @@ function createPapi4() {
                         papi4.dialogues = papi4.alternativeDialogues;
                     }
                     papi4.currentDialogue = 0;
-                    console.log("Dialogues de la brèche dimensionnelle définis pour Papi4");
                 }
             }
             
@@ -472,8 +450,6 @@ function createPapi4() {
         papi4.y = 4;
         papi4.px = 10 * TILE_SIZE;
         papi4.py = 4 * TILE_SIZE;
-        console.log("🏠 Papi 4 créé à la position (10, 4) dans la maison");
-        console.log("🏠 Papi 4 pixels: px=" + papi4.px + ", py=" + papi4.py);
     }
     
     pnjs.push(papi4);
@@ -483,7 +459,6 @@ function createPapi4() {
         occupy(papi4.x, papi4.y);
     }
     
-    console.log("Papi4 créé sur la map 4 (donjon slime)");
     return papi4;
 }
 
@@ -494,10 +469,8 @@ function loadPapi3Image() {
     
     papi3.img = new Image();
     papi3.img.onload = function() {
-        console.log("Image de Papi3 chargée avec succès");
     };
     papi3.img.onerror = function() {
-        console.error("Erreur lors du chargement de l'image de Papi3");
     };
     papi3.img.src = 'assets/pnj/papi.png'; // Utilise la même image que Papi
 }
@@ -509,10 +482,8 @@ function loadPapi4Image() {
     
     papi4.img = new Image();
     papi4.img.onload = function() {
-        console.log("Image de Papi4 chargée avec succès");
     };
     papi4.img.onerror = function() {
-        console.error("Erreur lors du chargement de l'image de Papi4");
     };
     papi4.img.src = 'assets/pnj/papi.png'; // Utilise la même image que les autres Papi
 }
@@ -525,7 +496,6 @@ window.loadPapi4Image = loadPapi4Image;
 
 // Réinitialiser les états des PNJ lors du changement de personnage
 function resetPNJStates() {
-    console.log('🔄 Réinitialisation des états des PNJ...');
     
     // Réinitialiser Papi3
     const papi3 = pnjs.find(p => p.id === 'papi3');
@@ -533,7 +503,6 @@ function resetPNJStates() {
         papi3.slimeBossQuestOffered = false;
         papi3.currentDialogue = 0;
         papi3.isTalking = false;
-        console.log('✅ État de Papi3 réinitialisé');
     }
     
     // Réinitialiser les autres PNJ si nécessaire
@@ -544,7 +513,6 @@ function resetPNJStates() {
         }
     });
     
-    console.log('✅ États des PNJ réinitialisés');
 }
 
 // Exporter la fonction de réinitialisation
@@ -585,7 +553,6 @@ function startPNJDialog(pnj) {
         window.quests.crowHunt && window.quests.crowHunt.completed) {
         pnj.dialogues = pnj.alternativeDialogues;
         pnj.currentDialogue = 0;
-        console.log("Dialogues alternatifs définis pour Papi1");
     } else if (pnj.id === 'papi' && typeof window.quests !== 'undefined' && 
                window.quests.crowHunt && window.quests.crowHunt.accepted) {
         // Si la quête est acceptée mais pas terminée, utiliser un dialogue spécial
@@ -595,7 +562,6 @@ function startPNJDialog(pnj) {
             "Une fois terminé, va voir Papi sur la map 2 pour valider ta quête !"
         ];
         pnj.currentDialogue = 0;
-        console.log("Dialogues de quête acceptée définis pour Papi1");
     }
     
     // Afficher la fenêtre de dialogue modale avec les dialogues actuels du PNJ
@@ -604,7 +570,6 @@ function startPNJDialog(pnj) {
         showPNJDialogModal(pnj.name, dialogue, null, pnj);
     }
     
-    console.log(`Dialogue avec ${pnj.name}: ${dialogue}`);
 }
 
 // Mettre à jour les PNJ
@@ -704,8 +669,6 @@ function initPNJs() {
         loadPapi4Image();
     }
     
-    console.log(`${pnjs.length} PNJ initialisés sur ${currentMap}`);
-    console.log("Dialogues réinitialisés pour tous les PNJ");
 }
 
 // Afficher la fenêtre de dialogue modale
@@ -785,7 +748,6 @@ function showPNJDialogModal(pnjName, dialogue, customCallback = null, pnj = null
             
             // Cas spécial pour le dialogue de création de personnage (pas de PNJ associé)
             if (!currentPnjId) {
-                console.log("🎮 Dialogue de création de personnage - fermeture directe");
                 hidePNJDialogModal();
                 if (customCallback) {
                     customCallback();
@@ -800,33 +762,23 @@ function showPNJDialogModal(pnjName, dialogue, customCallback = null, pnj = null
                 return;
             }
             
-            console.log("Bouton Continuer cliqué pour:", currentPnj.name);
-            console.log("Dialogues:", currentPnj.dialogues);
-            console.log("Current dialogue:", currentPnj.currentDialogue);
-            console.log("Nombre total de dialogues:", currentPnj.dialogues.length);
-            
             if (currentPnj.dialogues && currentPnj.currentDialogue < currentPnj.dialogues.length - 1) {
                 // Passer au dialogue suivant
                 currentPnj.currentDialogue++;
                 const nextDialogue = currentPnj.dialogues[currentPnj.currentDialogue];
-                console.log("Dialogue suivant:", nextDialogue);
                 if (nextDialogue) {
                     document.getElementById('pnj-dialog-text').textContent = nextDialogue;
-                    console.log("Dialogue mis à jour dans l'interface");
                 }
             } else {
-                console.log("Fin des dialogues atteinte");
                 // Fin des dialogues
                 if (currentPnj.id === 'papi') {
                     if (!window.quests.crowHunt.accepted) {
                         // Papi1 propose la quête
-                        console.log("Papi1 propose la quête");
                         if (typeof window.showQuestOffer === 'function') {
                             window.showQuestOffer();
                         }
                     } else {
                         // Papi1 ferme le dialogue normalement (quête déjà acceptée ou terminée)
-                        console.log("Papi1 ferme le dialogue");
                         hidePNJDialogModal();
                         if (customCallback) {
                             customCallback();
@@ -834,7 +786,6 @@ function showPNJDialogModal(pnjName, dialogue, customCallback = null, pnj = null
                     }
                                  } else if (currentPnj.id === 'papi2') {
                      // Papi2 ferme le dialogue
-                     console.log("Papi2 ferme le dialogue");
                      hidePNJDialogModal();
                      
                      // Vérifier si la quête de craft est disponible et proposer APRÈS la fermeture du dialogue
@@ -849,7 +800,6 @@ function showPNJDialogModal(pnjName, dialogue, customCallback = null, pnj = null
                      }
                                  } else if (currentPnj.id === 'papi3') {
                     // Papi3 ferme le dialogue
-                    console.log("Papi3 ferme le dialogue");
                     hidePNJDialogModal();
                     
                     // Valider la quête si elle est prête
@@ -868,13 +818,11 @@ function showPNJDialogModal(pnjName, dialogue, customCallback = null, pnj = null
                                 
                                 if (crowCraftCompleted && !slimeBossCompleted && typeof isQuestAvailable === 'function' && isQuestAvailable('slimeBoss')) {
                                     // Proposer la quête slimeBoss après avoir validé crowCraft
-                                    console.log("Proposition de la quête slimeBoss après validation de crowCraft");
                                     if (typeof showSlimeBossQuestOffer === 'function') {
                                         showSlimeBossQuestOffer();
                                     }
                                 } else if (slimeBossCompleted && typeof isQuestAvailable === 'function' && isQuestAvailable('slimeBossFinal')) {
                                     // Proposer la quête finale après avoir validé slimeBoss
-                                    console.log("Proposition de la quête slimeBossFinal après validation de slimeBoss");
                                     if (typeof showSlimeBossFinalQuestOffer === 'function') {
                                         showSlimeBossFinalQuestOffer();
                                     }
@@ -887,30 +835,14 @@ function showPNJDialogModal(pnjName, dialogue, customCallback = null, pnj = null
                                 const slimeBossAccepted = window.quests.slimeBoss && window.quests.slimeBoss.accepted;
                                 const slimeBossCompleted = window.quests.slimeBoss && window.quests.slimeBoss.completed;
                                 
-                                console.log('🔍 Diagnostic Papi3 - État des quêtes:', {
-                                    crowCraftCompleted,
-                                    slimeBossAccepted,
-                                    slimeBossCompleted,
-                                    currentMap: window.currentMap,
-                                    isQuestAvailable: typeof isQuestAvailable === 'function' ? isQuestAvailable('slimeBoss') : 'fonction non disponible'
-                                });
-                                
                                 if (crowCraftCompleted && !slimeBossAccepted && !slimeBossCompleted && 
                                     typeof isQuestAvailable === 'function' && isQuestAvailable('slimeBoss')) {
                                     // Proposer la quête slimeBoss si elle n'a pas encore été proposée
-                                    console.log("🎯 Proposition de la quête slimeBoss après dialogue");
                                     if (typeof showSlimeBossQuestOffer === 'function') {
                                         showSlimeBossQuestOffer();
                                     } else {
                                         console.error('❌ Fonction showSlimeBossQuestOffer non disponible');
                                     }
-                                } else {
-                                    console.log('❌ Conditions non remplies pour proposer slimeBoss:', {
-                                        crowCraftCompleted,
-                                        slimeBossAccepted,
-                                        slimeBossCompleted,
-                                        isQuestAvailable: typeof isQuestAvailable === 'function' ? isQuestAvailable('slimeBoss') : false
-                                    });
                                 }
                             }
                         }
@@ -921,7 +853,6 @@ function showPNJDialogModal(pnjName, dialogue, customCallback = null, pnj = null
                     }
                 } else if (currentPnj.id === 'papi4') {
                     // Papi4 ferme le dialogue
-                    console.log("Papi4 ferme le dialogue");
                     hidePNJDialogModal();
                     
                     // Valider la quête si elle est prête
@@ -929,7 +860,6 @@ function showPNJDialogModal(pnjName, dialogue, customCallback = null, pnj = null
                         const questValidated = validateQuestWithPNJ('papi4');
                         
                         if (questValidated) {
-                            console.log("Quête finale validée par Papi4");
                         }
                     }
                     
@@ -938,7 +868,6 @@ function showPNJDialogModal(pnjName, dialogue, customCallback = null, pnj = null
                     }
                 } else {
                     // Autres PNJ
-                    console.log("Autre PNJ ferme le dialogue");
                     hidePNJDialogModal();
                     if (customCallback) {
                         customCallback();
@@ -966,7 +895,6 @@ function showPNJDialogModal(pnjName, dialogue, customCallback = null, pnj = null
     // Stocker l'ID du PNJ actuel dans la modale
     if (pnj && pnj.id) {
         modal.setAttribute('data-current-pnj-id', pnj.id);
-        console.log("ID du PNJ stocké dans la modale:", pnj.id);
     }
     
     // Afficher la modale
@@ -988,7 +916,6 @@ function hidePNJDialogModal() {
         }
     });
     
-    console.log("Fenêtre de dialogue fermée, état de conversation réinitialisé");
 }
 
 // Gestion des touches pour interagir avec les PNJ
@@ -1002,7 +929,6 @@ function handlePNJInteraction(key) {
 function showCharacterCreationDialog() {
     // Vérifier si le dialogue a déjà été affiché
     if (window.characterCreationDialogShown) {
-        console.log("🎮 Dialogue de bienvenue déjà affiché, ignoré");
         return;
     }
     
@@ -1013,7 +939,6 @@ function showCharacterCreationDialog() {
     
     showPNJDialogModal("Papi", dialogue, function() {
         // Callback après fermeture du dialogue - le joueur reste en jeu
-        console.log("🎮 Dialogue de bienvenue terminé, le joueur peut maintenant jouer");
         // S'assurer que la fenêtre est bien fermée
         hidePNJDialogModal();
     }, null); // Pas de PNJ associé pour le dialogue de création
@@ -1022,29 +947,24 @@ function showCharacterCreationDialog() {
 // Réinitialiser le flag du dialogue de création de personnage
 function resetCharacterCreationDialog() {
     window.characterCreationDialogShown = false;
-    console.log("🎮 Flag du dialogue de création de personnage réinitialisé");
 }
 
 // Fonction pour réinitialiser les propriétés des PNJ
 function resetPNJProperties() {
-    console.log('🔄 Réinitialisation des propriétés des PNJ...');
     
     // Réinitialiser les propriétés de Papi3
     const papi3 = pnjs.find(p => p.id === 'papi3');
     if (papi3) {
         papi3.slimeBossQuestOffered = false;
         papi3.hasMoved = false;
-        console.log('✅ Propriétés de Papi3 réinitialisées');
     }
     
     // Réinitialiser les propriétés de Papi4
     const papi4 = pnjs.find(p => p.id === 'papi4');
     if (papi4) {
         papi4.slimeBossFinalQuestOffered = false;
-        console.log('✅ Propriétés de Papi4 réinitialisées');
     }
     
-    console.log('✅ Toutes les propriétés des PNJ réinitialisées');
 }
 
 // Export global

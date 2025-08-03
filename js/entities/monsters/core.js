@@ -70,15 +70,15 @@ function initMonsters() {
             }
         }
         
-        console.log(`📊 ${window.monsters.length} monstres initialisés avec succès`);
+        // Tous les console.log supprimés dans ce fichier.
         
         // Assigner l'image aux monstres si elle est déjà chargée
         if (typeof assignMonsterImages === "function") {
-            console.log("🖼️ Assignation des images des monstres...");
+            // console.log("🖼️ Assignation des images des monstres...");
             assignMonsterImages();
         }
         
-        console.log("🔍 === FIN INITMONSTERS ===");
+        // console.log("🔍 === FIN INITMONSTERS ===");
     }, 100);
 }
 

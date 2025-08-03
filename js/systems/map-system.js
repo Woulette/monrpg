@@ -156,7 +156,7 @@ class WorldMapSystem {
                 }
             }
             
-            console.log(`🗺️ ${this.maps.length} maps chargées (donjons et maisons exclus)`);
+
         } catch (error) {
             console.error('Erreur lors du chargement des maps:', error);
         }
@@ -361,12 +361,7 @@ class WorldMapSystem {
                 const mapName = `map${quest.validationOn.map}`;
                 const position = quest.validationOn.pnjPosition;
                 
-                console.log('✅ Quête à valider trouvée:', quest.name, 'sur', mapName, 'à', position);
-                console.log('📍 Détails de validation:', {
-                    mapName: mapName,
-                    position: position,
-                    questId: quest.id
-                });
+
                 
                 this.availableQuests.push({
                     x: position.x,
@@ -419,7 +414,6 @@ class WorldMapSystem {
                 currentPathIndex++;
                 if (currentPathIndex < imagePaths.length) {
                     // Essayer le prochain format
-                    console.log(`🔄 Essai ${currentPathIndex + 1}/${imagePaths.length} pour ${mapName}: ${imagePaths[currentPathIndex]}`);
                     image.src = imagePaths[currentPathIndex];
                 } else {
                     // Tous les formats ont échoué
@@ -430,7 +424,7 @@ class WorldMapSystem {
             // Commencer par le premier format
             image.src = imagePaths[0];
         } catch (error) {
-            console.log(`Erreur lors du chargement de l'image pour ${mapName}:`, error);
+            // Erreur lors du chargement de l'image
         }
     }
 
@@ -1138,48 +1132,36 @@ class WorldMapSystem {
     }
 
     drawAvailableQuests() {
-        console.log('🎨 Dessin de', this.availableQuests.length, 'quêtes disponibles');
         
         for (const quest of this.availableQuests) {
             // Trouver la map de la quête
             const map = this.maps.find(m => m.name === quest.mapName);
             if (!map) {
-                console.log('❌ Map non trouvée pour la quête:', quest.name, 'mapName:', quest.mapName);
                 continue;
             }
-            
             // Calculer le centre de la map
             const mapCenterX = map.position.x + (map.width * this.tileSize) / 2;
             const mapCenterY = map.position.y + (map.height * this.tileSize) / 2;
-            
-            console.log('🎨 Dessin quête:', quest.name, 'type:', quest.type, 'centre map:', { mapCenterX, mapCenterY });
-            
             // Effet de clignotement pour les quêtes à valider
             let shouldBlink = false;
             if (quest.type === 'validation') {
                 shouldBlink = Math.floor(Date.now() / 500) % 2 === 0; // Clignote toutes les 500ms
             }
-            
             // Choisir la couleur selon le type de quête
             if (quest.type === 'validation') {
                 // Cercle orange pour les quêtes à valider (avec clignotement)
                 this.ctx.fillStyle = shouldBlink ? '#f97316' : 'rgba(249, 115, 22, 0.3)';
-                console.log('🟠 Dessin quête à valider (orange)');
             } else {
                 // Cercle vert pour les quêtes disponibles
                 this.ctx.fillStyle = '#22c55e';
-                console.log('🟢 Dessin quête disponible (verte)');
             }
-            
             this.ctx.beginPath();
             this.ctx.arc(mapCenterX, mapCenterY, 30, 0, 2 * Math.PI);
             this.ctx.fill();
-            
             // Ajouter une bordure blanche plus épaisse
             this.ctx.strokeStyle = '#ffffff';
             this.ctx.lineWidth = 5;
             this.ctx.stroke();
-            
             // Ajouter l'icône de quête parfaitement centrée
             this.ctx.font = '32px Arial';
             this.ctx.fillStyle = shouldBlink ? '#ffffff' : 'rgba(255, 255, 255, 0.3)';

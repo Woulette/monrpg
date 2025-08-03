@@ -174,7 +174,6 @@ function initInventoryEvents() {
 
 // Attacher les événements aux slots d'équipement
 function initEquipmentEvents() {
-    console.log("🔧 Initialisation des événements d'équipement...");
     
     // Attacher les événements de clic aux slots d'équipement
     document.querySelectorAll('.equip-slot').forEach(slot => {
@@ -231,7 +230,6 @@ function initEquipmentEvents() {
 
 // Initialiser les événements de la fenêtre détaillée
 function initModalEvents() {
-    console.log("🔧 Initialisation des événements de modal...");
     
     // Fermeture de la fenêtre
     const closeBtn = document.getElementById('close-equipment-detail');
@@ -374,7 +372,6 @@ function initModalEvents() {
 
 // Fonction principale d'initialisation qui sera appelée par inventory.js
 function initInventoryMain() {
-    console.log("🚀 Initialisation du module main.js d'inventaire");
     
     // Attendre que le DOM soit prêt
     if (document.readyState === 'loading') {

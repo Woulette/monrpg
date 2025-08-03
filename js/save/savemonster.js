@@ -7,29 +7,23 @@ const monsterSaves = {};
 function saveMonstersForMap(mapName) {
     if (!mapName || !window.monsters || !window.currentCharacterId) return;
     
-    console.log(`💾 Sauvegarde des monstres pour ${mapName} (personnage ${window.currentCharacterId})...`);
-    
     // Filtrer les monstres selon le type de map
     let monstersToSave;
     
     if (mapName === "mapdonjonslime" || mapName === "mapdonjonslime2" || mapName.includes("slime")) {
         // Sur les maps slime, sauvegarder UNIQUEMENT les slimes
         monstersToSave = window.monsters.filter(m => m.type === "slime" && !m.isDead);
-        console.log(`🔵 ${monstersToSave.length} slimes sauvegardés pour ${mapName}`);
     } else if (mapName === "mapdonjonslimeboss") {
         // Sur mapdonjonslimeboss, NE SAUVEGARDER AUCUN MONSTRE
         monstersToSave = [];
-        console.log(`🚫 Aucun monstre sauvegardé pour mapdonjonslimeboss (map boss)`);
     } else if (mapName === "map1" || mapName === "map2" || mapName === "map3") {
         // Sur les maps 1, 2 et 3, sauvegarder UNIQUEMENT les corbeaux, corbeaux d'élite et maitrecorbeaux
         monstersToSave = window.monsters.filter(m => 
             (m.type === "crow" || m.type === "corbeauelite" || m.type === "maitrecorbeau") && !m.isDead
         );
-        console.log(`⚫ ${monstersToSave.length} corbeaux/corbeaux d'élite/maitrecorbeaux sauvegardés pour ${mapName}`);
     } else {
         // Sur les autres maps (non reconnues), ne sauvegarder aucun monstre
         monstersToSave = [];
-        console.log(`🚫 Aucun monstre sauvegardé pour la map non reconnue ${mapName}`);
     }
     
     // Préparer les données à sauvegarder (sans les références d'images)
@@ -103,7 +97,6 @@ function saveMonstersForMap(mapName) {
             }
         }
         
-        console.log(`✅ Sauvegarde réussie pour ${mapName}`);
     } catch (error) {
         console.error('Erreur lors de la sauvegarde des monstres:', error);
     }
@@ -112,18 +105,13 @@ function saveMonstersForMap(mapName) {
 // Charger les monstres pour une map spécifique
 function loadMonstersForMap(mapName) {
     if (!mapName || !window.currentCharacterId) {
-        console.log('❌ Impossible de charger les monstres: mapName ou currentCharacterId manquant');
         return false;
     }
     
-    console.log(`📂 Chargement des monstres pour ${mapName} (personnage ${window.currentCharacterId})...`);
-    
     // INVALIDATION DES SAUVEGARDES OBSOLÈTES POUR MAPDONJONSLIMEBOSS
     if (mapName === "mapdonjonslimeboss") {
-        console.log("🔍 Vérification des sauvegardes obsolètes pour mapdonjonslimeboss...");
         const wasInvalidated = invalidateBossMapSaves();
         if (wasInvalidated) {
-            console.log("🔄 Sauvegarde obsolète invalidée, création de nouveaux monstres...");
             return false; // Forcer la création de nouveaux monstres
         }
     }
@@ -133,7 +121,6 @@ function loadMonstersForMap(mapName) {
         const savedData = localStorage.getItem(saveKey);
         
         if (!savedData) {
-            console.log(`📭 Aucune sauvegarde de monstres trouvée pour ce personnage`);
             return false;
         }
         
@@ -141,7 +128,6 @@ function loadMonstersForMap(mapName) {
         const mapMonsters = allMonsterData[mapName];
         
         if (!mapMonsters || !Array.isArray(mapMonsters)) {
-            console.log(`📭 Aucun monstre sauvegardé pour ${mapName}`);
             return false;
         }
         
@@ -156,7 +142,6 @@ function loadMonstersForMap(mapName) {
         }
         
         if (mapMonsters.length < expectedCount) {
-            console.log(`⚠️ Nombre de monstres insuffisant pour ${mapName}: ${mapMonsters.length}/${expectedCount}`);
             return false;
         }
         
@@ -181,16 +166,10 @@ function loadMonstersForMap(mapName) {
         if (mapName === "mapdonjonslimeboss") {
             const hasSlimeBoss = window.monsters.some(m => m.type === 'slimeboss');
             if (!hasSlimeBoss) {
-                console.log("🐉 Aucun SlimeBoss trouvé dans la sauvegarde, création forcée...");
-                // Forcer la création du SlimeBoss
                 if (typeof window.spawnSlimeBossOnBossMap === 'function') {
                     window.spawnSlimeBossOnBossMap();
-                    console.log("✅ SlimeBoss créé avec succès");
                 } else {
-                    console.log("❌ Fonction spawnSlimeBossOnBossMap non disponible");
                 }
-            } else {
-                console.log("✅ SlimeBoss trouvé dans la sauvegarde");
             }
         }
         
@@ -205,11 +184,9 @@ function loadMonstersForMap(mapName) {
         if (mapName === "map1" || mapName === "map2" || mapName === "map3") {
             if (typeof window.getCrowKillCounts === 'function') {
                 const counts = window.getCrowKillCounts();
-                console.log(`📊 Compteurs de corbeaux chargés:`, counts);
             }
         }
         
-        console.log(`✅ ${window.monsters.length} monstres chargés pour ${mapName}`);
         return true;
         
     } catch (error) {
@@ -225,8 +202,6 @@ function loadMonstersForMap(mapName) {
 function cleanCorruptedSaveData() {
     if (!window.currentCharacterId) return;
     
-    console.log('🧹 Nettoyage des données corrompues...');
-    
     try {
         // Supprimer toutes les données de monstres pour ce personnage
         localStorage.removeItem(`monrpg_monsters_${window.currentCharacterId}`);
@@ -236,7 +211,6 @@ function cleanCorruptedSaveData() {
         localStorage.removeItem('monsterSaves');
         localStorage.removeItem('crowKillCounts');
         
-        console.log('✅ Données corrompues nettoyées');
     } catch (error) {
         console.error('❌ Erreur lors du nettoyage:', error);
     }
@@ -245,8 +219,6 @@ function cleanCorruptedSaveData() {
 // Supprimer les données de monstres pour une map spécifique
 function clearMonsterDataForMap(mapName) {
     if (!mapName || !window.currentCharacterId) return;
-    
-    console.log(`🗑️ Suppression des données de monstres pour ${mapName}...`);
     
     try {
         const saveKey = `monrpg_monsters_${window.currentCharacterId}`;
@@ -258,7 +230,6 @@ function clearMonsterDataForMap(mapName) {
             localStorage.setItem(saveKey, JSON.stringify(allMonsterData));
         }
         
-        console.log(`✅ Données supprimées pour ${mapName}`);
     } catch (error) {
         console.error('❌ Erreur lors de la suppression:', error);
     }
@@ -268,12 +239,9 @@ function clearMonsterDataForMap(mapName) {
 function clearAllMonsterData() {
     if (!window.currentCharacterId) return;
     
-    console.log('🗑️ Suppression de toutes les données de monstres...');
-    
     try {
         localStorage.removeItem(`monrpg_monsters_${window.currentCharacterId}`);
         localStorage.removeItem(`monrpg_crowKillCounts_${window.currentCharacterId}`);
-        console.log('✅ Toutes les données de monstres supprimées');
     } catch (error) {
         console.error('❌ Erreur lors de la suppression:', error);
     }
@@ -289,10 +257,8 @@ function loadCrowKillCounts() {
         
         if (crowData) {
             window.crowKillCounts = JSON.parse(crowData);
-            console.log('📊 Compteurs de corbeaux chargés:', window.crowKillCounts);
         } else {
             window.crowKillCounts = { map1: 0, map2: 0, map3: 0 };
-            console.log('📊 Compteurs de corbeaux initialisés');
         }
     } catch (error) {
         console.error('❌ Erreur lors du chargement des compteurs:', error);
@@ -302,23 +268,19 @@ function loadCrowKillCounts() {
 
 // Fonction pour forcer le nettoyage complet des données de monstres
 window.forceCleanMonsterData = function() {
-    console.log('🧹 Nettoyage forcé de toutes les données de monstres...');
     
     // Supprimer toutes les clés liées aux monstres
     Object.keys(localStorage).forEach(key => {
         if (key.includes('monster') || key.includes('crowKillCounts')) {
             localStorage.removeItem(key);
-            console.log(`🗑️ Supprimé: ${key}`);
         }
     });
     
-    console.log('✅ Nettoyage forcé terminé');
 };
 
 // Fonction pour invalider les sauvegardes obsolètes de mapdonjonslimeboss
 function invalidateBossMapSaves() {
     if (!window.currentCharacterId) {
-        console.log('⚠️ Aucun personnage actif, impossible d\'invalider les sauvegardes');
         return;
     }
     
@@ -334,10 +296,8 @@ function invalidateBossMapSaves() {
                 const hasSlimeBoss = allMonsterData.mapdonjonslimeboss.some(m => m.type === 'slimeboss');
                 
                 if (!hasSlimeBoss) {
-                    console.log('🗑️ Sauvegarde obsolète de mapdonjonslimeboss détectée, suppression...');
                     delete allMonsterData.mapdonjonslimeboss;
                     localStorage.setItem(saveKey, JSON.stringify(allMonsterData));
-                    console.log('✅ Sauvegarde obsolète supprimée');
                     return true; // Indique qu'une sauvegarde a été invalidée
                 }
             }

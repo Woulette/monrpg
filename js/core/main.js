@@ -68,14 +68,11 @@ function startGameDirectly() {
                 });
             })
             .then(() => {
-                console.log('🗺️ Map chargée, initialisation des systèmes...');
                 
                 // S'assurer que playerImg est initialisé
                 if (!window.playerImg) {
-                    console.log('🖼️ Initialisation de playerImg...');
                     const playerImg = new Image();
                     playerImg.onload = () => {
-                        console.log('✅ Image du joueur chargée');
                     };
                     playerImg.onerror = () => {
                         console.error('❌ Erreur de chargement de l\'image du joueur');
@@ -92,11 +89,23 @@ function startGameDirectly() {
                     initPlayer(); // Initialiser le joueur avec les valeurs par défaut
                 }
                 
+                // Initialiser les événements de souris pour les tooltips
+                canvas.addEventListener('mousemove', handleMouseMove);
+                
+                // Initialiser le panneau MMO du joueur
+                if (typeof updatePlayerMMOPanel === "function") {
+                    updatePlayerMMOPanel();
+                }
+                
+                // Initialiser les événements du panneau MMO
+                if (typeof initMMOPanelEvents === "function") {
+                    initMMOPanelEvents();
+                }
+                
                 // Mettre à jour les coordonnées pixel après l'initialisation
                 if (typeof player !== 'undefined') {
                     player.px = player.x * TILE_SIZE;
                     player.py = player.y * TILE_SIZE;
-                    console.log('📍 Position du joueur mise à jour:', { x: player.x, y: player.y, px: player.px, py: player.py });
                 }
                 
                 // Nettoyage des données corrompues au démarrage
@@ -107,7 +116,6 @@ function startGameDirectly() {
                 // Initialiser l'état du boss slime
                 if (window.slimeBossDefeated === undefined) {
                     window.slimeBossDefeated = false;
-                    console.log('🐉 État du boss slime initialisé à false');
                 }
                 
                 // Initialiser l'inventaire
@@ -149,7 +157,6 @@ function startGameDirectly() {
                     drawGame();
                 }
                 
-                console.log('🎮 Tous les systèmes initialisés, lancement de la boucle de jeu');
                 requestAnimationFrame(gameLoop);
             })
             .catch(e => {
@@ -242,6 +249,15 @@ function drawGame() {
             }
         }
         
+        // Dessiner les tooltips au survol
+        if (typeof drawAllTooltips === "function") {
+            try {
+                drawAllTooltips(ctx);
+            } catch (error) {
+                // Erreur silencieuse
+            }
+        }
+        
     } catch (error) {
         // Erreur silencieuse
     }
@@ -288,16 +304,7 @@ function initUIEventHandlers() {
 
 // Fonction de diagnostic des performances
 function diagnosePerformance() {
-    console.log("🔍 Diagnostic des performances:");
-    console.log("- FPS actuel:", window.lastFrameTime ? Math.round(1000 / (Date.now() - window.lastFrameTime)) : "N/A");
-    console.log("- Nombre de monstres:", window.monsters ? window.monsters.length : 0);
-    console.log("- Joueur en mouvement:", window.player ? window.player.moving : "N/A");
-    console.log("- Joueur en combat:", window.player ? window.player.inCombat : "N/A");
-    console.log("- Effets de dégâts actifs:", window.damageEffects ? window.damageEffects.length : 0);
-    console.log("- Loot actif:", window.lootItems ? window.lootItems.length : 0);
-    console.log("- Quêtes actives:", window.activeQuests ? window.activeQuests.length : 0);
-    console.log("- Map actuelle:", window.currentMap);
-    console.log("- Canvas visible:", canvas ? canvas.style.display : "N/A");
+    // Diagnostic des performances
 }
 
 // Export de la fonction de diagnostic
@@ -308,7 +315,6 @@ function gameLoop(ts) {
     // Vérifier STRICTEMENT si nous sommes en mode jeu
     if (window.gameState !== "playing") {
         // En mode menu, arrêter complètement la boucle
-        console.log('⏸️ Boucle de jeu arrêtée - mode menu actif');
         return;
     }
     
@@ -401,6 +407,11 @@ function gameLoop(ts) {
         window.lastAutoSave = ts;
     }
 
+    // Mise à jour du panneau MMO du joueur
+    if (typeof updatePlayerMMOPanel === "function") {
+        updatePlayerMMOPanel();
+    }
+
     // Dessiner le jeu
     drawGame();
 
@@ -408,7 +419,7 @@ function gameLoop(ts) {
     if (window.gameState === "playing") {
         requestAnimationFrame(gameLoop);
     } else {
-        console.log('⏸️ Boucle de jeu arrêtée - gameState:', window.gameState);
+        // Boucle de jeu arrêtée
     }
 }
 
@@ -626,12 +637,11 @@ window.spawnMonster = function(type) {
 // Fonction de téléportation globale (accessible depuis la console)
 window.teleportToMap = function(mapName, x = 400, y = 300) {
     if (!mapName) {
-        console.log("❌ Usage: teleportToMap('nomDeLaMap', x, y)");
-        console.log("📋 Maps disponibles: map1, map2, map3, mapdonjonslime, mapdonjonslime2, mapdonjonslimeboss");
+        // Usage: teleportToMap('nomDeLaMap', x, y)
         return;
     }
     
-    console.log(`🚀 Téléportation vers ${mapName} aux coordonnées (${x}, ${y})`);
+    // Téléportation vers la map
     
     // Sauvegarder la position actuelle
     if (window.saveGame) {
@@ -658,18 +668,11 @@ window.teleportToMap = function(mapName, x = 400, y = 300) {
         window.loadPNJsForMap(mapName);
     }
     
-    console.log(`✅ Téléportation réussie vers ${mapName}`);
+            // Téléportation réussie
 };
 
 // Afficher les commandes disponibles au démarrage
-console.log("🎮 Commandes de téléportation disponibles:");
-console.log("teleportToMap('map1') - Téléportation vers map1");
-console.log("teleportToMap('map2') - Téléportation vers map2");
-console.log("teleportToMap('map3') - Téléportation vers map3");
-console.log("teleportToMap('mapdonjonslime') - Téléportation vers le donjon slime");
-console.log("teleportToMap('mapdonjonslime2') - Téléportation vers le donjon slime niveau 2");
-console.log("teleportToMap('mapdonjonslimeboss') - Téléportation vers l'antre du SlimeBoss");
-console.log("teleportToMap('nomMap', x, y) - Téléportation avec coordonnées personnalisées");
+    // Commandes de téléportation disponibles
 
 function resizeGameCanvas() {
     const canvas = document.getElementById('gameCanvas');
@@ -698,28 +701,28 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initEtablies() {
-    console.log("Initialisation du système d'établies...");
+    // Initialisation du système d'établies
     
     // Vérifier que les fonctions des établies sont disponibles
     if (typeof window.openTailorWorkshopModal === 'function') {
-        console.log("✓ Fonction openTailorWorkshopModal disponible");
+        // Fonction openTailorWorkshopModal disponible
     } else {
         console.error("✗ Fonction openTailorWorkshopModal manquante");
     }
     
     if (typeof window.openCordonnierWorkshopModal === 'function') {
-        console.log("✓ Fonction openCordonnierWorkshopModal disponible");
+        // Fonction openCordonnierWorkshopModal disponible
     } else {
         console.error("✗ Fonction openCordonnierWorkshopModal manquante");
     }
     
     if (typeof window.openBijoutierWorkshopModal === 'function') {
-        console.log("✓ Fonction openBijoutierWorkshopModal disponible");
+        // Fonction openBijoutierWorkshopModal disponible
     } else {
         console.error("✗ Fonction openBijoutierWorkshopModal manquante");
     }
     
-    console.log("Système d'établies initialisé avec succès");
+    // Système d'établies initialisé avec succès
 }
 
 // Fonction pour afficher la popup de victoire du boss
@@ -767,12 +770,12 @@ window.showBossVictoryPopup = function() {
         document.body.removeChild(popup);
     });
     
-    console.log("🎉 Popup de victoire du SlimeBoss affichée");
+            // Popup de victoire du SlimeBoss affichée
 };
 
 // Fonction pour afficher la fenêtre de sélection d'objets du coffre
 window.showBossChestWindow = function() {
-    console.log("🎁 Affichage de la fenêtre de sélection du coffre du SlimeBoss...");
+            // Affichage de la fenêtre de sélection du coffre du SlimeBoss
     
     // Créer la fenêtre du coffre
     const chestWindow = document.createElement('div');
@@ -864,12 +867,10 @@ window.showBossChestWindow = function() {
     itemElements.forEach((element, index) => {
         element.addEventListener('click', function() {
             const selectedItem = chestItems[index];
-            console.log(`🎁 Objet sélectionné: ${selectedItem.name}`);
             
             // Ajouter l'objet à l'inventaire
             if (typeof window.addItemToInventory === "function") {
                 window.addItemToInventory(selectedItem);
-                console.log(`✅ ${selectedItem.name} ajouté à l'inventaire`);
             }
             
             // Fermer la fenêtre
@@ -877,7 +878,6 @@ window.showBossChestWindow = function() {
             
             // Téléporter vers map3 après un délai
             setTimeout(() => {
-                console.log("🚪 Téléportation vers map3 après sélection de la récompense...");
                 if (typeof window.teleportPlayer === "function") {
                     window.teleportPlayer("map3", 10, 10);
                 }
@@ -886,7 +886,6 @@ window.showBossChestWindow = function() {
                 setTimeout(() => {
                     if (typeof window.saveGameStateData === "function" && window.currentCharacterId) {
                         window.saveGameStateData(window.currentCharacterId);
-                        console.log("💾 Sauvegarde automatique effectuée après sélection de la récompense");
                     }
                 }, 500);
             }, 1000);
@@ -898,12 +897,12 @@ window.showBossChestWindow = function() {
         document.body.removeChild(chestWindow);
     });
     
-    console.log("🎁 Fenêtre de sélection du coffre affichée");
+            // Fenêtre de sélection du coffre affichée
 };
 
 // Fonction pour donner la récompense du boss (remplacée par la fenêtre de sélection)
 window.giveBossReward = function() {
-    console.log("🎁 Ouverture de la fenêtre de sélection du coffre...");
+            // Ouverture de la fenêtre de sélection du coffre
     
     // Afficher la fenêtre de sélection
     if (typeof window.showBossChestWindow === "function") {
@@ -914,11 +913,11 @@ window.giveBossReward = function() {
 // Fonction pour ouvrir le coffre de la maison
 window.openHouseChest = function() {
     if (window.currentMap !== "maison") {
-        console.log("❌ Erreur: Le coffre ne peut être ouvert que dans la maison");
+        // Erreur: Le coffre ne peut être ouvert que dans la maison
         return;
     }
     
-    console.log("🎁 Ouverture du coffre de la maison...");
+            // Ouverture du coffre de la maison
     
     // Afficher la fenêtre de sélection
     if (typeof window.showHouseChestWindow === "function") {
@@ -928,7 +927,7 @@ window.openHouseChest = function() {
 
 // Fonction pour afficher la fenêtre de sélection d'objets du coffre de la maison
 window.showHouseChestWindow = function() {
-    console.log("🎁 Affichage de la fenêtre de sélection du coffre de la maison...");
+            // Affichage de la fenêtre de sélection du coffre de la maison
     
     // Créer la fenêtre du coffre
     const chestWindow = document.createElement('div');
@@ -1018,13 +1017,12 @@ window.showHouseChestWindow = function() {
     // Gestionnaire pour le bouton récupérer
     const recoverButton = chestWindow.querySelector('#recover-house-chest-items');
     recoverButton.addEventListener('click', function() {
-        console.log("🎁 Récupération de tous les objets du coffre");
+        // Récupération de tous les objets du coffre
         
         // Ajouter tous les objets à l'inventaire
         if (typeof window.addItemToInventory === 'function') {
             chestItems.forEach(item => {
                 window.addItemToInventory(item.id, 1);
-                console.log(`✅ ${item.name} ajouté à l'inventaire`);
             });
         }
         
@@ -1050,13 +1048,11 @@ let gameInputsEnabled = false;
 // Fonction pour désactiver les touches du jeu
 function disableGameInputs() {
     gameInputsEnabled = false;
-    console.log('🔒 Touches du jeu désactivées');
 }
 
 // Fonction pour activer les touches du jeu
 function enableGameInputs() {
     gameInputsEnabled = true;
-    console.log('🔓 Touches du jeu activées');
 }
 
 // Gestionnaire global des touches
@@ -1124,7 +1120,7 @@ window.reloadImages = function() {
 
 // Fonction d'urgence pour nettoyer tous les effets visuels problématiques
 window.emergencyClearAllVisualEffects = function() {
-    console.log('🚨 Nettoyage d\'urgence de tous les effets visuels');
+    // Nettoyage d'urgence de tous les effets visuels
     
     // Nettoyer l'écran noir
     if (typeof clearBlackScreen === "function") {
@@ -1146,6 +1142,6 @@ window.emergencyClearAllVisualEffects = function() {
         drawMap();
     }
     
-    console.log('✅ Tous les effets visuels nettoyés');
+    // Tous les effets visuels nettoyés
 };
 

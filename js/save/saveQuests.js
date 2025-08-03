@@ -18,7 +18,6 @@ class QuestsSaveManager {
             // Utiliser le système existant dans quetes.js
             if (typeof window.saveQuestsForCharacter === 'function') {
                 window.saveQuestsForCharacter(characterId);
-                console.log(`✅ Quêtes sauvegardées via le système existant pour ${characterId}`);
                 return true;
             } else {
                 console.warn('⚠️ Système de sauvegarde des quêtes non disponible');
@@ -40,7 +39,6 @@ class QuestsSaveManager {
             // Utiliser le système existant dans quetes.js
             if (typeof window.loadQuestsForCharacter === 'function') {
                 const success = window.loadQuestsForCharacter(characterId);
-                console.log(`✅ Quêtes chargées via le système existant pour ${characterId}`);
                 return success;
             } else {
                 console.warn('⚠️ Système de chargement des quêtes non disponible');
@@ -62,7 +60,6 @@ class QuestsSaveManager {
             // Utiliser le système existant dans quetes.js
             if (typeof window.deleteQuestsForCharacter === 'function') {
                 window.deleteQuestsForCharacter(characterId);
-                console.log(`✅ Quêtes supprimées via le système existant pour ${characterId}`);
                 return true;
             } else {
                 console.warn('⚠️ Système de suppression des quêtes non disponible');
@@ -84,7 +81,6 @@ class QuestsSaveManager {
             // Utiliser la fonction de réinitialisation existante
             if (typeof window.resetQuestsToInitial === 'function') {
                 window.resetQuestsToInitial();
-                console.log(`✅ Quêtes initiales créées pour ${characterId}`);
                 return true;
             } else {
                 console.warn('⚠️ Fonction de réinitialisation des quêtes non disponible');

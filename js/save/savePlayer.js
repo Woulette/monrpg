@@ -10,11 +10,8 @@ class PlayerSaveManager {
     // Sauvegarder les données du joueur
     savePlayer(characterId) {
         if (typeof player === 'undefined' || !characterId) {
-            console.log('⚠️ Impossible de sauvegarder le joueur: player ou characterId manquant');
             return false;
         }
-
-        console.log('💾 Sauvegarde du joueur pour le personnage', characterId);
 
         try {
             const playerData = {
@@ -147,7 +144,6 @@ class PlayerSaveManager {
             const saveKey = `monrpg_player_${characterId}`;
             localStorage.setItem(saveKey, JSON.stringify(playerData));
             
-            console.log('✅ Données du joueur sauvegardées avec succès');
             return true;
             
         } catch (error) {
@@ -159,18 +155,14 @@ class PlayerSaveManager {
     // Charger les données du joueur
     loadPlayer(characterId) {
         if (!characterId || typeof player === 'undefined') {
-            console.log('⚠️ Impossible de charger le joueur: characterId ou player manquant');
             return false;
         }
-
-        console.log('📂 Chargement du joueur pour le personnage', characterId);
 
         try {
             const saveKey = `monrpg_player_${characterId}`;
             const savedData = localStorage.getItem(saveKey);
             
             if (!savedData) {
-                console.log('❌ Aucune sauvegarde du joueur trouvée pour ce personnage');
                 return false;
             }
 
@@ -181,8 +173,6 @@ class PlayerSaveManager {
                 console.warn(`⚠️ Version de sauvegarde différente: ${data.version} vs ${this.version}`);
             }
 
-            console.log('👤 Restauration des données du joueur...');
-            
             // Restaurer la position
             if (data.position) {
                 player.x = data.position.x || player.x;
@@ -302,13 +292,6 @@ class PlayerSaveManager {
                 player.stats = data.legacy.stats || {};
             }
             
-            console.log('✅ Données du joueur restaurées:', {
-                level: player.level,
-                xp: player.xp,
-                life: player.life,
-                position: { x: player.x, y: player.y }
-            });
-            
             return true;
             
         } catch (error) {
@@ -331,7 +314,6 @@ class PlayerSaveManager {
         try {
             const saveKey = `monrpg_player_${characterId}`;
             localStorage.removeItem(saveKey);
-            console.log('🗑️ Sauvegarde du joueur supprimée pour le personnage', characterId);
         } catch (error) {
             console.error('❌ Erreur lors de la suppression de la sauvegarde du joueur:', error);
         }
@@ -366,5 +348,3 @@ window.deletePlayerSave = (characterId) => playerSaveManager.deletePlayerSave(ch
 // Exporter la classe pour utilisation avancée
 window.PlayerSaveManager = PlayerSaveManager;
 window.playerSaveManager = playerSaveManager;
-
-console.log('✅ Module savePlayer.js chargé');

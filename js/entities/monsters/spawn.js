@@ -55,7 +55,6 @@ function isInForbiddenSpawnZone(x, y) {
 
 // Fonction pour créer des slimes (pour les maps dédiées)
 function createSlimes(count = 5) {
-    console.log(`Création de ${count} slimes...`);
     
     // Zone de patrouille adaptée à la map slime (25x20)
     const slimePatrolZone = { x: 0, y: 0, width: 25, height: 20 };
@@ -245,7 +244,6 @@ function spawnMaitreCorbeau() {
         intelligence: 10,
         defense: baseDefense
     });
-    console.log(`Maitrecorbeau apparu sur ${currentMap} à la position (${sx}, ${sy}) !`);
     if (typeof assignMonsterImages === "function") {
         assignMonsterImages();
     }
@@ -421,7 +419,6 @@ function spawnSlimeBoss() {
     newMonster.lastIdleAnim = 0;
     newMonster.lastWalkAnim = 0;
     
-    console.log(`SlimeBoss apparu sur ${currentMap} à la position (${sx}, ${sy}) !`);
     if (typeof assignMonsterImages === "function") {
         assignMonsterImages();
     }
@@ -429,7 +426,6 @@ function spawnSlimeBoss() {
 
 // Fonction pour créer des corbeaux (pour les maps 1, 2, 3)
 function createCrows(count = 10) {
-    console.log(`Création de ${count} corbeaux...`);
     
     // Zone de patrouille sur toute la map (48x25)
     const PATROL_ZONE = { x: 0, y: 0, width: 48, height: 25 };
@@ -518,7 +514,6 @@ function createCrows(count = 10) {
             occupy(sx, sy);
         }
         
-        console.log(`Corbeau ${i + 1} créé à la position (${sx}, ${sy}) - Niveau ${level}`);
     }
     
     // Assigner l'image aux corbeaux si elle est déjà chargée
@@ -540,13 +535,12 @@ window.showForbiddenSpawnZone = function() {
     const zones = FORBIDDEN_SPAWN_ZONES[currentMap];
     
     if (!zones) {
-        console.log(`🚫 Aucune zone interdite définie pour la map ${currentMap}`);
         return;
     }
 
     for (let i = 0; i < zones.length; i++) {
         const zone = zones[i];
-        console.log(`🚫 Zone interdite ${i + 1} pour ${currentMap}: x=${zone.x} à ${zone.x + zone.width - 1}, y=${zone.y} à ${zone.y + zone.height - 1}`);
+        return;
     }
-    console.log(`🗺️ Map actuelle: ${window.currentMap}`);
+    return;
 }; 

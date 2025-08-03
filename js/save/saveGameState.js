@@ -10,11 +10,8 @@ class GameStateSaveManager {
     // Sauvegarder l'état du jeu
     saveGameState(characterId) {
         if (!characterId) {
-            console.log('⚠️ Impossible de sauvegarder l\'état du jeu: characterId manquant');
             return false;
         }
-
-        console.log('💾 Sauvegarde de l\'état du jeu pour le personnage', characterId);
 
         try {
             const gameStateData = {
@@ -52,7 +49,6 @@ class GameStateSaveManager {
             const saveKey = `monrpg_gameState_${characterId}`;
             localStorage.setItem(saveKey, JSON.stringify(gameStateData));
             
-            console.log('✅ État du jeu sauvegardé avec succès');
             return true;
             
         } catch (error) {
@@ -64,18 +60,14 @@ class GameStateSaveManager {
     // Charger l'état du jeu
     loadGameState(characterId) {
         if (!characterId) {
-            console.log('⚠️ Impossible de charger l\'état du jeu: characterId manquant');
             return false;
         }
-
-        console.log('📂 Chargement de l\'état du jeu pour le personnage', characterId);
 
         try {
             const saveKey = `monrpg_gameState_${characterId}`;
             const savedData = localStorage.getItem(saveKey);
             
             if (!savedData) {
-                console.log('❌ Aucune sauvegarde de l\'état du jeu trouvée pour ce personnage');
                 return false;
             }
 
@@ -86,30 +78,25 @@ class GameStateSaveManager {
                 console.warn(`⚠️ Version de sauvegarde différente: ${data.version} vs ${this.version}`);
             }
 
-            console.log('🎮 Restauration de l\'état du jeu...');
             
             // Restaurer la map actuelle
             if (data.currentMap) {
                 window.currentMap = data.currentMap;
-                console.log('🗺️ Map actuelle restaurée:', window.currentMap);
             }
             
             // Restaurer la progression du donjon
             if (data.dungeonProgression) {
                 window.dungeonProgression = data.dungeonProgression;
-                console.log('🏰 Progression du donjon restaurée');
             }
             
             // Restaurer l'état de victoire du boss slime
             if (data.slimeBossDefeated !== undefined) {
                 window.slimeBossDefeated = data.slimeBossDefeated;
-                console.log('🐉 État de victoire du boss slime restauré:', window.slimeBossDefeated);
             }
             
             // Restaurer les compteurs de corbeaux
             if (data.crowKillCounts) {
                 window.crowKillCounts = data.crowKillCounts;
-                console.log('⚫ Compteurs de corbeaux restaurés:', window.crowKillCounts);
             }
             
             // Restaurer les états des portails
@@ -125,10 +112,8 @@ class GameStateSaveManager {
             // Restaurer les métadonnées
             if (data.metadata) {
                 window.totalPlayTime = data.metadata.totalPlayTime || 0;
-                console.log('📊 Métadonnées restaurées');
             }
             
-            console.log('✅ État du jeu restauré avec succès');
             return true;
             
         } catch (error) {
@@ -185,7 +170,6 @@ class GameStateSaveManager {
             }
         }
         
-        console.log('🚪 États des portails restaurés');
     }
 
     // Obtenir l'état des PNJ
@@ -219,7 +203,6 @@ class GameStateSaveManager {
             window.pnjDialogStates = { ...window.pnjDialogStates, ...pnjStates.dialogs };
         }
         
-        console.log('👥 États des PNJ restaurés');
     }
 
     // Vérifier si une sauvegarde de l'état du jeu existe
@@ -236,7 +219,6 @@ class GameStateSaveManager {
         try {
             const saveKey = `monrpg_gameState_${characterId}`;
             localStorage.removeItem(saveKey);
-            console.log('🗑️ Sauvegarde de l\'état du jeu supprimée pour le personnage', characterId);
         } catch (error) {
             console.error('❌ Erreur lors de la suppression de la sauvegarde de l\'état du jeu:', error);
         }
@@ -295,5 +277,3 @@ window.getGameStateInfo = (characterId) => gameStateSaveManager.getGameStateInfo
 // Exporter la classe pour utilisation avancée
 window.GameStateSaveManager = GameStateSaveManager;
 window.gameStateSaveManager = gameStateSaveManager;
-
-console.log('✅ Module saveGameState.js chargé');

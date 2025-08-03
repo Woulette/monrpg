@@ -20,11 +20,8 @@ class SaveManager {
     // Initialiser le système de sauvegarde
     async init() {
         if (this.isInitialized) {
-            console.log('⚠️ SaveManager déjà initialisé');
             return;
         }
-
-        console.log('🚀 Initialisation du système de sauvegarde modulaire...');
 
         try {
             // Attendre que tous les modules soient chargés
@@ -41,7 +38,6 @@ class SaveManager {
             this.startAutoSave();
             
             this.isInitialized = true;
-            console.log('✅ Système de sauvegarde modulaire initialisé avec succès');
             
         } catch (error) {
             console.error('❌ Erreur lors de l\'initialisation du SaveManager:', error);
@@ -72,16 +68,12 @@ class SaveManager {
     // Sauvegarde complète de tous les modules
     async saveAll(characterId) {
         if (!characterId) {
-            console.log('⚠️ Impossible de sauvegarder: characterId manquant');
             return false;
         }
 
         if (!this.isInitialized) {
-            console.log('⚠️ SaveManager non initialisé, initialisation...');
             await this.init();
         }
-
-        console.log('💾 Sauvegarde complète pour le personnage', characterId);
 
         const results = {
             player: false,
@@ -124,9 +116,6 @@ class SaveManager {
             const successCount = Object.values(results).filter(Boolean).length;
             const totalModules = Object.keys(results).length;
             
-            console.log(`✅ Sauvegarde terminée: ${successCount}/${totalModules} modules sauvegardés`);
-            console.log('📊 Résultats:', results);
-            
             return successCount === totalModules;
             
         } catch (error) {
@@ -138,16 +127,12 @@ class SaveManager {
     // Chargement complet de tous les modules
     async loadAll(characterId) {
         if (!characterId) {
-            console.log('⚠️ Impossible de charger: characterId manquant');
             return false;
         }
 
         if (!this.isInitialized) {
-            console.log('⚠️ SaveManager non initialisé, initialisation...');
             await this.init();
         }
-
-        console.log('📂 Chargement complet pour le personnage', characterId);
 
         const results = {
             player: false,
@@ -187,9 +172,6 @@ class SaveManager {
             const successCount = Object.values(results).filter(Boolean).length;
             const totalModules = Object.keys(results).length;
             
-            console.log(`✅ Chargement terminé: ${successCount}/${totalModules} modules chargés`);
-            console.log('📊 Résultats:', results);
-            
             return successCount > 0; // Au moins un module chargé avec succès
             
         } catch (error) {
@@ -200,7 +182,6 @@ class SaveManager {
 
     // Sauvegarde automatique
     startAutoSave() {
-        console.log('⏰ Démarrage de la sauvegarde automatique...');
         
         setInterval(() => {
             if (window.gameState === "playing" && window.currentCharacterId) {
@@ -212,7 +193,6 @@ class SaveManager {
     // Exécuter la sauvegarde automatique
     async autoSave() {
         if (!window.currentCharacterId) {
-            console.log('⚠️ Auto-save ignoré: aucun personnage actif');
             return;
         }
 
@@ -221,7 +201,6 @@ class SaveManager {
             return; // Éviter les sauvegardes trop fréquentes
         }
 
-        console.log('💾 Sauvegarde automatique...');
         await this.saveAll(window.currentCharacterId);
     }
 
@@ -230,11 +209,9 @@ class SaveManager {
         const targetCharacterId = characterId || window.currentCharacterId;
         
         if (!targetCharacterId) {
-            console.log('⚠️ Impossible de forcer la sauvegarde: aucun personnage spécifié');
             return false;
         }
 
-        console.log('💾 Sauvegarde forcée pour le personnage', targetCharacterId);
         return await this.saveAll(targetCharacterId);
     }
 
@@ -256,8 +233,6 @@ class SaveManager {
     deleteAllSaves(characterId) {
         if (!characterId) return;
 
-        console.log('🗑️ Suppression de toutes les sauvegardes pour le personnage', characterId);
-
         // Supprimer via les modules
         if (this.modules.player) this.modules.player.deletePlayerSave(characterId);
         if (this.modules.gameState) this.modules.gameState.deleteGameStateSave(characterId);
@@ -269,14 +244,11 @@ class SaveManager {
             window.clearAllMonsterData();
         }
 
-        console.log('✅ Toutes les sauvegardes supprimées');
     }
 
     // Migrer les anciennes sauvegardes
     async migrateOldSaves(characterId) {
         if (!characterId) return false;
-
-        console.log('🔄 Migration des anciennes sauvegardes pour le personnage', characterId);
 
         const migrations = [];
 
@@ -298,7 +270,6 @@ class SaveManager {
         const results = await Promise.all(migrations);
         const successCount = results.filter(Boolean).length;
 
-        console.log(`✅ Migration terminée: ${successCount} migrations réussies`);
         return successCount > 0;
     }
 
@@ -346,23 +317,19 @@ class SaveManager {
     logSaveStats(characterId) {
         if (!characterId) return;
 
-        console.log('📊 Statistiques de sauvegarde pour le personnage', characterId);
-        
         if (window.saveUtils) {
             window.saveUtils.logSaveStats(characterId);
         }
 
         const info = this.getSaveInfo(characterId);
         if (info) {
-            console.log('📋 Informations détaillées:', info);
+    
         }
     }
 
     // Créer un nouveau personnage avec des données initiales
     async createNewCharacter(characterId) {
         if (!characterId) return false;
-
-        console.log('🆕 Création d\'un nouveau personnage:', characterId);
 
         try {
             // Créer un inventaire vide
@@ -375,7 +342,6 @@ class SaveManager {
                 this.modules.quests.createInitialQuests(characterId);
             }
 
-            console.log('✅ Nouveau personnage créé avec succès');
             return true;
 
         } catch (error) {
@@ -410,4 +376,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 1000); // Attendre 1 seconde pour que tous les modules soient chargés
 });
 
-console.log('✅ Module saveManager.js chargé');

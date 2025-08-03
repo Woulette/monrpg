@@ -126,9 +126,6 @@ function addItemToInventory(itemId, category) {
         };
     }
     
-    console.log(`Item ${item.name} ajouté à l'inventaire ${category}`);
-    
-    // Mettre à jour toutes les grilles
     updateAllGrids();
     
     // Mettre à jour les établis si ils sont ouverts
@@ -148,7 +145,6 @@ function addItemToInventory(itemId, category) {
     
     // Vérifier le progrès de la quête slimeBoss si le certificat a été obtenu
     if (itemId === 'certificat_corbeau' && typeof window.checkSlimeBossQuestProgress === 'function') {
-        console.log("📜 Certificat obtenu via inventaire, vérification du progrès de la quête slimeBoss...");
         window.checkSlimeBossQuestProgress();
     }
     
@@ -157,34 +153,21 @@ function addItemToInventory(itemId, category) {
 
 // Fonction utilitaire pour retirer un item de tous les inventaires (par id)
 function removeItemFromAllInventories(itemId) {
-    console.log(`🔍 Tentative de suppression de l'item ${itemId} de tous les inventaires`);
-    
-    // Debug: Afficher le contenu de inventoryAll avant suppression
-    console.log(`🔍 Contenu de inventoryAll avant suppression:`);
-    window.inventoryAll.forEach((slot, index) => {
-        if (slot.item) {
-            console.log(`  Slot ${index}: ${slot.item.id} - ${slot.item.name}`);
-        }
-    });
-    
     // Retire de l'inventaire principal
     const mainIndex = window.inventoryAll.findIndex(slot => slot.item && slot.item.id === itemId);
     if (mainIndex !== -1) {
-        console.log(`✅ Item trouvé dans inventoryAll à l'index ${mainIndex}`);
         window.inventoryAll[mainIndex] = { item: null, category: null };
         reorganizeInventory(window.inventoryAll);
     } else {
-        console.log(`❌ Item non trouvé dans inventoryAll`);
         // Essayer de trouver par nom si l'id ne correspond pas
         const item = equipmentDatabase[itemId];
         if (item) {
             const nameIndex = window.inventoryAll.findIndex(slot => slot.item && slot.item.name === item.name);
             if (nameIndex !== -1) {
-                console.log(`✅ Item trouvé dans inventoryAll par nom à l'index ${nameIndex}`);
                 window.inventoryAll[nameIndex] = { item: null, category: null };
                 reorganizeInventory(window.inventoryAll);
             } else {
-                console.log(`❌ Item non trouvé dans inventoryAll même par nom`);
+                console.error(`Item non trouvé dans inventoryAll même par nom`);
             }
         }
     }
@@ -194,20 +177,14 @@ function removeItemFromAllInventories(itemId) {
         const invName = ['inventoryEquipement', 'inventoryPotions', 'inventoryRessources'][index];
         const idx = inv.findIndex(slot => slot.item && slot.item.id === itemId);
         if (idx !== -1) {
-            console.log(`✅ Item trouvé dans ${invName} à l'index ${idx}`);
             inv[idx] = { item: null, category: inv[idx].category };
             reorganizeInventory(inv);
         } else {
-            console.log(`❌ Item non trouvé dans ${invName}`);
+            console.error(`Item non trouvé dans ${invName}`);
         }
     });
     
-    console.log(`📊 État des inventaires après suppression:`);
-    console.log(`inventoryAll: ${window.inventoryAll.filter(slot => slot.item).length} items`);
-    console.log(`inventoryEquipement: ${window.inventoryEquipement.filter(slot => slot.item).length} items`);
-    
-    // Forcer la synchro visuelle
-    if (typeof updateAllGrids === 'function') updateAllGrids();
+    updateAllGrids();
     
     // Mettre à jour les établis si ils sont ouverts
     if (typeof window.updateEtabliesInventory === 'function') {
@@ -227,15 +204,12 @@ function removeItemFromAllInventories(itemId) {
 
 // Modifie handleItemClick pour synchroniser les retraits
 function handleItemClick(item, slotIndex, category) {
-    console.log(`Clic sur ${item.name} dans la catégorie ${category}`);
-    console.log('Type:', item.type, 'Slot:', item.slot);
     
     // Vérifier si l'item est équipable (utiliser type ou slot)
     const isEquippable = (item.type === 'coiffe' || item.type === 'cape' || item.type === 'amulette' || item.type === 'anneau' || item.type === 'ceinture' || item.type === 'bottes') ||
                         (item.slot === 'coiffe' || item.slot === 'cape' || item.slot === 'amulette' || item.slot === 'anneau' || item.slot === 'ceinture' || item.slot === 'bottes');
     
     if (isEquippable) {
-        console.log('Item équipable détecté, tentative d\'équipement...');
         // Équiper l'item
         if (equipItem(item.id)) {
             // Retirer l'item de tous les inventaires
@@ -243,7 +217,6 @@ function handleItemClick(item, slotIndex, category) {
             updateAllGrids();
             updateEquipmentDisplay();
             updateStatsDisplay();
-            console.log(`${item.name} équipé !`);
             
             // Sauvegarde automatique après équipement
             if (typeof window.autoSaveOnEvent === 'function') {
@@ -255,16 +228,15 @@ function handleItemClick(item, slotIndex, category) {
                 window.checkCraftQuestProgress();
             }
         } else {
-            console.log('Échec de l\'équipement de', item.name);
+            console.error('Échec de l\'équipement de', item.name);
         }
     } else {
-        console.log('Item non équipable:', item.name);
+        console.error('Item non équipable:', item.name);
     }
 }
 
 // Fonction pour gérer le clic sur un slot d'équipement
 function handleEquipmentSlotClick(slotType) {
-    console.log(`Clic sur slot d'équipement: ${slotType}`);
     
     const equippedItem = getItemInSlot(slotType);
     if (equippedItem) {
@@ -291,7 +263,6 @@ function handleEquipmentSlotClick(slotType) {
             updateAllGrids();
             updateEquipmentDisplay();
             updateStatsDisplay();
-            console.log(`${equippedItem.name} déséquipé !`);
             
             // Sauvegarde automatique après déséquipement
             if (typeof window.autoSaveOnEvent === 'function') {

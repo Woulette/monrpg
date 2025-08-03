@@ -60,7 +60,7 @@ function forceCleanupDamageEffects() {
     }
     
     if (removedCount > 0) {
-        console.log(`🧹 Nettoyage forcé: ${removedCount} effets de dégâts supprimés`);
+        // Nettoyage forcé effectué
     }
 }
 
@@ -203,12 +203,12 @@ function updateDamageEffects() {
     
     // Log de débogage si on a beaucoup d'effets
     if (damageEffects.length > 20) {
-        console.log(`⚠️ Nombre d'effets de dégâts actifs: ${damageEffects.length}`);
+        // Nombre d'effets de dégâts actifs élevé
     }
     
     // Nettoyage d'urgence si on dépasse la limite
     if (damageEffects.length > MAX_DAMAGE_EFFECTS * 1.5) {
-        console.warn(`🚨 Trop d'effets de dégâts (${damageEffects.length}), nettoyage d'urgence`);
+        // console.warn(`🚨 Trop d'effets de dégâts (${damageEffects.length}), nettoyage d'urgence`);
         damageEffects.length = 0; // Vider complètement
     }
 }
@@ -341,19 +341,16 @@ function drawDamageEffects(ctx) {
 function clearAllDamageEffects() {
     damageEffects.length = 0;
     damageNumbers.length = 0;
-    console.log('🧹 Tous les effets de dégâts nettoyés');
 }
 
 // Fonction de nettoyage d'urgence pour les effets de dégâts
 function emergencyClearDamageEffects() {
-    console.log("🚨 Nettoyage d'urgence des effets de dégâts");
     damageEffects.length = 0;
     damageNumbers.length = 0;
 }
 
 // Fonction d'urgence pour nettoyer les effets et forcer un redessinage
 window.emergencyClearCombatEffects = function() {
-    console.log('🚨 Nettoyage d\'urgence des effets de combat');
     clearAllDamageEffects();
     
     // Forcer un redessinage complet

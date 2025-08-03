@@ -102,7 +102,6 @@ class SaveUtils {
         const keysToDelete = backupKeys.slice(0, backupKeys.length - keepCount);
         keysToDelete.forEach(key => {
             this.deleteData(key);
-            console.log(`🗑️ Backup supprimé: ${key}`);
         });
     }
 
@@ -197,24 +196,16 @@ class SaveUtils {
     logSaveStats(characterId) {
         const stats = this.getSaveStats(characterId);
         
-        console.log('📊 Statistiques de sauvegarde pour le personnage', characterId);
-        console.log(`📁 Total: ${stats.totalKeys} clés, ${this.formatSize(stats.totalSize)}`);
-        
-        Object.entries(stats.modules).forEach(([module, data]) => {
-            console.log(`  📂 ${module}: ${data.keys} clés, ${this.formatSize(data.size)}`);
-        });
     }
 
     // Migrer les anciennes sauvegardes vers le nouveau format
     migrateOldSaves(characterId) {
-        console.log('🔄 Migration des anciennes sauvegardes...');
         
         // Vérifier s'il y a des anciennes sauvegardes
         const oldSaveKey = `monrpg_save_${characterId}`;
         const oldData = this.loadData(oldSaveKey);
         
         if (oldData) {
-            console.log('📦 Ancienne sauvegarde trouvée, migration en cours...');
             
             // Extraire les données du joueur
             if (oldData.player) {
@@ -225,7 +216,6 @@ class SaveUtils {
                     characterId: characterId,
                     ...oldData.player
                 });
-                console.log('✅ Données du joueur migrées');
             }
             
             // Extraire l'état du jeu
@@ -237,12 +227,10 @@ class SaveUtils {
                     characterId: characterId,
                     ...oldData.gameState
                 });
-                console.log('✅ État du jeu migré');
             }
             
             // Supprimer l'ancienne sauvegarde
             this.deleteData(oldSaveKey);
-            console.log('🗑️ Ancienne sauvegarde supprimée');
             
             return true;
         }
@@ -252,7 +240,6 @@ class SaveUtils {
 
     // Nettoyer toutes les données d'un personnage
     cleanupCharacterData(characterId) {
-        console.log(`🧹 Nettoyage des données du personnage ${characterId}...`);
         
         const keysToDelete = [];
         const pattern = `${this.savePrefix}`;
@@ -266,10 +253,8 @@ class SaveUtils {
         
         keysToDelete.forEach(key => {
             this.deleteData(key);
-            console.log(`🗑️ Supprimé: ${key}`);
         });
         
-        console.log(`✅ ${keysToDelete.length} clés supprimées`);
     }
 }
 
@@ -290,5 +275,3 @@ window.getSaveStats = (characterId) => saveUtils.getSaveStats(characterId);
 window.logSaveStats = (characterId) => saveUtils.logSaveStats(characterId);
 window.migrateOldSaves = (characterId) => saveUtils.migrateOldSaves(characterId);
 window.cleanupCharacterData = (characterId) => saveUtils.cleanupCharacterData(characterId);
-
-console.log('✅ Module saveUtils.js chargé');

@@ -108,17 +108,13 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Coffre de la maison (ID 25206 sur calque 2)
             if (tileId2 === 25206 && window.currentMap === "maison") {
-                console.log("🎁 Clic détecté sur le coffre de la maison !");
-                console.log("📍 Position:", nx, ny);
-                console.log("🗺️ Map actuelle:", window.currentMap);
-                console.log("🎯 Tile ID:", tileId2);
                 handleHouseChestClick(nx, ny);
                 return;
             }
             
             // Debug: Log tous les clics sur calque 2 dans la maison
             if (window.currentMap === "maison" && tileId2 !== 0) {
-                console.log("🔍 Debug - Clic sur calque 2 maison:", {x: nx, y: ny, tileId: tileId2});
+                // console.log("🔍 Debug - Clic sur calque 2 maison:", {x: nx, y: ny, tileId: tileId2});
             }
             
             // Établie du bijoutier (IDs 616, 617, 816, 817)
@@ -327,16 +323,10 @@ function handleBossChestClick(nx, ny) {
 
 // Fonction pour gérer le clic sur le coffre de la maison
 function handleHouseChestClick(nx, ny) {
-    console.log("🎁 handleHouseChestClick appelée !");
-    console.log("📋 Vérification de la quête slimeBossFinal...");
-    
     // Vérifier si la quête slimeBossFinal est terminée
     if (typeof window.quests !== 'undefined' && window.quests.slimeBossFinal) {
-        console.log("✅ Quêtes chargées, slimeBossFinal trouvée");
-        console.log("📊 Statut de la quête:", window.quests.slimeBossFinal.completed);
         
         if (!window.quests.slimeBossFinal.completed) {
-            console.log("❌ Quête non terminée, affichage message d'erreur");
             // Afficher un message d'erreur
             if (typeof window.showMessage === "function") {
                 window.showMessage("Vous devez d'abord valider la quête finale auprès de Papi4 pour ouvrir ce coffre !", "error");
@@ -344,8 +334,6 @@ function handleHouseChestClick(nx, ny) {
             return;
         }
     } else {
-        console.log("❌ Quêtes non chargées ou slimeBossFinal non trouvée");
-        console.log("📋 window.quests:", window.quests);
         // Si les quêtes ne sont pas chargées, empêcher l'ouverture
         if (typeof window.showMessage === "function") {
             window.showMessage("Vous devez d'abord valider la quête finale auprès de Papi4 pour ouvrir ce coffre !", "error");
@@ -353,14 +341,10 @@ function handleHouseChestClick(nx, ny) {
         return;
     }
     
-    console.log("✅ Quête validée, vérification de la distance...");
-    
     // Vérifier si le joueur est assez proche du coffre
     const distance = Math.sqrt((player.x - nx) ** 2 + (player.y - ny) ** 2);
-    console.log("📏 Distance au coffre:", distance);
     
     if (distance > 2) {
-        console.log("🚶 Joueur trop loin, création du chemin...");
         
         // Chercher une case adjacente libre au coffre
         const adjacents = [
@@ -415,14 +399,11 @@ function handleHouseChestClick(nx, ny) {
         return;
     }
     
-    console.log("✅ Joueur assez proche, ouverture du coffre...");
-    
     // Ouvrir le coffre
     if (typeof window.openHouseChest === "function") {
-        console.log("🎁 Appel de window.openHouseChest()");
         window.openHouseChest();
     } else {
-        console.log("❌ window.openHouseChest n'est pas une fonction !");
+        // console.log("❌ window.openHouseChest n'est pas une fonction !");
     }
 }
 

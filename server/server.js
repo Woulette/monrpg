@@ -38,8 +38,12 @@ wss.on('connection', (socket) => {
         y: 12,
         direction: 0,
         map: 'map1',
-        name: 'Joueur_' + Math.floor(Math.random() * 1000)
+        name: 'Joueur_' + Math.floor(Math.random() * 1000),
+        color: '#' + Math.floor(Math.random()*16777215).toString(16) // Couleur aléatoire
     };
+    
+    // Attendre la réception du nom du personnage
+    let playerNameReceived = false;
     
     // Ajouter le joueur à la liste
     players.set(socket, playerData);
@@ -50,14 +54,22 @@ wss.on('connection', (socket) => {
         data: playerData
     }));
     
-    // Envoyer la liste des autres joueurs sur la même carte
-    const otherPlayers = Array.from(players.values())
-        .filter(p => p.id !== playerData.id && p.map === playerData.map);
-    
-    socket.send(JSON.stringify({
-        type: 'other_players',
-        data: otherPlayers
-    }));
+    // Attendre un peu avant d'envoyer la liste des joueurs pour permettre l'envoi du nom
+    setTimeout(() => {
+        // Envoyer la liste des autres joueurs sur la même carte (seulement les joueurs avec des noms personnalisés)
+        const otherPlayers = Array.from(players.values())
+            .filter(p => p.id !== playerData.id && p.map === playerData.map && !p.name.startsWith('Joueur_'));
+        
+        console.log(`📤 Envoi de ${otherPlayers.length} autres joueurs au nouveau joueur (noms personnalisés uniquement):`);
+        otherPlayers.forEach(p => {
+            console.log(`  - ${p.name} (${p.id}) sur ${p.map}`);
+        });
+        
+        socket.send(JSON.stringify({
+            type: 'other_players',
+            data: otherPlayers
+        }));
+    }, 200); // Attendre 200ms pour permettre l'envoi du nom
     
     // Informer les autres joueurs
     broadcastToMap(playerData.map, {
@@ -71,6 +83,47 @@ wss.on('connection', (socket) => {
             const data = JSON.parse(message);
             
             switch(data.type) {
+                case 'player_name':
+                    // Réception du nom du personnage
+                    const oldName = playerData.name;
+                    playerData.name = data.name;
+                    playerNameReceived = true;
+                    console.log(`📝 Nom du personnage reçu: ${data.name} (ancien: ${oldName})`);
+                    
+                    // Mettre à jour le nom dans la Map des joueurs
+                    players.set(socket, playerData);
+                    console.log(`💾 Nom mis à jour dans la Map pour ${playerData.id}: ${oldName} → ${playerData.name}`);
+                    
+                    // Informer les autres joueurs du changement de nom
+                    broadcastToMap(playerData.map, {
+                        type: 'player_joined',
+                        data: playerData
+                    }, socket);
+                    
+                    // Envoyer la liste mise à jour à tous les joueurs de cette carte (seulement les joueurs avec des noms personnalisés)
+                    const updatedMapPlayers = Array.from(players.values())
+                        .filter(p => p.id !== playerData.id && p.map === playerData.map && !p.name.startsWith('Joueur_'));
+                    
+                    console.log(`📤 Envoi de la liste mise à jour avec ${updatedMapPlayers.length} joueurs (noms personnalisés uniquement):`);
+                    updatedMapPlayers.forEach(p => {
+                        console.log(`  - ${p.name} (${p.id})`);
+                    });
+                    
+                    // Envoyer la liste mise à jour à tous les joueurs de cette carte
+                    broadcastToMap(playerData.map, {
+                        type: 'other_players',
+                        data: updatedMapPlayers
+                    }, socket);
+                    
+                    // Envoyer aussi au joueur qui vient de se connecter
+                    socket.send(JSON.stringify({
+                        type: 'other_players',
+                        data: updatedMapPlayers
+                    }));
+                    
+                    console.log(`🔄 Nom mis à jour pour ${playerData.id}: ${oldName} → ${playerData.name}`);
+                    break;
+                    
                 case 'player_update':
                     // Mettre à jour la position du joueur
                     playerData.x = data.data.x;
@@ -135,12 +188,12 @@ wss.on('connection', (socket) => {
                     // Demande de la liste des joueurs pour une carte
                     const requestedMap = data.mapName || playerData.map;
                     const mapPlayers = Array.from(players.values())
-                        .filter(p => p.id !== playerData.id && p.map === requestedMap);
+                        .filter(p => p.id !== playerData.id && p.map === requestedMap && !p.name.startsWith('Joueur_'));
                     
                     console.log(`📡 Demande de joueurs reçue:`);
                     console.log(`  - Joueur: ${playerData.name} (${playerData.id})`);
                     console.log(`  - Carte demandée: ${requestedMap}`);
-                    console.log(`  - Joueurs trouvés: ${mapPlayers.length}`);
+                    console.log(`  - Joueurs trouvés: ${mapPlayers.length} (noms personnalisés uniquement)`);
                     
                     socket.send(JSON.stringify({
                         type: 'other_players',

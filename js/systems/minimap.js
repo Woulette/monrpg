@@ -104,8 +104,6 @@ class MinimapSystem {
             
             // Ajouter la poignée au canvas
             this.canvas.appendChild(handle);
-            
-            console.log(`🔧 Poignée créée: ${pos.corner}`);
         });
     }
     
@@ -116,7 +114,6 @@ class MinimapSystem {
         handle.addEventListener('mousedown', (e) => {
             e.stopPropagation();
             e.preventDefault();
-            console.log(`🎯 Début redimensionnement: ${corner}`);
             
             isResizing = true;
             startX = e.clientX;
@@ -156,8 +153,6 @@ class MinimapSystem {
                     break;
             }
             
-            console.log(`📏 Redimensionnement: ${newWidth}x${newHeight}`);
-            
             // Redimensionner la mini-carte
             this.resize(newWidth, newHeight);
             
@@ -167,7 +162,6 @@ class MinimapSystem {
         
         document.addEventListener('mouseup', () => {
             if (isResizing) {
-                console.log(`✅ Fin redimensionnement: ${corner}`);
                 isResizing = false;
                 document.body.style.cursor = '';
                 
@@ -184,23 +178,19 @@ class MinimapSystem {
     
     showResizeHandles(show) {
         const handles = document.querySelectorAll('.minimap-resize-handle');
-        console.log(`🔧 showResizeHandles(${show}) - ${handles.length} poignées trouvées`);
         
         handles.forEach((handle, index) => {
             handle.style.display = show ? 'block' : 'none';
-            console.log(`🔧 Poignée ${index + 1}: display = ${handle.style.display}`);
         });
     }
     
     // Méthode de test pour forcer l'affichage des poignées
     forceShowHandles() {
-        console.log('🔧 Forcer l\'affichage des poignées');
         this.showResizeHandles(true);
     }
     
     // Méthode de test pour redimensionner manuellement
     testResize() {
-        console.log('🧪 Test de redimensionnement');
         this.resize(300, 200);
     }
     
@@ -435,12 +425,10 @@ class MinimapSystem {
         
         // Afficher les poignées de redimensionnement au survol
         this.canvas.addEventListener('mouseenter', () => {
-            console.log('🖱️ Mouseenter - Afficher les poignées');
             this.showResizeHandles(true);
         });
         
         this.canvas.addEventListener('mouseleave', () => {
-            console.log('🖱️ Mouseleave - Masquer les poignées');
             // Vérifier si on est en train de redimensionner
             const isResizing = document.querySelector('.minimap-resize-handle:hover');
             if (!isResizing) {
@@ -450,7 +438,6 @@ class MinimapSystem {
         
         // Ajouter un événement pour forcer l'affichage des poignées
         this.canvas.addEventListener('dblclick', () => {
-            console.log('🖱️ Double-clic - Forcer affichage des poignées');
             this.showResizeHandles(true);
         });
     }
@@ -573,8 +560,6 @@ class MinimapSystem {
 • Glisser les coins: Redimensionner la mini-carte
 • Clic droit sur l'icône ➕: Ouvrir les contrôles avancés
         `;
-        
-        console.log(instructions);
         
         // Afficher aussi un message visuel
         let message = document.getElementById('minimap-instructions');
@@ -813,12 +798,7 @@ window.showMinimapHandles = function() {
 };
 
 window.debugMinimap = function() {
-    console.log('🔍 Debug Mini-carte:');
-    console.log('- Système:', window.worldMapSystem);
-    console.log('- Mini-carte:', window.worldMapSystem?.minimap);
-    console.log('- Canvas:', window.worldMapSystem?.minimap?.canvas);
-    console.log('- Poignées:', document.querySelectorAll('.minimap-resize-handle').length);
-    console.log('- Taille actuelle:', window.getMinimapSize());
+    // Fonction de debug supprimée
 };
 
 // Exemple d'utilisation :

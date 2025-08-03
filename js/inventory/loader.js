@@ -1,5 +1,3 @@
-console.log("Fichier js/inventory/loader.js chargé - Système modulaire");
-
 // Fonction pour charger un script de manière synchrone
 function loadScript(src) {
     return new Promise((resolve, reject) => {
@@ -14,7 +12,6 @@ function loadScript(src) {
 // Chargement séquentiel des modules
 async function loadInventoryModules() {
     try {
-        console.log("🔄 Chargement des modules d'inventaire...");
         
         // Charger les modules dans l'ordre (chemins relatifs depuis le dossier inventory)
         await loadScript('js/inventory/core.js');
@@ -26,7 +23,6 @@ async function loadInventoryModules() {
         await loadScript('js/inventory/modals.js');
         await loadScript('js/inventory/main.js');
         
-        console.log("✅ Tous les modules d'inventaire chargés avec succès");
         
         // Initialiser l'inventaire après le chargement de tous les modules
         if (typeof initInventory === 'function') {

@@ -38,7 +38,6 @@ function loadQuestsForCharacter(characterId) {
         const savedData = localStorage.getItem(saveKey);
         
         if (!savedData) {
-            console.log(`📭 Aucune quête sauvegardée trouvée pour le personnage ${characterId}`);
             resetCurrentQuests();
             return false;
         }
@@ -122,7 +121,6 @@ function resetQuestsToInitial() {
 
 // Fonction pour changer de personnage
 function switchCharacterQuests(characterId) {
-    console.log(`🔄 Changement de personnage pour ${characterId} - Réinitialisation des quêtes...`);
     
     // Réinitialiser complètement les quêtes
     window.quests = createQuestsInstance();
@@ -137,7 +135,6 @@ function switchCharacterQuests(characterId) {
         window.loadQuestsForCharacter(characterId);
     }
     
-    console.log(`✅ Quêtes réinitialisées pour le personnage ${characterId}`);
 }
 
 // ===== FONCTIONS DE DIAGNOSTIC =====
@@ -159,7 +156,6 @@ window.debugQuestsIcon = function() {
 
 // Fonction pour forcer la réinitialisation complète de toutes les données de quêtes
 window.forceResetAllQuests = function() {
-    console.log('🧹 Réinitialisation forcée de toutes les données de quêtes...');
     
     // Supprimer toutes les données de quêtes de tous les personnages
     const keys = Object.keys(localStorage);
@@ -172,76 +168,47 @@ window.forceResetAllQuests = function() {
     // Réinitialiser window.quests
     resetQuestsToInitial();
     
-    console.log('✅ Toutes les données de quêtes ont été réinitialisées');
 };
 
 // Fonction de test pour diagnostiquer les problèmes de quêtes
 function diagnoseQuestsSystem() {
-    console.log('🔍 === DIAGNOSTIC DU SYSTÈME DE QUÊTES ===');
     
     // Vérifier l'état actuel des quêtes
-    console.log('📊 État actuel des quêtes:');
+    
     if (window.quests) {
         Object.entries(window.quests).forEach(([questId, quest]) => {
-            console.log(`  ${questId}:`, {
-                accepted: quest.accepted,
-                completed: quest.completed,
-                readyToComplete: quest.readyToComplete,
-                current: quest.current,
-                target: quest.target
-            });
         });
     } else {
-        console.log('  ❌ window.quests non défini');
     }
     
     // Vérifier le personnage actuel
-    console.log('👤 Personnage actuel:', {
-        characterId: window.currentCharacterId,
-        playerName: window.playerName
-    });
     
     // Vérifier les sauvegardes dans localStorage
-    console.log('💾 Sauvegardes dans localStorage:');
+    
     const questsKey = `monrpg_quests_${window.currentCharacterId}`;
     const savedData = localStorage.getItem(questsKey);
     if (savedData) {
         try {
             const data = JSON.parse(savedData);
-            console.log('  ✅ Sauvegarde trouvée:', {
-                characterId: data.characterId,
-                timestamp: new Date(data.timestamp).toLocaleString(),
-                questsCount: Object.keys(data.quests || {}).length
-            });
         } catch (error) {
-            console.log('  ❌ Erreur lors de la lecture de la sauvegarde:', error);
         }
     } else {
-        console.log('  ❌ Aucune sauvegarde trouvée');
     }
     
     // Vérifier les états des PNJ
-    console.log('🤖 États des PNJ:');
+    
     if (typeof window.pnjs !== 'undefined') {
         window.pnjs.forEach(pnj => {
             if (pnj && pnj.id) {
-                console.log(`  ${pnj.id}:`, {
-                    currentDialogue: pnj.currentDialogue,
-                    isTalking: pnj.isTalking,
-                    slimeBossQuestOffered: pnj.slimeBossQuestOffered
-                });
             }
         });
     } else {
-        console.log('  ❌ window.pnjs non défini');
     }
     
-    console.log('🔍 === FIN DU DIAGNOSTIC ===');
 }
 
 // Fonction pour forcer la réinitialisation complète des quêtes
 function forceResetQuests() {
-    console.log('🔄 Réinitialisation forcée des quêtes...');
     
     // Réinitialiser les quêtes
     resetQuestsToInitial();
@@ -256,49 +223,29 @@ function forceResetQuests() {
         window.saveQuestsForCharacter(window.currentCharacterId);
     }
     
-    console.log('✅ Réinitialisation forcée terminée');
 }
 
 // Fonction de test pour vérifier l'isolation des quêtes
 function testQuestsIsolation() {
-    console.log('🧪 === TEST D\'ISOLATION DES QUÊTES ===');
     
     // Sauvegarder l'état actuel
     const currentCharacterId = window.currentCharacterId;
     const currentQuests = JSON.parse(JSON.stringify(window.quests || {}));
     
-    console.log('📊 État actuel:', {
-        characterId: currentCharacterId,
-        quests: Object.keys(currentQuests).map(id => ({
-            id,
-            accepted: currentQuests[id]?.accepted,
-            completed: currentQuests[id]?.completed
-        }))
-    });
     
     // Simuler un changement de personnage
-    console.log('🔄 Simulation d\'un changement de personnage...');
+    
     const testCharacterId = 'test_character_' + Date.now();
     window.currentCharacterId = testCharacterId;
     
     // Réinitialiser les quêtes
     window.quests = createQuestsInstance();
     
-    console.log('📊 État après réinitialisation:', {
-        characterId: window.currentCharacterId,
-        quests: Object.keys(window.quests).map(id => ({
-            id,
-            accepted: window.quests[id]?.accepted,
-            completed: window.quests[id]?.completed
-        }))
-    });
     
     // Restaurer l'état original
     window.currentCharacterId = currentCharacterId;
     window.quests = currentQuests;
     
-    console.log('✅ Test d\'isolation terminé');
-    console.log('🧪 === FIN DU TEST ===');
 }
 
 // ===== EXPORTS GLOBAUX FINAUX =====

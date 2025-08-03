@@ -223,7 +223,6 @@ window.startBlackScreenTransition = startBlackScreenTransition;
 
 // Fonction d'urgence pour nettoyer l'écran noir (à appeler manuellement si nécessaire)
 window.emergencyClearBlackScreen = function() {
-    console.log('🚨 Nettoyage d\'urgence de l\'écran noir');
     clearBlackScreen();
     // Forcer un redessinage
     if (typeof drawMap === "function") {
@@ -435,7 +434,6 @@ function toggleDebugGridLayer1() {
 
 function toggleDebugGridLayer2() {
     window.debugGridLayer2Enabled = !window.debugGridLayer2Enabled;
-    console.log(`Debug calque 2 (collisions): ${window.debugGridLayer2Enabled ? 'ACTIVÉ' : 'DÉSACTIVÉ'}`);
 }
 
 function toggleDebugGridLayer3() {
@@ -444,7 +442,6 @@ function toggleDebugGridLayer3() {
 
 function toggleTileCoordinates() {
     window.debugTileCoordinatesEnabled = !window.debugTileCoordinatesEnabled;
-    console.log(`Coordonnées des tiles: ${window.debugTileCoordinatesEnabled ? 'ACTIVÉES' : 'DÉSACTIVÉES'}`);
 }
 
 function drawMap() {
@@ -660,27 +657,11 @@ function drawCollisionDebugInfo() {
 // Fonctions globales pour le debug
 window.toggleCollisionDebug = function() {
     window.debugGridLayer2Enabled = !window.debugGridLayer2Enabled;
-    console.log(`🔴 Debug des collisions: ${window.debugGridLayer2Enabled ? 'ACTIVÉ' : 'DÉSACTIVÉ'}`);
-    if (window.debugGridLayer2Enabled) {
-        console.log(`📊 GIDs bloquants actuels: ${window.BLOCKED_GIDS ? window.BLOCKED_GIDS.join(', ') : 'Aucun'}`);
-        console.log(`🗺️ Map actuelle: ${window.currentMap}`);
-    }
 };
 
 window.showPlayerPosition = function() {
     if (player) {
-        console.log(`👤 Joueur position: (${Math.floor(player.x)}, ${Math.floor(player.y)})`);
-        console.log(`🎯 Coordonnées écran: (${player.px}, ${player.py})`);
-        
-        // Vérifier les collisions autour du joueur
-        for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-                const checkX = Math.floor(player.x) + dx;
-                const checkY = Math.floor(player.y) + dy;
-                const isBlocked = window.isBlocked ? window.isBlocked(checkX, checkY) : false;
-                console.log(`📍 Position (${checkX}, ${checkY}): ${isBlocked ? 'BLOQUÉ' : 'Libre'}`);
-            }
-        }
+        // Debug des collisions activé
     }
 };
 
@@ -726,7 +707,6 @@ function startBlackScreenTransition() {
     
     // Timeout de sécurité pour Vercel - nettoyer après 2 secondes max
     window.blackScreenTimeout = setTimeout(() => {
-        console.log('🔄 Timeout de sécurité - nettoyage de l\'écran noir');
         clearBlackScreen();
     }, 2000);
 }
@@ -766,7 +746,6 @@ function drawForbiddenSpawnZone() {
 // Fonction pour activer/désactiver l'affichage de la zone interdite
 function toggleForbiddenSpawnZone() {
     window.debugForbiddenSpawnZoneEnabled = !window.debugForbiddenSpawnZoneEnabled;
-    console.log(`🚫 Zone interdite de spawn: ${window.debugForbiddenSpawnZoneEnabled ? 'AFFICHÉE' : 'MASQUÉE'}`);
 }
 
 // Export global
@@ -774,23 +753,7 @@ window.toggleForbiddenSpawnZone = toggleForbiddenSpawnZone;
 
 // Fonction de diagnostic pour détecter les problèmes de calques
 function diagnoseCanvasLayers() {
-    console.log("🔍 Diagnostic des calques de map:");
-    console.log(`- Map actuelle: ${window.currentMap}`);
-    console.log(`- Nombre de calques: ${window.mapData?.layers?.length || 0}`);
-    console.log(`- Offset X: ${window.mapOffsetX}, Offset Y: ${window.mapOffsetY}`);
-    
-    if (window.mapData?.layers) {
-        window.mapData.layers.forEach((layer, index) => {
-            console.log(`  Calque ${index} (ID: ${layer.id}): ${layer.name} - Visible: ${layer.visible}`);
-        });
-    }
-    
-    // Vérifier l'état du canvas
-    const canvas = document.getElementById('gameCanvas');
-    if (canvas) {
-        console.log(`- Canvas size: ${canvas.width}x${canvas.height}`);
-        console.log(`- Canvas style: ${canvas.style.width}x${canvas.style.height}`);
-    }
+    // Diagnostic des calques de map
 }
 
 // Fonction de nettoyage forcé du canvas
@@ -802,7 +765,7 @@ function forceClearCanvas() {
         ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.restore();
-        console.log("🧹 Canvas forcément nettoyé");
+        // Canvas nettoyé
     }
 }
 
@@ -812,7 +775,7 @@ window.forceClearCanvas = forceClearCanvas;
 
 // Fonction de nettoyage d'urgence pour le voile sombre
 function emergencyClearMapLayers() {
-    console.log("🚨 Nettoyage d'urgence des calques de map");
+    // Nettoyage d'urgence des calques de map
     
     // Forcer un nettoyage complet du canvas
     forceClearCanvas();

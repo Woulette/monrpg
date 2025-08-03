@@ -232,15 +232,7 @@ function drawPlayer(ctx) {
 
 // Fonction de diagnostic du joueur
 function diagnosePlayer() {
-    console.log("Diagnostic du joueur:");
-    console.log("- window.player:", window.player);
-    console.log("- local player:", player);
-    console.log("- isDead (window):", window.player ? window.player.isDead : "N/A");
-    console.log("- isDead (local):", player.isDead);
-    console.log("- life (window):", window.player ? window.player.life : "N/A");
-    console.log("- life (local):", player.life);
-    console.log("- deathTime:", player.deathTime);
-    console.log("- respawnTime:", player.respawnTime);
+    // Tous les console.log supprimés dans ce fichier.
 }
 
 // Export des fonctions principales

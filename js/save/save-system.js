@@ -29,25 +29,15 @@ class SaveSystem {
             window.gameState === "playing") {
             
             this.saveGame();
-            console.log('💾 Sauvegarde automatique effectuée pour le personnage', window.currentCharacterId);
         } else {
-            console.log('⚠️ Auto-save ignoré:', {
-                playerExists: typeof player !== 'undefined',
-                currentMap: typeof window.currentMap !== 'undefined',
-                characterId: window.currentCharacterId,
-                gameState: window.gameState
-            });
         }
     }
 
     // Sauvegarde manuelle
     saveGame() {
         if (typeof player === 'undefined' || !window.currentCharacterId) {
-            console.log('⚠️ Impossible de sauvegarder: player ou currentCharacterId manquant');
             return;
         }
-
-        console.log('💾 Sauvegarde du personnage', window.currentCharacterId);
 
         const saveData = {
             timestamp: Date.now(),
@@ -169,7 +159,6 @@ class SaveSystem {
             }
             
             this.lastSaveTime = Date.now();
-            console.log('✅ Sauvegarde complète réussie');
         } catch (error) {
             console.error('❌ Erreur lors de la sauvegarde:', error);
         }
@@ -178,16 +167,12 @@ class SaveSystem {
     // Charger la partie
     loadGame() {
         if (!window.currentCharacterId) {
-            console.log('⚠️ Impossible de charger: currentCharacterId manquant');
             return false;
         }
-
-        console.log('📂 Chargement du personnage', window.currentCharacterId);
 
         try {
             const saveData = localStorage.getItem(`monrpg_save_${window.currentCharacterId}`);
             if (!saveData) {
-                console.log('❌ Aucune sauvegarde trouvée pour ce personnage');
                 return false;
             }
 
@@ -195,7 +180,6 @@ class SaveSystem {
             
             // Restaurer les données du joueur
             if (data.player && typeof player !== 'undefined') {
-                console.log('👤 Restauration des données du joueur...');
                 
                 // Restaurer la position sauvegardée
                 player.x = data.player.x || player.x;
@@ -292,12 +276,6 @@ class SaveSystem {
                 // Anciennes propriétés pour compatibilité
                 player.stats = data.player.stats || {};
                 
-                console.log('✅ Données du joueur restaurées:', {
-                    level: player.level,
-                    xp: player.xp,
-                    life: player.life,
-                    position: { x: player.x, y: player.y }
-                });
             }
 
             // Restaurer l'inventaire
@@ -310,7 +288,6 @@ class SaveSystem {
                     window.inventoryEquipement = data.inventory.inventoryEquipement || [];
                     window.inventoryPotions = data.inventory.inventoryPotions || [];
                     window.inventoryRessources = data.inventory.inventoryRessources || [];
-                    console.log('✅ Inventaires restaurés (ancien système)');
                 }
                 
                 if (data.equipment) {
@@ -324,7 +301,6 @@ class SaveSystem {
                         armure: null,
                         bottes: null
                     };
-                    console.log('✅ Équipement restauré (ancien système)');
                 }
             }
 
@@ -335,23 +311,19 @@ class SaveSystem {
                 // Fallback pour l'ancien système
                 if (data.quests) {
                     window.quests = data.quests;
-                    console.log('✅ Quêtes restaurées (ancien système)');
                 }
             }
 
             // Restaurer l'état du jeu
             if (data.gameState) {
                 window.currentMap = data.gameState.currentMap || 'map1';
-                console.log('✅ État du jeu restauré, map actuelle:', window.currentMap);
                 
                 // Restaurer l'état de victoire du boss slime
                 if (data.gameState.slimeBossDefeated !== undefined) {
                     window.slimeBossDefeated = data.gameState.slimeBossDefeated;
-                    console.log('🐉 État de victoire du boss slime restauré:', window.slimeBossDefeated);
                 }
             }
 
-            console.log('✅ Chargement complet réussi');
             return true;
         } catch (error) {
             console.error('❌ Erreur lors du chargement:', error);
@@ -360,7 +332,6 @@ class SaveSystem {
     }
 
     showLoadSuccess() {
-        console.log('🎮 Partie chargée avec succès !');
         
         // Afficher le dialogue de bienvenue si c'est la première fois
         if (!window.characterCreationDialogShown) {
@@ -400,7 +371,6 @@ class SaveSystem {
             window.deleteQuestsForCharacter(window.currentCharacterId);
         }
         
-        console.log('🗑️ Sauvegarde du personnage actuel supprimée');
     }
 
     getContinueButtonText() {
@@ -432,7 +402,6 @@ class SaveSystem {
     // Sauvegarde forcée lors d'événements importants
     forceSaveOnEvent() {
         if (window.gameState === "playing" && window.currentCharacterId) {
-            console.log('💾 Sauvegarde forcée lors d\'un événement important');
             this.saveGame();
             
             // Sauvegarder aussi les monstres de la map actuelle
@@ -491,31 +460,22 @@ window.hasSave = function() {
 document.addEventListener('DOMContentLoaded', () => {
     saveSystem = new SaveSystem();
     saveSystem.init(); // Initialiser le système de sauvegarde
-    console.log('💾 Système de sauvegarde initialisé');
 });
 
 // Sauvegarde automatique lors d'événements importants
 window.autoSaveOnEvent = function() {
     // Vérifier si les sauvegardes automatiques sont désactivées
     if (window.autoSaveDisabled) {
-        console.log('🚫 Sauvegarde automatique ignorée (désactivée temporairement)');
         return;
     }
     
     if (saveSystem && window.gameState === "playing") {
-        console.log('💾 Sauvegarde automatique déclenchée par événement');
         saveSystem.saveGame();
-    } else {
-        console.log('⚠️ Auto-save ignoré - conditions non remplies:', {
-            saveSystemExists: !!saveSystem,
-            gameState: window.gameState
-        });
     }
 };
 
 // Fonction de test pour vérifier la sauvegarde des inventaires
 window.testInventorySave = function() {
-    console.log('🧪 Test de sauvegarde des inventaires...');
     
     // Ajouter quelques items de test
     if (typeof window.addItemToInventory === 'function') {
@@ -533,18 +493,10 @@ window.testInventorySave = function() {
         window.autoSaveOnEvent();
     }
     
-    console.log('✅ Test terminé. Vérifiez la console pour les détails.');
-    console.log('📦 Inventaires actuels:', {
-        all: window.inventoryAll,
-        equipement: window.inventoryEquipement,
-        potions: window.inventoryPotions,
-        ressources: window.inventoryRessources
-    });
 };
 
 // Fonction pour supprimer TOUTES les données du localStorage
 window.clearAllGameData = function() {
-    console.log('🗑️ Suppression de TOUTES les données du jeu...');
     
     // Supprimer toutes les données du localStorage
     localStorage.clear();
@@ -574,31 +526,19 @@ window.clearAllGameData = function() {
     window.monsters = [];
     window.occupiedPositions = new Set();
     
-    console.log('✅ TOUTES les données du jeu ont été supprimées et réinitialisées');
-    console.log('🔄 Le jeu est maintenant dans un état complètement neuf');
 }; 
 
 // Fonction de test pour vérifier la sauvegarde
 window.testSaveSystem = function() {
-    console.log('🧪 Test du système de sauvegarde...');
     
     if (!window.currentCharacterId) {
-        console.log('❌ Aucun personnage actif');
         return;
     }
     
     if (!player) {
-        console.log('❌ Objet player non défini');
         return;
     }
     
-    console.log('📊 État actuel du joueur:', {
-        level: player.level,
-        xp: player.xp,
-        life: player.life,
-        force: player.force,
-        currentMap: window.currentMap
-    });
     
     // Forcer une sauvegarde
     if (typeof window.forceSaveOnEvent === 'function') {
@@ -611,26 +551,17 @@ window.testSaveSystem = function() {
     
     if (savedData) {
         const data = JSON.parse(savedData);
-        console.log('✅ Sauvegarde trouvée:', {
-            timestamp: new Date(data.timestamp).toLocaleString(),
-            characterId: data.characterId,
-            playerLevel: data.player.level,
-            playerXP: data.player.xp,
-            currentMap: data.gameState.currentMap
-        });
+        
     } else {
-        console.log('❌ Aucune sauvegarde trouvée');
+        
     }
     
-    console.log('🧪 Test terminé');
 }; 
 
 // Fonction de débogage pour vérifier l'état complet
 window.debugSaveState = function() {
-    console.log('🔍 Débogage complet du système de sauvegarde...');
     
     if (!window.currentCharacterId) {
-        console.log('❌ Aucun personnage actif');
         return;
     }
     
@@ -639,36 +570,17 @@ window.debugSaveState = function() {
     
     if (savedData) {
         const data = JSON.parse(savedData);
-        console.log('📊 Données sauvegardées:', {
-            timestamp: new Date(data.timestamp).toLocaleString(),
-            characterId: data.characterId,
-            player: {
-                level: data.player.level,
-                xp: data.player.xp,
-                life: data.player.life,
-                position: { x: data.player.x, y: data.player.y },
-                force: data.player.force
-            },
-            gameState: data.gameState
-        });
+        
     } else {
-        console.log('❌ Aucune sauvegarde trouvée');
+        
     }
     
     if (player) {
-        console.log('👤 État actuel du joueur:', {
-            level: player.level,
-            xp: player.xp,
-            life: player.life,
-            position: { x: player.x, y: player.y },
-            force: player.force,
-            currentMap: window.currentMap
-        });
+        
     } else {
-        console.log('❌ Objet player non défini');
+        
     }
     
-    console.log('🔍 Débogage terminé');
 }; 
 
 // Variable pour désactiver temporairement les sauvegardes automatiques
@@ -677,22 +589,17 @@ window.autoSaveDisabled = false;
 // Fonction pour désactiver temporairement les sauvegardes automatiques
 function disableAutoSave() {
     window.autoSaveDisabled = true;
-    console.log('🚫 Sauvegardes automatiques désactivées temporairement');
 }
 
 // Fonction pour réactiver les sauvegardes automatiques
 function enableAutoSave() {
     window.autoSaveDisabled = false;
-    console.log('✅ Sauvegardes automatiques réactivées');
 }
 
 // Fonction pour forcer une sauvegarde manuelle
 function forceManualSave() {
     if (saveSystem && window.gameState === "playing") {
-        console.log('💾 Sauvegarde manuelle forcée');
         saveSystem.saveGame();
-    } else {
-        console.log('⚠️ Impossible de sauvegarder manuellement - conditions non remplies');
     }
 }
 

@@ -25,7 +25,6 @@ window.updateBlockedGids = function() {
     }
     
     window.BLOCKED_GIDS = Array.from(blockedGids);
-    console.log(`Collisions mises à jour: ${window.BLOCKED_GIDS.length} GIDs bloquants`);
 };
 
 window.isBlocked = function(x, y) {

@@ -1,18 +1,14 @@
-console.log("Fichier js/hud.js chargé");
-
 function initHUD() {
-    console.log("Initialisation du HUD...");
     
     // Le HUD est déjà configuré avec les fonctions drawLifeBar et drawXPBar
     // Cette fonction peut être utilisée pour des initialisations supplémentaires si nécessaire
     
-    console.log("HUD initialisé avec succès");
 }
 
 // Charge l'image de la barre de vie (cœur)
 const lifeBarImg = new Image();
 lifeBarImg.src = 'assets/ui/barredevie.png';
-lifeBarImg.onload = () => console.log("Barre de vie chargée !");
+    lifeBarImg.onload = () => {};
 
 // Position et taille du cœur (zone grise du canvas)
 const lifeBarX = 740;
@@ -105,6 +101,99 @@ function drawHUD(ctx) {
     drawLifeBar(ctx);
     if (typeof drawXPBar === "function") drawXPBar(ctx);
     if (typeof drawMonsterInfo === "function") drawMonsterInfo(ctx); // Ajoute cette ligne
+}
+
+// Fonction pour afficher le nom du joueur au survol
+function drawPlayerNameTooltip(ctx, mouseX, mouseY) {
+    if (typeof player === 'undefined') return;
+    
+    // Position du joueur en pixels
+    const playerX = player.x * TILE_SIZE;
+    const playerY = player.y * TILE_SIZE;
+    
+    // Zone de détection du survol (32x32 pixels centrée sur le joueur)
+    const hoverZone = 32;
+    const playerCenterX = playerX + TILE_SIZE/2; // Centre du tile du joueur
+    const playerCenterY = playerY + TILE_SIZE/2; // Centre du tile du joueur
+    const isHovering = mouseX >= playerCenterX - hoverZone/2 && 
+                       mouseX <= playerCenterX + hoverZone/2 &&
+                       mouseY >= playerCenterY - hoverZone/2 && 
+                       mouseY <= playerCenterY + hoverZone/2;
+    
+    if (isHovering && window.playerName) {
+        // Calculer la largeur du texte pour centrer le tooltip
+        ctx.save();
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        const textWidth = ctx.measureText(window.playerName).width;
+        const tooltipWidth = Math.max(80, textWidth + 20); // Largeur minimale de 80px
+        
+        // Position centrée du tooltip au-dessus de la tête du joueur
+        const tooltipX = playerX + TILE_SIZE/2; // Centre du tile du joueur
+        const tooltipY = playerY - 10; // Juste au-dessus de la tête
+        
+        // Fond du tooltip
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillRect(tooltipX - tooltipWidth/2, tooltipY - 25, tooltipWidth, 25);
+        
+        // Bordure
+        ctx.strokeStyle = '#3498db';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(tooltipX - tooltipWidth/2, tooltipY - 25, tooltipWidth, 25);
+        
+        // Texte du nom
+        ctx.fillStyle = 'white';
+        ctx.fillText(window.playerName, tooltipX, tooltipY - 10);
+        
+        ctx.restore();
+    }
+}
+
+// Fonction pour afficher le nom des autres joueurs au survol
+function drawOtherPlayersNameTooltip(ctx, mouseX, mouseY) {
+    if (!window.multiplayerManager || !window.multiplayerManager.connected) return;
+    
+    window.multiplayerManager.otherPlayers.forEach((otherPlayer, id) => {
+        const playerX = otherPlayer.x * TILE_SIZE;
+        const playerY = otherPlayer.y * TILE_SIZE;
+        
+        // Zone de détection du survol (32x32 pixels centrée sur le joueur)
+        const hoverZone = 32;
+        const playerCenterX = playerX + TILE_SIZE/2; // Centre du tile du joueur
+        const playerCenterY = playerY + TILE_SIZE/2; // Centre du tile du joueur
+        const isHovering = mouseX >= playerCenterX - hoverZone/2 && 
+                           mouseX <= playerCenterX + hoverZone/2 &&
+                           mouseY >= playerCenterY - hoverZone/2 && 
+                           mouseY <= playerCenterY + hoverZone/2;
+        
+        if (isHovering && otherPlayer.name) {
+            // Calculer la largeur du texte pour centrer le tooltip
+            ctx.save();
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            const textWidth = ctx.measureText(otherPlayer.name).width;
+            const tooltipWidth = Math.max(80, textWidth + 20); // Largeur minimale de 80px
+            
+            // Position centrée du tooltip au-dessus de la tête du joueur
+            const tooltipX = playerX + TILE_SIZE/2; // Centre du tile du joueur
+            const tooltipY = playerY - 10; // Juste au-dessus de la tête
+            
+            // Fond du tooltip
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(tooltipX - tooltipWidth/2, tooltipY - 25, tooltipWidth, 25);
+            
+            // Bordure
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(tooltipX - tooltipWidth/2, tooltipY - 25, tooltipWidth, 25);
+            
+            // Texte du nom
+            ctx.fillStyle = 'white';
+            ctx.fillText(otherPlayer.name, tooltipX, tooltipY - 10);
+            
+            ctx.restore();
+        }
+    });
 }
 
 // Fonction de positionnement des icônes du HUD avec pourcentages
@@ -248,7 +337,6 @@ function toggleMinimap() {
         }
     }
     
-    console.log('🗺️ Mini-carte:', minimapVisible ? 'affichée' : 'masquée');
 }
 
 // Fonction pour ouvrir les contrôles de la mini-carte
@@ -280,3 +368,80 @@ function initMinimapControls() {
 window.positionHudIcons = positionHudIcons;
 window.toggleMinimap = toggleMinimap;
 window.openMinimapControls = openMinimapControls;
+
+// Fonction pour mettre à jour le panneau MMO du joueur
+function updatePlayerMMOPanel() {
+    const panel = document.getElementById('player-mmo-panel');
+    const nameElement = document.getElementById('player-mmo-name');
+    const levelElement = document.getElementById('player-mmo-level');
+    const avatarElement = document.getElementById('player-mmo-avatar');
+    const statusElement = document.getElementById('player-mmo-status');
+    
+    if (!panel || !nameElement || !levelElement || !avatarElement || !statusElement) return;
+    
+    // Afficher le panneau
+    panel.style.display = 'block';
+    
+    // Mettre à jour les informations
+    if (window.playerName) {
+        nameElement.textContent = window.playerName;
+    }
+    
+    if (typeof player !== 'undefined' && player.level) {
+        levelElement.textContent = `Niveau ${player.level}`;
+    }
+    
+    if (window.playerAvatar) {
+        avatarElement.src = window.playerAvatar;
+    }
+    
+    // Mettre à jour le statut multijoueur
+    if (window.multiplayerManager && window.multiplayerManager.connected) {
+        statusElement.textContent = 'ON';
+        statusElement.style.color = '#27ae60';
+    } else {
+        statusElement.textContent = 'OFF';
+        statusElement.style.color = '#e74c3c';
+    }
+}
+
+// Fonction pour initialiser les événements du panneau MMO
+function initMMOPanelEvents() {
+    const panel = document.getElementById('player-mmo-panel');
+    if (panel) {
+        panel.addEventListener('click', function() {
+            if (window.multiplayerManager) {
+                if (window.multiplayerManager.connected) {
+                    // Désactiver le multijoueur
+                    disableMultiplayer();
+                } else {
+                    // Activer le multijoueur
+                    enableMultiplayer();
+                }
+            }
+        });
+        
+        // Ajouter un style de curseur pour indiquer que c'est cliquable
+        panel.style.cursor = 'pointer';
+    }
+}
+
+// Fonction pour gérer les tooltips au survol de la souris
+function handleMouseMove(event) {
+    const canvas = document.getElementById('gameCanvas');
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+    
+    // Stocker la position de la souris pour les tooltips
+    window.mouseX = mouseX;
+    window.mouseY = mouseY;
+}
+
+// Fonction pour dessiner tous les tooltips
+function drawAllTooltips(ctx) {
+    if (window.mouseX !== undefined && window.mouseY !== undefined) {
+        drawPlayerNameTooltip(ctx, window.mouseX, window.mouseY);
+        drawOtherPlayersNameTooltip(ctx, window.mouseX, window.mouseY);
+    }
+}

@@ -1,5 +1,5 @@
 // Système multijoueur pour MonRPG
-// Se connecte au serveur WebSocket et gère les autres joueurs
+// Version séparée et organisée
 
 class MultiplayerManager {
     constructor() {
@@ -10,7 +10,7 @@ class MultiplayerManager {
         this.currentMap = 'map1';
         
         // Configuration
-        this.serverUrl = 'ws://localhost:3001';
+        this.serverUrl = 'ws://localhost:3001'; // Utiliser le serveur local pour tester
         this.updateInterval = null;
         
         console.log('🎮 Système multijoueur initialisé');
@@ -24,6 +24,11 @@ class MultiplayerManager {
             this.socket.onopen = () => {
                 console.log('✅ Connecté au serveur multijoueur');
                 this.connected = true;
+                
+                // Envoyer le nom du personnage avec un petit délai pour s'assurer qu'il est disponible
+                setTimeout(() => {
+                    this.sendPlayerName();
+                }, 100);
                 
                 // S'assurer que la carte actuelle est synchronisée
                 if (window.currentMap && this.currentMap !== window.currentMap) {
@@ -66,6 +71,18 @@ class MultiplayerManager {
                 // Vider la liste actuelle et ajouter les nouveaux joueurs
                 this.otherPlayers.clear();
                 console.log(`📥 Réception de ${message.data.length} joueurs du serveur`);
+                
+                console.log(`📥 Données reçues du serveur:`);
+                message.data.forEach(player => {
+                    console.log(`  - Joueur reçu: ${player.name} (${player.id})`);
+                });
+                
+                // Debug: vérifier si les noms sont corrects
+                message.data.forEach(player => {
+                    if (player.name && player.name.startsWith('Joueur_')) {
+                        console.log(`⚠️ Nom par défaut détecté: ${player.name} (${player.id})`);
+                    }
+                });
                 
                 message.data.forEach(player => {
                     // Ne pas ajouter notre propre joueur à la liste des autres joueurs
@@ -120,6 +137,26 @@ class MultiplayerManager {
                     }
                 });
                 break;
+        }
+    }
+    
+    // Envoyer le nom du personnage
+    sendPlayerName() {
+        if (this.connected && this.socket && window.playerNameManager) {
+            const playerName = window.playerNameManager.getPlayerName();
+            
+            // Vérifier que le nom n'est pas vide ou par défaut
+            if (playerName && !playerName.startsWith('Joueur_')) {
+                this.socket.send(JSON.stringify({
+                    type: 'player_name',
+                    name: playerName
+                }));
+                console.log(`📝 Envoi du nom du personnage: ${playerName}`);
+            } else {
+                console.log(`⚠️ Nom du personnage non valide: ${playerName}`);
+            }
+        } else {
+            console.log('❌ Impossible d\'envoyer le nom: connexion ou gestionnaire non disponible');
         }
     }
     
@@ -214,14 +251,10 @@ class MultiplayerManager {
                 ctx.fillRect(x + 16, y + 6, 2, 2);
             }
             
-            // Nom du joueur avec fond
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(x + 4, y - 2, 24, 14);
-            
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 10px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(otherPlayer.name || 'Joueur', x + 16, y + 8);
+                         // Debug: afficher le nom dans la console
+             if (otherPlayer.name && !otherPlayer.name.startsWith('Joueur_')) {
+                 console.log(`🎯 Affichage du nom: ${otherPlayer.name} pour le joueur ${otherPlayer.id}`);
+             }
             
             ctx.restore();
         });
@@ -338,4 +371,4 @@ function forceReconnect() {
     }
 }
 
-console.log('🎮 Module multijoueur chargé'); 
+console.log('🎮 Module multijoueur séparé chargé'); 

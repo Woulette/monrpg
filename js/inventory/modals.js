@@ -1,5 +1,3 @@
-console.log("Fichier js/inventory/modals.js chargé");
-
 // Variables globales pour la fenêtre détaillée
 let currentEquipmentDetailItem = null;
 let currentEquipmentDetailIndex = null;
