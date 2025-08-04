@@ -660,9 +660,9 @@ function initPNJs() {
         createPapi3();
         loadPapi3Image();
     } else if (currentMap === "map4") {
-        // Créer Papi4 sur la map 4 (donjon slime)
-        createPapi4();
-        loadPapi4Image();
+        // Map 4 normale - pas de Papi4
+        // createPapi4();
+        // loadPapi4Image();
     } else if (currentMap === "maison") {
         // Créer Papi4 dans la maison
         createPapi4();

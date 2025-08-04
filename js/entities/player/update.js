@@ -486,36 +486,79 @@ function updatePlayer(ts) {
                             let destX = closest.x + dx;
                             let destY = closest.y + dy;
                             
-                            // Vérifier que la case d'arrivée est dans la map et pas un portail
+                            // Vérifier que la case d'arrivée est dans la map
                             if (destX < 0) destX = 0;
                             if (destY < 0) destY = 0;
                             if (destX >= mapData.width) destX = mapData.width - 1;
                             if (destY >= mapData.height) destY = mapData.height - 1;
                             
-                            // Vérifier si la case d'arrivée est un portail dans n'importe quel calque
-                            let isPortalAtDestination = false;
+                            // Vérifier si la case d'arrivée est un portail ou une collision
+                            let isInvalidDestination = false;
                             for (let layerIndex = 0; layerIndex < mapData.layers.length; layerIndex++) {
                                 const layer = mapData.layers[layerIndex];
-                                if (layer.data[destY * layer.width + destX] === targetPortalId) {
-                                    isPortalAtDestination = true;
+                                const tileGid = layer.data[destY * layer.width + destX];
+                                
+                                // Vérifier si c'est un portail
+                                if (tileGid === targetPortalId) {
+                                    isInvalidDestination = true;
+                                    break;
+                                }
+                                
+                                // Vérifier si c'est une collision (calque 2)
+                                if (layer.id === 2 && tileGid !== 0) {
+                                    isInvalidDestination = true;
                                     break;
                                 }
                             }
                             
-                            if (isPortalAtDestination) {
-                                // Si la case d'arrivée est un portail, on place à côté (autre direction)
-                                if (dx !== 0) destX += dx; // Avancer encore d'une case
-                                if (dy !== 0) destY += dy;
-                                // Si toujours pas possible, fallback au centre
-                                let stillPortal = false;
-                                for (let layerIndex = 0; layerIndex < mapData.layers.length; layerIndex++) {
-                                    const layer = mapData.layers[layerIndex];
-                                    if (layer.data[destY * layer.width + destX] === targetPortalId) {
-                                        stillPortal = true;
+                            if (isInvalidDestination) {
+                                // Essayer les 4 directions autour du portail
+                                const directions = [
+                                    {dx: 0, dy: -1}, // Haut
+                                    {dx: 1, dy: 0},  // Droite
+                                    {dx: 0, dy: 1},  // Bas
+                                    {dx: -1, dy: 0}  // Gauche
+                                ];
+                                
+                                let validPositionFound = false;
+                                for (let dir of directions) {
+                                    let testX = closest.x + dir.dx;
+                                    let testY = closest.y + dir.dy;
+                                    
+                                    // Vérifier les limites de la map
+                                    if (testX < 0 || testY < 0 || testX >= mapData.width || testY >= mapData.height) {
+                                        continue;
+                                    }
+                                    
+                                    // Vérifier si la position est valide
+                                    let isValid = true;
+                                    for (let layerIndex = 0; layerIndex < mapData.layers.length; layerIndex++) {
+                                        const layer = mapData.layers[layerIndex];
+                                        const tileGid = layer.data[testY * layer.width + testX];
+                                        
+                                        // Vérifier si c'est un portail
+                                        if (tileGid === targetPortalId) {
+                                            isValid = false;
+                                            break;
+                                        }
+                                        
+                                        // Vérifier si c'est une collision (calque 2)
+                                        if (layer.id === 2 && tileGid !== 0) {
+                                            isValid = false;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if (isValid) {
+                                        destX = testX;
+                                        destY = testY;
+                                        validPositionFound = true;
                                         break;
                                     }
                                 }
-                                if (destX < 0 || destY < 0 || destX >= mapData.width || destY >= mapData.height || stillPortal) {
+                                
+                                // Si aucune position valide trouvée, fallback au centre
+                                if (!validPositionFound) {
                                     destX = 24;
                                     destY = 14;
                                 }

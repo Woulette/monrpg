@@ -228,7 +228,8 @@ class WorldMapSystem {
             'map1': { x: 0, y: 800 },                    // map1 en bas (Y = 800)
             'map2': { x: 0, y: 400 },                  // map2 au milieu (Y = 400)
             'map3': { x: 0, y: 0 },                  // map3 en haut (Y = 0)
-            // Pour les futures maps : map4 = Y = 1200, map5 = Y = 1600, etc.
+            'map4': { x: 770, y: 0 },                 // map4 au-dessus de map3 (Y = -400)
+            // Pour les futures maps : map5 = Y = -800, map6 = Y = -1200, etc.
         };
         
         // Si la map a une position définie, l'utiliser

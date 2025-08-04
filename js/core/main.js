@@ -1263,15 +1263,15 @@ window.showBossChestWindow = function() {
     `;
     
     // Définir les 3 objets disponibles
-    const chestItems = [
-        {
-            id: "orbe_atypique_niveau1",
-            name: "Orbe Atypique Niveau 1",
-            type: "objet_special",
-            category: "objet_special",
-            description: "Un orbe mystérieux qui dégage une énergie particulière",
-            image: "assets/objets/orbesatypiqueniveau1.png"
-        },
+            const chestItems = [
+            {
+                id: "orbe_atypique_niveau10",
+                name: "Orbe Atypique Niveau 10",
+                type: "objet_special",
+                category: "objet_special",
+                description: "Un orbe mystérieux qui dégage une énergie particulière. Permet d'améliorer les équipements de niveau 10 ou inférieur.",
+                image: "assets/objets/orbesatypiqueniveau10.png"
+            },
         {
             id: "dague_slime",
             name: "Dague de Slime",

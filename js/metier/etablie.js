@@ -19,32 +19,58 @@ window.enableInventoryDragAndDrop = function() {
   setTimeout(() => {
     document.querySelectorAll('#tailor-inventory-grid .tailor-inventory-slot, #cordonnier-inventory-grid .cordonnier-inventory-slot, #bijoutier-inventory-grid .bijoutier-inventory-slot').forEach(slot => {
       const img = slot.querySelector('img');
-      if (img && img.src.includes('assets/equipements/')) {
-        slot.setAttribute('draggable', 'true');
-        slot.ondragstart = (e) => {
-          const itemName = img.getAttribute('alt');
-          e.dataTransfer.setData('text/plain', itemName);
-          e.dataTransfer.setData('dragged-icon', img.src);
-        };
-        slot.onclick = () => {
-          const slotLeft = document.querySelector('.tailor-improve-slot, .cordonnier-improve-slot, .bijoutier-improve-slot');
-          if (slotLeft) {
-            slotLeft.innerHTML = '';
-            const imgClone = img.cloneNode(true);
-            imgClone.style.width = '48px';
-            imgClone.style.height = '48px';
-            slotLeft.appendChild(imgClone);
-            // Affiche la fiche de l'équipement en bas (si trouvé dans equipmentDatabase)
-            let found = null;
-            for (const id in window.equipmentDatabase) {
-              if (window.equipmentDatabase[id].icon && (img.src.endsWith(window.equipmentDatabase[id].icon) || window.equipmentDatabase[id].icon.endsWith(img.src))) {
-                found = window.equipmentDatabase[id];
-                break;
+      if (img) {
+        // Permettre le drag & drop pour les équipements ET les orbes
+        if (img.src.includes('assets/equipements/') || img.src.includes('orbesatypiqueniveau10.png')) {
+          slot.setAttribute('draggable', 'true');
+          slot.ondragstart = (e) => {
+            const itemName = img.getAttribute('alt');
+            e.dataTransfer.setData('text/plain', itemName);
+            e.dataTransfer.setData('dragged-icon', img.src);
+          };
+          slot.onclick = () => {
+            // Déterminer si c'est un équipement ou un orbe
+            if (img.src.includes('assets/equipements/')) {
+              // C'est un équipement, aller dans le slot gauche
+              const slotLeft = document.querySelector('.tailor-improve-slot, .cordonnier-improve-slot, .bijoutier-improve-slot');
+              if (slotLeft) {
+                slotLeft.innerHTML = '';
+                const imgClone = img.cloneNode(true);
+                imgClone.style.width = '48px';
+                imgClone.style.height = '48px';
+                slotLeft.appendChild(imgClone);
+                // Affiche la fiche de l'équipement en bas (si trouvé dans equipmentDatabase)
+                let found = null;
+                for (const id in window.equipmentDatabase) {
+                  if (window.equipmentDatabase[id].icon && (img.src.endsWith(window.equipmentDatabase[id].icon) || window.equipmentDatabase[id].icon.endsWith(img.src))) {
+                    found = window.equipmentDatabase[id];
+                    break;
+                  }
+                }
+                // Affichage fiche équipement (à adapter si besoin)
+              }
+            } else if (img.src.includes('orbesatypiqueniveau10.png')) {
+              // C'est un orbe, aller dans le slot droit
+              const slotRight = document.querySelector('.tailor-improve-slot, .cordonnier-improve-slot, .bijoutier-improve-slot');
+              if (slotRight) {
+                // Trouver le slot droit (le deuxième slot d'amélioration)
+                const improveSlots = document.querySelectorAll('.tailor-improve-slot, .cordonnier-improve-slot, .bijoutier-improve-slot');
+                if (improveSlots.length >= 2) {
+                  const rightSlot = improveSlots[1]; // Le deuxième slot est le slot droit
+                  rightSlot.innerHTML = '';
+                  const imgClone = img.cloneNode(true);
+                  imgClone.style.width = '48px';
+                  imgClone.style.height = '48px';
+                  rightSlot.appendChild(imgClone);
+                }
               }
             }
-            // Affichage fiche équipement (à adapter si besoin)
-          }
-        };
+          };
+        } else {
+          slot.removeAttribute('draggable');
+          slot.onclick = null;
+          slot.ondragstart = null;
+        }
       } else {
         slot.removeAttribute('draggable');
         slot.onclick = null;
@@ -134,6 +160,19 @@ function openWorkshopModal({
   improveView.appendChild(improveSlotLeft);
   improveView.appendChild(arrow);
   improveView.appendChild(improveSlotRight);
+
+  // Bouton d'amélioration
+  const improveButton = document.createElement('button');
+  improveButton.textContent = 'AMÉLIORER';
+  improveButton.className = `${cssPrefix}improve-btn`;
+  improveButton.id = `${cssPrefix}improve-btn-debug`;
+  improveView.appendChild(improveButton);
+
+  // Fiche d'aperçu pour l'amélioration
+  let improvePreviewDiv = document.createElement('div');
+  improvePreviewDiv.id = `${cssPrefix}improve-preview`;
+  improvePreviewDiv.className = `${cssPrefix}improve-preview`;
+  improveView.appendChild(improvePreviewDiv);
   // Affichage par défaut : vue craft
   craftViews.appendChild(craftGrid);
   // Switch d'onglet
@@ -142,6 +181,8 @@ function openWorkshopModal({
     improveTab.className = `${cssPrefix}improve-tab`;
     craftViews.innerHTML = '';
     craftViews.appendChild(craftGrid);
+    // Afficher le bouton CRAFTER dans l'onglet Craft
+    if (craftButton) craftButton.style.display = 'block';
   };
   improveTab.onclick = () => {
     improveTab.className = `${cssPrefix}craft-tab`;
@@ -149,6 +190,162 @@ function openWorkshopModal({
     craftViews.innerHTML = '';
     craftViews.appendChild(improveView);
     if (craftPreviewDiv) craftPreviewDiv.innerHTML = '';
+    if (improvePreviewDiv) improvePreviewDiv.innerHTML = '';
+    // Masquer le bouton CRAFTER dans l'onglet Amélioration
+    if (craftButton) craftButton.style.display = 'none';
+    
+    // Initialiser le bouton AMÉLIORER quand l'onglet est activé
+    setTimeout(() => {
+      const improveBtn = document.getElementById(`${cssPrefix}improve-btn-debug`);
+      console.log('Recherche du bouton améliorer:', `${cssPrefix}improve-btn-debug`);
+      console.log('Bouton trouvé:', improveBtn);
+      if (improveBtn) {
+        improveBtn.onclick = () => {
+          console.log('Clic sur le bouton AMÉLIORER détecté');
+          // Récupérer l'équipement dans le slot gauche
+          const leftSlot = improveSlotLeft.querySelector('img');
+          const rightSlot = improveSlotRight.querySelector('img');
+          
+          if (!leftSlot || !rightSlot) {
+            alert('Placez un équipement et un orbe atypique pour améliorer !');
+            return;
+          }
+
+          // Vérifier que le slot droit contient un orbe atypique niveau 10
+          const orbeIcon = rightSlot.src;
+          if (!orbeIcon.includes('orbesatypiqueniveau10.png')) {
+            alert('L\'orbe dans le slot de droite doit être un orbe atypique niveau 10 !');
+            return;
+          }
+
+          // Trouver l'équipement dans la base de données
+          let equipItem = null;
+          let equipId = '';
+          for (const id in window.equipmentDatabase) {
+            const item = window.equipmentDatabase[id];
+            if (item && item.icon && (leftSlot.src.endsWith(item.icon) || item.icon.endsWith(leftSlot.src))) {
+              equipItem = item;
+              equipId = id;
+              break;
+            }
+          }
+
+          if (!equipItem) {
+            alert('Équipement non reconnu !');
+            return;
+          }
+
+          // Vérifier que l'équipement n'est pas déjà atypique
+          if (equipItem.name && equipItem.name.includes('Atypique')) {
+            alert('Cet équipement est déjà atypique !');
+            return;
+          }
+
+          // Vérifier que l'équipement a un niveau requis inférieur ou égal à 10
+          if (equipItem.levelRequired && equipItem.levelRequired > 10) {
+            alert('Cet équipement nécessite un niveau supérieur à 10 et ne peut pas être amélioré avec cet orbe.');
+            return;
+          }
+
+          // Vérifier que le joueur a bien l'orbe dans son inventaire
+          let hasOrbe = false;
+          for (let slot of window.inventoryAll) {
+            if (slot.item && slot.item.id === 'orbe_atypique_niveau10') {
+              hasOrbe = true;
+              break;
+            }
+          }
+
+          if (!hasOrbe) {
+            alert('Vous n\'avez pas d\'orbe atypique dans votre inventaire !');
+            return;
+          }
+
+          // Créer la version atypique de l'équipement
+          const newStats = {};
+          if (equipItem.stats) {
+            Object.entries(equipItem.stats).forEach(([stat, value]) => {
+              // Augmentation de 50% arrondie
+              newStats[stat] = Math.round(value * 1.5);
+            });
+          }
+
+          // Créer le nouvel item atypique
+          const newItemId = equipId + '_atypique';
+          const newItem = {
+            id: newItemId,
+            name: equipItem.name + ' Atypique',
+            type: equipItem.type,
+            icon: equipItem.icon,
+            description: equipItem.description + ' (Version atypique)',
+            stats: newStats,
+            levelRequired: equipItem.levelRequired,
+            rarity: 'atypique'
+          };
+
+          // Ajouter à la base de données si pas déjà présent
+          if (!window.equipmentDatabase[newItemId]) {
+            window.equipmentDatabase[newItemId] = newItem;
+          }
+
+          // Retirer l'orbe de l'inventaire
+          let orbeRemoved = false;
+          for (let slot of window.inventoryAll) {
+            if (slot.item && slot.item.id === 'orbe_atypique_niveau10' && !orbeRemoved) {
+              if (slot.item.quantity && slot.item.quantity > 1) {
+                slot.item.quantity--;
+              } else {
+                slot.item = null;
+              }
+              orbeRemoved = true;
+            }
+          }
+
+          // Retirer l'ancien équipement de l'inventaire
+          let equipRemoved = false;
+          for (let slot of window.inventoryAll) {
+            if (slot.item && slot.item.id === equipId && !equipRemoved) {
+              slot.item = null;
+              equipRemoved = true;
+            }
+          }
+
+          // Ajouter le nouvel équipement atypique à l'inventaire
+          if (typeof addItemToInventory === 'function') {
+            const result = addItemToInventory(newItemId, 'equipement');
+            if (result === false) {
+              alert("Inventaire plein, impossible d'ajouter l'équipement amélioré !");
+              return;
+            }
+          }
+
+          // Vider les slots d'amélioration
+          improveSlotLeft.innerHTML = '';
+          improveSlotRight.innerHTML = '';
+
+          // Mettre à jour l'inventaire
+          if (typeof updateAllGrids === 'function') updateAllGrids();
+          if (typeof updateCraftInventoryGrid === 'function') updateCraftInventoryGrid();
+          if (typeof window.enableInventoryDragAndDrop === 'function') window.enableInventoryDragAndDrop();
+
+          // Afficher la fiche de l'item amélioré
+          improvePreviewDiv.innerHTML = `
+            <div class='item-preview'>
+              <div class='item-preview-card'>
+                <img src='${newItem.icon}' alt='${newItem.name}' class='item-preview-icon'>
+                <div class='item-preview-infos'>
+                  <div class='item-preview-title'>${newItem.name}</div>
+                  <div class='item-preview-stats'>
+                    ${Object.entries(newItem.stats||{}).map(([k,v])=>`<span class='item-preview-stat'><span class='item-preview-stat-icon'>${window.getStatIcon(k)}</span> <span class='item-preview-stat-name'>${k}</span> : <b class='item-preview-stat-value'>${v}</b></span>`).join('')}
+                  </div>
+                  <div class='item-preview-rarity' style='color: #4CAF50; font-weight: bold;'>Atypique</div>
+                </div>
+              </div>
+            </div>
+                     `;
+         };
+      }
+    }, 100);
   };
   // Bouton de craft
   const craftButton = document.createElement('button');
@@ -356,6 +553,7 @@ function openWorkshopModal({
       }
     }
     document.addEventListener('keydown', handleEscapeModal);
+
     // Bouton CRAFTER
     setTimeout(() => {
       const btn = document.getElementById(`${cssPrefix}craft-btn-debug`);
@@ -486,6 +684,8 @@ function openWorkshopModal({
         };
       }
     }, 0);
+
+
   }
 }
 

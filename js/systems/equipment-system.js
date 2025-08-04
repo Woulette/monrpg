@@ -271,16 +271,17 @@ const equipmentDatabase = {
         maxStack: 99
     },
     
-    // Orbe atypique niveau 1
-    orbe_atypique_niveau1: {
-        id: 'orbe_atypique_niveau1',
-        name: 'Orbe Atypique Niveau 1',
-        type: 'objet_special',
-        icon: 'assets/objets/orbesatypiqueniveau1.png',
-        description: 'Un orbe mystérieux qui dégage une énergie particulière.',
-        rarity: 'rare',
-        stackable: false
-    },
+            // Orbe atypique niveau 10
+        orbe_atypique_niveau10: {
+            id: 'orbe_atypique_niveau10',
+            name: 'Orbe Atypique Niveau 10',
+            type: 'objet_special',
+            icon: 'assets/objets/orbesatypiqueniveau10.png',
+            description: 'Un orbe mystérieux qui dégage une énergie particulière. Permet d\'améliorer les équipements de niveau 10 ou inférieur.',
+            rarity: 'rare',
+            stackable: false,
+            levelRequired: 10
+        },
 
 };
 

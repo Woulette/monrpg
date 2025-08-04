@@ -51,9 +51,10 @@ function initMonsters() {
                 window.ensureSlimeBossExists();
             }
         } else if (currentMap && currentMap === "map4") {
-            if (typeof window.spawnSlimeBoss === "function") {
-                window.spawnSlimeBoss(); // Créer le SlimeBoss sur la map 4
-            }
+            // Map 4 normale - pas de boss slime
+            // if (typeof window.spawnSlimeBoss === "function") {
+            //     window.spawnSlimeBoss(); // Créer le SlimeBoss sur la map 4
+            // }
         } else if (currentMap && (currentMap === "mapdonjonslime" || currentMap === "mapdonjonslime2")) {
             // Créer les slimes pour les maps du donjon slime
             if (typeof window.createSlimes === "function") {
@@ -63,10 +64,10 @@ function initMonsters() {
                     window.createSlimes(7); // 7 slimes sur mapdonjonslime2
                 }
             }
-        } else if (currentMap && (currentMap === "map1" || currentMap === "map2" || currentMap === "map3")) {
-            // Créer les corbeaux UNIQUEMENT pour les maps 1, 2 et 3
+        } else if (currentMap && (currentMap === "map1" || currentMap === "map2" || currentMap === "map3" || currentMap === "map4")) {
+            // Créer les corbeaux pour les maps 1, 2, 3 et 4
             if (typeof window.createCrows === "function") {
-                window.createCrows(10); // 10 corbeaux sur les maps 1, 2, 3
+                window.createCrows(10); // 10 corbeaux sur les maps 1, 2, 3, 4
             }
         }
         
