@@ -229,6 +229,10 @@ function handleItemClick(item, slotIndex, category) {
             }
         } else {
             console.error('Échec de l\'équipement de', item.name);
+            // Afficher un message d'erreur si le niveau n'est pas suffisant
+            if (item.levelRequired && player.level < item.levelRequired) {
+                alert(`Niveau requis: ${item.levelRequired}, votre niveau: ${player.level}`);
+            }
         }
     } else {
         console.error('Item non équipable:', item.name);

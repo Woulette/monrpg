@@ -7,7 +7,10 @@ function preloadLootImages() {
         'assets/objets/plumedecorbeau.png',
         'assets/objets/certificadonjoncorbeau.png',
         'assets/objets/nouveau_sort.png',
-        'assets/objets/orbe_speciale.png'
+        'assets/objets/orbe_speciale.png',
+        'assets/objets/geleeslime.png',
+        'assets/objets/noyauslime.png',
+        'assets/objets/mucusslime.png'
     ];
     
     imagesToPreload.forEach(src => {
@@ -77,6 +80,39 @@ const resourceDatabase = {
         rarity: 'legendary',
         stackable: false,
         maxStack: 1
+    },
+    'geleeslime': {
+        id: 'geleeslime',
+        name: 'Gelée de Slime',
+        type: 'ressource',
+        category: 'organe',
+        icon: 'assets/objets/geleeslime.png',
+        description: 'Une gelée visqueuse de slime, utile pour la fabrication.',
+        rarity: 'common',
+        stackable: true,
+        maxStack: 99
+    },
+    'noyauslime': {
+        id: 'noyauslime',
+        name: 'Noyau de Slime',
+        type: 'ressource',
+        category: 'organe',
+        icon: 'assets/objets/noyauslime.png',
+        description: 'Le noyau mystérieux d\'un slime, très précieux.',
+        rarity: 'common',
+        stackable: true,
+        maxStack: 99
+    },
+    'mucusslime': {
+        id: 'mucusslime',
+        name: 'Mucus de Slime',
+        type: 'ressource',
+        category: 'organe',
+        icon: 'assets/objets/mucusslime.png',
+        description: 'Un mucus visqueux de slime, utile pour la fabrication.',
+        rarity: 'common',
+        stackable: true,
+        maxStack: 99
     }
 };
 
@@ -116,6 +152,33 @@ const lootTables = {
             chance: 100, // 100% de chance
             minAmount: 10,
             maxAmount: 20
+        }
+    },
+    'slime': { // Type de monstre slime
+        resources: [
+            {
+                id: 'geleeslime',
+                chance: 30, // 30% de chance
+                minQuantity: 1,
+                maxQuantity: 1
+            },
+            {
+                id: 'noyauslime',
+                chance: 30, // 30% de chance
+                minQuantity: 1,
+                maxQuantity: 1
+            },
+            {
+                id: 'mucusslime',
+                chance: 30, // 30% de chance
+                minQuantity: 1,
+                maxQuantity: 1
+            }
+        ],
+        pecka: {
+            chance: 50, // 50% de chance
+            minAmount: 10,
+            maxAmount: 18
         }
     }
 };

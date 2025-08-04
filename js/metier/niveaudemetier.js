@@ -73,7 +73,7 @@ const metierRecettes = {
     {
       nom: 'Corbacape',
       icon: 'assets/equipements/capes/capecorbeau.png',
-      niveauRequis: 1,
+      niveauRequis: 3,
       description: 'Une cape de corbeau stylée.',
       ingredients: [
         { nom: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantite: 5 },
@@ -83,10 +83,30 @@ const metierRecettes = {
     {
       nom: 'Corbacoiffe',
       icon: 'assets/equipements/coiffes/coiffecorbeau.png',
-      niveauRequis: 1,
+      niveauRequis: 3,
       description: 'Une coiffe de corbeau mystérieuse.',
       ingredients: [
         { nom: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantite: 3 }
+      ]
+    },
+    {
+      nom: 'Cape de Slime',
+      icon: 'assets/equipements/capes/capeslime.png',
+      niveauRequis: 10,
+      description: 'Une cape visqueuse qui vous permet de glisser facilement.',
+      ingredients: [
+        { nom: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantite: 3 },
+        { nom: 'Mucus de Slime', icon: 'assets/objets/mucusslime.png', quantite: 2 }
+      ]
+    },
+    {
+      nom: 'Coiffe de Slime',
+      icon: 'assets/equipements/coiffes/coiffeslime.png',
+      niveauRequis: 10,
+      description: 'Une coiffe visqueuse qui vous donne l\'apparence d\'un slime.',
+      ingredients: [
+        { nom: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantite: 2 },
+        { nom: 'Noyau de Slime', icon: 'assets/objets/noyauslime.png', quantite: 1 }
       ]
     }
   ],
@@ -94,7 +114,7 @@ const metierRecettes = {
     {
       nom: 'Corbobotte',
       icon: 'assets/equipements/bottes/bottecorbeau.png',
-      niveauRequis: 1,
+      niveauRequis: 3,
       description: 'Des bottes robustes en plumes et pattes de corbeau.',
       ingredients: [
         { nom: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantite: 2 },
@@ -104,11 +124,31 @@ const metierRecettes = {
     {
       nom: 'Corbature',
       icon: 'assets/equipements/ceintures/ceinturecorbeau.png',
-      niveauRequis: 1,
+      niveauRequis: 3,
       description: 'Une ceinture tressée de plumes et pattes de corbeau.',
       ingredients: [
         { nom: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantite: 1 },
         { nom: 'Patte de Corbeau', icon: 'assets/objets/pattedecorbeau.png', quantite: 3 }
+      ]
+    },
+    {
+      nom: 'Bottes de Slime',
+      icon: 'assets/equipements/bottes/botteslime.png',
+      niveauRequis: 10,
+      description: 'Des bottes visqueuses qui vous permettent de glisser rapidement.',
+      ingredients: [
+        { nom: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantite: 4 },
+        { nom: 'Mucus de Slime', icon: 'assets/objets/mucusslime.png', quantite: 2 }
+      ]
+    },
+    {
+      nom: 'Ceinture de Slime',
+      icon: 'assets/equipements/ceintures/ceintureslime.png',
+      niveauRequis: 10,
+      description: 'Une ceinture visqueuse qui vous donne la souplesse d\'un slime.',
+      ingredients: [
+        { nom: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantite: 2 },
+        { nom: 'Noyau de Slime', icon: 'assets/objets/noyauslime.png', quantite: 1 }
       ]
     }
   ],
@@ -116,7 +156,7 @@ const metierRecettes = {
     {
       nom: 'Corbollier',
       icon: 'assets/equipements/colliers/colliercorbeau.png',
-      niveauRequis: 1,
+      niveauRequis: 3,
       description: 'Un collier élégant orné de plumes de corbeau.',
       ingredients: [
         { nom: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantite: 2 },
@@ -126,11 +166,31 @@ const metierRecettes = {
     {
       nom: 'Corbaneau',
       icon: 'assets/equipements/anneaux/anneaucorbeau.png',
-      niveauRequis: 1,
+      niveauRequis: 3,
       description: 'Un anneau mystérieux inspiré du corbeau.',
       ingredients: [
         { nom: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantite: 1 },
         { nom: 'Patte de Corbeau', icon: 'assets/objets/pattedecorbeau.png', quantite: 2 }
+      ]
+    },
+    {
+      nom: 'Collier de Slime',
+      icon: 'assets/equipements/colliers/collierslime.png',
+      niveauRequis: 10,
+      description: 'Un collier visqueux qui vous donne la résistance d\'un slime.',
+      ingredients: [
+        { nom: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantite: 3 },
+        { nom: 'Mucus de Slime', icon: 'assets/objets/mucusslime.png', quantite: 1 }
+      ]
+    },
+    {
+      nom: 'Anneau de Slime',
+      icon: 'assets/equipements/anneaux/anneauslime.png',
+      niveauRequis: 10,
+      description: 'Un anneau visqueux qui vous donne la flexibilité d\'un slime.',
+      ingredients: [
+        { nom: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantite: 2 },
+        { nom: 'Noyau de Slime', icon: 'assets/objets/noyauslime.png', quantite: 1 }
       ]
     }
   ]

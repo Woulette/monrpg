@@ -961,6 +961,13 @@ function loadUnlockedSpells() {
     }
   } else {
     console.log('Aucune sauvegarde de sorts débloqués trouvée');
+    // Pour un nouveau personnage, initialiser les sorts basés sur son niveau
+    console.log('Initialisation des sorts pour nouveau personnage basée sur le niveau');
+    Object.keys(SPELLS).forEach(slotId => {
+      const spell = SPELLS[slotId];
+      spell.unlocked = player && player.level >= spell.levelRequired;
+      console.log(`Sort ${spell.name}: niveau requis ${spell.levelRequired}, niveau joueur ${player ? player.level : 'N/A'}, déverrouillé: ${spell.unlocked}`);
+    });
   }
 }
 

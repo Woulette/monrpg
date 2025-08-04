@@ -11,9 +11,27 @@ const equipmentDatabase = {
         icon: 'assets/equipements/coiffes/coiffecorbeau.png',
         description: 'Une coiffe mystérieuse qui vous donne l\'apparence d\'un corbeau.',
         rarity: 'rare',
+        levelRequired: 3,
         stats: {
             force: 5,
             defense: 3
+        }
+    },
+    
+    coiffe_slime: {
+        id: 'coiffe_slime',
+        name: 'Coiffe de Slime',
+        type: 'coiffe',
+        slot: 'coiffe',
+        icon: 'assets/equipements/coiffes/coiffeslime.png',
+        description: 'Une coiffe visqueuse qui vous donne l\'apparence d\'un slime.',
+        rarity: 'common',
+        levelRequired: 10,
+        stats: {
+            force: 10,
+            defense: 3,
+            agilite: 10,
+            vie: 15
         }
     },
     
@@ -26,9 +44,27 @@ const equipmentDatabase = {
         icon: 'assets/equipements/capes/capecorbeau.png',
         description: 'Une cape sombre qui vous permet de vous fondre dans l\'ombre.',
         rarity: 'rare',
+        levelRequired: 3,
         stats: {
             agilite: 8,
             defense: 2
+        }
+    },
+    
+    cape_slime: {
+        id: 'cape_slime',
+        name: 'Cape de Slime',
+        type: 'cape',
+        slot: 'cape',
+        icon: 'assets/equipements/capes/capeslime.png',
+        description: 'Une cape visqueuse qui vous permet de glisser facilement.',
+        rarity: 'common',
+        levelRequired: 10,
+        stats: {
+            agilite: 15,
+            defense: 2,
+            chance: 30,
+            vie: 10
         }
     },
     
@@ -41,9 +77,27 @@ const equipmentDatabase = {
         icon: 'assets/equipements/colliers/colliercorbeau.png',
         description: 'Une amulette mystique qui renforce votre connexion avec les corbeaux.',
         rarity: 'rare',
+        levelRequired: 3,
         stats: {
             intelligence: 5,
             chance: 5
+        }
+    },
+    
+    collier_slime: {
+        id: 'collier_slime',
+        name: 'Collier de Slime',
+        type: 'amulette',
+        slot: 'amulette',
+        icon: 'assets/equipements/colliers/collierslime.png',
+        description: 'Un collier visqueux qui vous donne la résistance d\'un slime.',
+        rarity: 'common',
+        levelRequired: 10,
+        stats: {
+            intelligence: 15,
+            force: 15,
+            defense: 2,
+            chance: 20
         }
     },
     
@@ -56,9 +110,26 @@ const equipmentDatabase = {
         icon: 'assets/equipements/anneaux/anneaucorbeau.png',
         description: 'Un anneau enchanté qui vous donne la vision perçante d\'un corbeau.',
         rarity: 'rare',
+        levelRequired: 3,
         stats: {
             force: 3,
             agilite: 3
+        }
+    },
+    
+    anneau_slime: {
+        id: 'anneau_slime',
+        name: 'Anneau de Slime',
+        type: 'anneau',
+        slot: 'anneau',
+        icon: 'assets/equipements/anneaux/anneauslime.png',
+        description: 'Un anneau visqueux qui vous donne la flexibilité d\'un slime.',
+        rarity: 'common',
+        levelRequired: 10,
+        stats: {
+            vie: 15,
+            force: 5,
+            intelligence: 10
         }
     },
     
@@ -71,9 +142,26 @@ const equipmentDatabase = {
         icon: 'assets/equipements/ceintures/ceinturecorbeau.png',
         description: 'Une ceinture robuste qui renforce votre endurance.',
         rarity: 'rare',
+        levelRequired: 3,
         stats: {
             defense: 2,
             vie: 10
+        }
+    },
+    
+    ceinture_slime: {
+        id: 'ceinture_slime',
+        name: 'Ceinture de Slime',
+        type: 'ceinture',
+        slot: 'ceinture',
+        icon: 'assets/equipements/ceintures/ceintureslime.png',
+        description: 'Une ceinture visqueuse qui vous donne la souplesse d\'un slime.',
+        rarity: 'common',
+        levelRequired: 10,
+        stats: {
+            defense: 3,
+            vie: 20,
+            agilite: 10
         }
     },
     
@@ -86,9 +174,43 @@ const equipmentDatabase = {
         icon: 'assets/equipements/bottes/bottecorbeau.png',
         description: 'Des bottes légères qui vous permettent de marcher silencieusement.',
         rarity: 'rare',
+        levelRequired: 3,
         stats: {
             vitesse: 10,
             agilite: 5
+        }
+    },
+    
+    bottes_slime: {
+        id: 'bottes_slime',
+        name: 'Bottes de Slime',
+        type: 'bottes',
+        slot: 'bottes',
+        icon: 'assets/equipements/bottes/botteslime.png',
+        description: 'Des bottes visqueuses qui vous permettent de glisser rapidement.',
+        rarity: 'common',
+        levelRequired: 10,
+        stats: {
+            vitesse: 25,
+            agilite: 20,
+            vie: 10,
+            force: 5
+        }
+    },
+    
+    // Armes
+    dague_slime: {
+        id: 'dague_slime',
+        name: 'Dague de Slime',
+        type: 'arme',
+        slot: 'arme',
+        icon: 'assets/equipements/armes/dagueslime.png',
+        description: 'Une dague visqueuse qui colle à vos ennemis.',
+        rarity: 'common',
+        levelRequired: 10,
+        stats: {
+            force: 3,
+            agilite: 1
         }
     },
     
@@ -115,6 +237,40 @@ const equipmentDatabase = {
         maxStack: 99
     },
     
+    // Ressources Slime
+    geleeslime: {
+        id: 'geleeslime',
+        name: 'Gelée de Slime',
+        type: 'ressource',
+        icon: 'assets/objets/geleeslime.png',
+        description: 'Une gelée visqueuse de slime.',
+        rarity: 'common',
+        stackable: true,
+        maxStack: 99
+    },
+    
+    noyauslime: {
+        id: 'noyauslime',
+        name: 'Noyau de Slime',
+        type: 'ressource',
+        icon: 'assets/objets/noyauslime.png',
+        description: 'Le noyau mystérieux d\'un slime.',
+        rarity: 'common',
+        stackable: true,
+        maxStack: 99
+    },
+    
+    mucusslime: {
+        id: 'mucusslime',
+        name: 'Mucus de Slime',
+        type: 'ressource',
+        icon: 'assets/objets/mucusslime.png',
+        description: 'Un mucus visqueux de slime.',
+        rarity: 'common',
+        stackable: true,
+        maxStack: 99
+    },
+    
 
 };
 
@@ -123,6 +279,12 @@ function equipItem(itemId) {
     const item = equipmentDatabase[itemId];
     if (!item) {
         console.error(`Équipement ${itemId} non trouvé`);
+        return false;
+    }
+    
+    // Vérifier le niveau requis pour l'équipement
+    if (item.levelRequired && player.level < item.levelRequired) {
+        console.error(`Niveau requis: ${item.levelRequired}, votre niveau: ${player.level}`);
         return false;
     }
     

@@ -401,6 +401,8 @@ function openWorkshopModal({
             alert("Tu n'as pas assez de ressources pour ce craft !");
             return;
           }
+          
+
           // Retirer les ressources de l'inventaire
           recipe.ingredients.forEach(ing => {
             let qtyToRemove = ing.quantity;
@@ -438,6 +440,12 @@ function openWorkshopModal({
             case 'Corbature': equipId = 'ceinture_corbeau'; break;
             case 'Corbolier': equipId = 'amulette_corbeau'; break;
             case 'Corbaneau': equipId = 'anneau_corbeau'; break;
+            case 'Cape de Slime': equipId = 'cape_slime'; break;
+            case 'Coiffe de Slime': equipId = 'coiffe_slime'; break;
+            case 'Bottes de Slime': equipId = 'bottes_slime'; break;
+            case 'Ceinture de Slime': equipId = 'ceinture_slime'; break;
+            case 'Collier de Slime': equipId = 'collier_slime'; break;
+            case 'Anneau de Slime': equipId = 'anneau_slime'; break;
             default: equipId = ''; break;
           }
           if (equipId) {
@@ -491,6 +499,7 @@ window.openTailorWorkshopModal = function() {
         name: 'Corbacape',
         icon: 'assets/equipements/capes/capecorbeau.png',
         type: 'cape',
+        levelRequired: 3,
         ingredients: [
           { name: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantity: 5 },
           { name: 'Patte de Corbeau', icon: 'assets/objets/pattedecorbeau.png', quantity: 2 }
@@ -500,8 +509,29 @@ window.openTailorWorkshopModal = function() {
         name: 'Corbacoiffe',
         icon: 'assets/equipements/coiffes/coiffecorbeau.png',
         type: 'coiffe',
+        levelRequired: 3,
         ingredients: [
           { name: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantity: 3 }
+        ]
+      },
+      {
+        name: 'Cape de Slime',
+        icon: 'assets/equipements/capes/capeslime.png',
+        type: 'cape',
+        levelRequired: 10,
+        ingredients: [
+          { name: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantity: 3 },
+          { name: 'Mucus de Slime', icon: 'assets/objets/mucusslime.png', quantity: 2 }
+        ]
+      },
+      {
+        name: 'Coiffe de Slime',
+        icon: 'assets/equipements/coiffes/coiffeslime.png',
+        type: 'coiffe',
+        levelRequired: 10,
+        ingredients: [
+          { name: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantity: 2 },
+          { name: 'Noyau de Slime', icon: 'assets/objets/noyauslime.png', quantity: 1 }
         ]
       }
     ],
@@ -519,6 +549,7 @@ window.openCordonnierWorkshopModal = function() {
         name: 'Corbobotte',
         icon: 'assets/equipements/bottes/bottecorbeau.png',
         type: 'bottes',
+        levelRequired: 3,
         ingredients: [
           { name: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantity: 2 },
           { name: 'Patte de Corbeau', icon: 'assets/objets/pattedecorbeau.png', quantity: 2 }
@@ -528,9 +559,30 @@ window.openCordonnierWorkshopModal = function() {
         name: 'Corbature',
         icon: 'assets/equipements/ceintures/ceinturecorbeau.png',
         type: 'ceinture',
+        levelRequired: 3,
         ingredients: [
           { name: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantity: 1 },
           { name: 'Patte de Corbeau', icon: 'assets/objets/pattedecorbeau.png', quantity: 3 }
+        ]
+      },
+      {
+        name: 'Bottes de Slime',
+        icon: 'assets/equipements/bottes/botteslime.png',
+        type: 'bottes',
+        levelRequired: 10,
+        ingredients: [
+          { name: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantity: 4 },
+          { name: 'Mucus de Slime', icon: 'assets/objets/mucusslime.png', quantity: 2 }
+        ]
+      },
+      {
+        name: 'Ceinture de Slime',
+        icon: 'assets/equipements/ceintures/ceintureslime.png',
+        type: 'ceinture',
+        levelRequired: 10,
+        ingredients: [
+          { name: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantity: 2 },
+          { name: 'Noyau de Slime', icon: 'assets/objets/noyauslime.png', quantity: 1 }
         ]
       }
     ],
@@ -548,6 +600,7 @@ window.openBijoutierWorkshopModal = function() {
         name: 'Corbolier',
         icon: 'assets/equipements/colliers/colliercorbeau.png',
         type: 'amulette',
+        levelRequired: 3,
         ingredients: [
           { name: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantity: 2 },
           { name: 'Patte de Corbeau', icon: 'assets/objets/pattedecorbeau.png', quantity: 1 }
@@ -557,9 +610,30 @@ window.openBijoutierWorkshopModal = function() {
         name: 'Corbaneau',
         icon: 'assets/equipements/anneaux/anneaucorbeau.png',
         type: 'anneau',
+        levelRequired: 3,
         ingredients: [
           { name: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantity: 1 },
           { name: 'Patte de Corbeau', icon: 'assets/objets/pattedecorbeau.png', quantity: 2 }
+        ]
+      },
+      {
+        name: 'Collier de Slime',
+        icon: 'assets/equipements/colliers/collierslime.png',
+        type: 'amulette',
+        levelRequired: 10,
+        ingredients: [
+          { name: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantity: 3 },
+          { name: 'Mucus de Slime', icon: 'assets/objets/mucusslime.png', quantity: 1 }
+        ]
+      },
+      {
+        name: 'Anneau de Slime',
+        icon: 'assets/equipements/anneaux/anneauslime.png',
+        type: 'anneau',
+        levelRequired: 10,
+        ingredients: [
+          { name: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantity: 2 },
+          { name: 'Noyau de Slime', icon: 'assets/objets/noyauslime.png', quantity: 1 }
         ]
       }
     ],

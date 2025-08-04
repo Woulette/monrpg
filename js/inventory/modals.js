@@ -35,6 +35,15 @@ function showEquipmentDetailModal(item, slotIndex) {
         
         document.getElementById('equipment-type').textContent = displayType;
         document.getElementById('equipment-rarity').textContent = item.rarity.toUpperCase();
+        
+        // Afficher le niveau requis
+        if (item.levelRequired) {
+            document.getElementById('equipment-level').textContent = `Niveau ${item.levelRequired}`;
+            document.getElementById('equipment-level').parentElement.style.display = 'flex';
+        } else {
+            document.getElementById('equipment-level').parentElement.style.display = 'none';
+        }
+        
         document.getElementById('equipment-description').textContent = item.description;
         
         // Mettre le nom de l'équipement dans le titre
