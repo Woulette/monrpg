@@ -709,11 +709,8 @@ function castSpell(slotId, baseMin, baseMax, cooldown, effetSpecial) {
 
 // Démo : cooldown au clic sur le slot
 window.addEventListener('DOMContentLoaded', () => {
-  // Initialiser le système de sorts après un délai pour s'assurer que le joueur est chargé
+  // Initialiser l'affichage des détails des sorts seulement
   setTimeout(() => {
-    if (typeof updateSpellUnlockStatus === 'function') {
-      updateSpellUnlockStatus();
-    }
     if (typeof updateSpellDetailsDisplay === 'function') {
       updateSpellDetailsDisplay();
     }
@@ -803,31 +800,116 @@ function updateSpellUnlockStatus() {
   console.log('updateSpellUnlockStatus appelée');
   console.log('player:', player);
   console.log('player.level:', player ? player.level : 'player non défini');
+  console.log('window.currentCharacterId:', window.currentCharacterId);
   
   if (!player || !player.level) {
     console.log('Player ou player.level non défini, sortie de la fonction');
     return;
   }
   
+  let anySpellUnlocked = false;
+
   Object.keys(SPELLS).forEach(slotId => {
     const spell = SPELLS[slotId];
     const wasUnlocked = spell.unlocked;
-    spell.unlocked = player.level >= spell.levelRequired;
+    
+    // Vérifier si le sort doit être déverrouillé basé sur le niveau actuel
+    const shouldBeUnlocked = player.level >= spell.levelRequired;
+    
+    // Si le sort n'est pas encore débloqué ET que le joueur a le niveau requis, le déverrouiller
+    if (!spell.unlocked && shouldBeUnlocked) {
+      spell.unlocked = true;
+      anySpellUnlocked = true;
+      console.log(`Nouveau sort déverrouillé: ${spell.name}`);
+      console.log(`🎉 Nouveau sort déverrouillé : ${spell.name} !`);
+    }
     
     console.log(`Sort ${spell.name}: niveau requis ${spell.levelRequired}, niveau joueur ${player.level}, déverrouillé: ${spell.unlocked}`);
-    
-    // Si le sort vient d'être déverrouillé, afficher un message
-                 if (!wasUnlocked && spell.unlocked) {
-               console.log(`Nouveau sort déverrouillé: ${spell.name}`);
-               // Utiliser console.log au lieu d'addChatMessage pour éviter les erreurs
-               console.log(`🎉 Nouveau sort déverrouillé : ${spell.name} !`);
-             }
   });
+
+  // Sauvegarder l'état des sorts débloqués APRÈS avoir traité tous les sorts
+  // Seulement si un personnage est connecté
+  if (window.currentCharacterId) {
+    saveUnlockedSpells();
+  } else {
+    console.log('Aucun personnage connecté, pas de sauvegarde des sorts');
+  }
   
   // Mettre à jour l'affichage visuel des sorts de manière différée pour éviter les freezes
   requestAnimationFrame(() => {
     updateSpellVisuals();
   });
+}
+
+// Fonction pour sauvegarder les sorts débloqués
+function saveUnlockedSpells() {
+  if (!window.currentCharacterId) {
+    console.log('Aucun personnage connecté, impossible de sauvegarder les sorts');
+    return;
+  }
+  
+  const unlockedSpellsData = {};
+  Object.keys(SPELLS).forEach(slotId => {
+    const spell = SPELLS[slotId];
+    unlockedSpellsData[slotId] = {
+      name: spell.name,
+      unlocked: spell.unlocked,
+      levelRequired: spell.levelRequired
+    };
+  });
+  
+  const saveKey = `monrpg_unlocked_spells_${window.currentCharacterId}`;
+  localStorage.setItem(saveKey, JSON.stringify(unlockedSpellsData));
+  console.log('Sorts débloqués sauvegardés:', unlockedSpellsData);
+}
+
+// Fonction pour charger les sorts débloqués
+function loadUnlockedSpells() {
+  console.log('loadUnlockedSpells appelée');
+  console.log('window.currentCharacterId:', window.currentCharacterId);
+  console.log('player:', player);
+  console.log('player.level:', player ? player.level : 'N/A');
+  
+  if (!window.currentCharacterId) {
+    console.log('Aucun personnage connecté, impossible de charger les sorts');
+    return;
+  }
+  
+  const saveKey = `monrpg_unlocked_spells_${window.currentCharacterId}`;
+  const savedData = localStorage.getItem(saveKey);
+  
+  console.log('Clé de sauvegarde:', saveKey);
+  console.log('Données sauvegardées trouvées:', !!savedData);
+  
+  if (savedData) {
+    try {
+      const unlockedSpellsData = JSON.parse(savedData);
+      console.log('Données de sorts débloqués chargées:', unlockedSpellsData);
+      
+      Object.keys(unlockedSpellsData).forEach(slotId => {
+        if (SPELLS[slotId]) {
+          const savedSpell = unlockedSpellsData[slotId];
+          const currentSpell = SPELLS[slotId];
+          
+          console.log(`Traitement du sort ${currentSpell.name}: sauvegardé comme débloqué = ${savedSpell.unlocked}`);
+          
+          // Si le sort était débloqué dans la sauvegarde, le restaurer comme débloqué
+          if (savedSpell.unlocked) {
+            currentSpell.unlocked = true;
+            console.log(`Sort ${currentSpell.name} restauré comme débloqué (était sauvegardé comme débloqué)`);
+          } else {
+            // Si le sort n'était pas débloqué dans la sauvegarde, utiliser la logique normale
+            currentSpell.unlocked = player && player.level >= currentSpell.levelRequired;
+            console.log(`Sort ${currentSpell.name} non sauvegardé, vérification niveau: ${player ? player.level : 'N/A'} >= ${currentSpell.levelRequired}`);
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Erreur lors du chargement des sorts débloqués:', error);
+    }
+  } else {
+    console.log('Aucune sauvegarde de sorts débloqués trouvée');
+  }
 }
 
 // Fonction pour mettre à jour l'affichage visuel des sorts
@@ -919,6 +1001,8 @@ window.testSpellUnlock = function() {
 window.updateSpellUnlockStatus = updateSpellUnlockStatus;
 window.updateSpellVisuals = updateSpellVisuals;
 window.updateSpellDetailsDisplay = updateSpellDetailsDisplay;
+window.saveUnlockedSpells = saveUnlockedSpells;
+window.loadUnlockedSpells = loadUnlockedSpells;
 window.SPELLS = SPELLS;
 
 // Fonction utilitaire pour spawn un monstre depuis la console

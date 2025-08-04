@@ -101,7 +101,7 @@ class SaveManager {
 
             // Sauvegarder les quêtes
             if (this.modules.quests) {
-                results.quests = this.modules.quests.saveQuests(characterId);
+                results.quests = this.modules.quests.saveQuestsData(characterId);
             }
 
             // Sauvegarder les monstres de la map actuelle
@@ -160,7 +160,7 @@ class SaveManager {
 
             // Charger les quêtes
             if (this.modules.quests) {
-                results.quests = this.modules.quests.loadQuests(characterId);
+                results.quests = this.modules.quests.loadQuestsData(characterId);
             }
 
             // Charger les monstres de la map actuelle

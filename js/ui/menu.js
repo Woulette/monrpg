@@ -558,6 +558,16 @@ function initializeGame(character) {
     window.playerAvatar = character.avatar;
     window.currentCharacterId = character.id;
     
+    // Charger les sorts débloqués pour ce personnage
+    if (typeof window.loadUnlockedSpells === 'function') {
+        window.loadUnlockedSpells();
+    }
+    
+    // Mettre à jour l'état de déverrouillage des sorts après le chargement
+    if (typeof window.updateSpellUnlockStatus === 'function') {
+        window.updateSpellUnlockStatus();
+    }
+    
     // Réinitialiser les quêtes pour ce personnage spécifique
     if (typeof window.switchCharacterQuests === 'function') {
         window.switchCharacterQuests(character.id);
