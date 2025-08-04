@@ -366,6 +366,14 @@ function initUIEventHandlers() {
 
 // Système d'amélioration de sorts
 function initSpellUpgradeSystem() {
+    // Initialiser les variables de dégâts de base pour les sorts
+    if (!window.punchDamageMin) window.punchDamageMin = 3;
+    if (!window.punchDamageMax) window.punchDamageMax = 6;
+    if (!window.explosiveDamageMin) window.explosiveDamageMin = 12;
+    if (!window.explosiveDamageMax) window.explosiveDamageMax = 20;
+    if (!window.tripleDamageMin) window.tripleDamageMin = 6;
+    if (!window.tripleDamageMax) window.tripleDamageMax = 10;
+    
     // Variables globales pour l'amélioration de sorts
     window.currentSpellUpgrade = {
         spellId: null,
@@ -606,6 +614,7 @@ function initSpellUpgradeSystem() {
         }
         
         console.log(`Bonus de dégâts ${orbeType} appliqué au sort ${spellId}: +${Math.round((damageMultiplier - 1) * 100)}%`);
+        console.log(`Variables mises à jour: window.${spellId}DamageMin = ${window[spellId + 'DamageMin']}, window.${spellId}DamageMax = ${window[spellId + 'DamageMax']}`);
     }
     
     // Fonction pour mettre à jour l'affichage des dégâts
@@ -1044,6 +1053,7 @@ function castExplosivePunch() {
       // Utiliser les dégâts améliorés s'ils existent, sinon les dégâts de base
       const minDamage = window.explosiveDamageMin || 12;
       const maxDamage = window.explosiveDamageMax || 20;
+      console.log(`Coup Explosif - Dégâts utilisés: ${minDamage}-${maxDamage} (base: 12-20)`);
       const { damage, isCrit } = computeSpellDamage(minDamage, maxDamage);
       attackTarget.hp -= damage;
       if (typeof displayDamage === 'function') {
@@ -1071,6 +1081,7 @@ function castTriplePunch() {
           // Utiliser les dégâts améliorés s'ils existent, sinon les dégâts de base
           const minDamage = window.tripleDamageMin || 6;
           const maxDamage = window.tripleDamageMax || 10;
+          console.log(`Triple Coup (1er) - Dégâts utilisés: ${minDamage}-${maxDamage} (base: 6-10)`);
           const { damage: damage1, isCrit: isCrit1 } = computeSpellDamage(minDamage, maxDamage);
           attackTarget.hp -= damage1;
           if (typeof displayDamage === 'function') {
@@ -1108,6 +1119,7 @@ function castTriplePunch() {
           // Utiliser les dégâts améliorés s'ils existent, sinon les dégâts de base
           const minDamage = window.tripleDamageMin || 6;
           const maxDamage = window.tripleDamageMax || 10;
+          console.log(`Triple Coup (2ème) - Dégâts utilisés: ${minDamage}-${maxDamage} (base: 6-10)`);
           const { damage: damage2, isCrit: isCrit2 } = computeSpellDamage(minDamage, maxDamage);
           attackTarget.hp -= damage2;
           if (typeof displayDamage === 'function') {
@@ -1145,6 +1157,7 @@ function castTriplePunch() {
           // Utiliser les dégâts améliorés s'ils existent, sinon les dégâts de base
           const minDamage = window.tripleDamageMin || 6;
           const maxDamage = window.tripleDamageMax || 10;
+          console.log(`Triple Coup (3ème) - Dégâts utilisés: ${minDamage}-${maxDamage} (base: 6-10)`);
           const { damage: damage3, isCrit: isCrit3 } = computeSpellDamage(minDamage, maxDamage);
           attackTarget.hp -= damage3;
           if (typeof displayDamage === 'function') {
@@ -1202,6 +1215,9 @@ function castSpell(slotId, baseMin, baseMax, cooldown, effetSpecial) {
       if (slotId === 'spell-slot-1' && window.punchDamageMin && window.punchDamageMax) {
         minDamage = window.punchDamageMin;
         maxDamage = window.punchDamageMax;
+        console.log(`Coup de Poing - Dégâts améliorés utilisés: ${minDamage}-${maxDamage} (base: 3-6)`);
+      } else if (slotId === 'spell-slot-1') {
+        console.log(`Coup de Poing - Dégâts de base utilisés: ${minDamage}-${maxDamage}`);
       }
       
       const { damage, isCrit } = computeSpellDamage(minDamage, maxDamage);
