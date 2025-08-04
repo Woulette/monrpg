@@ -1313,7 +1313,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     }
     // Sort 3 : Triple Coup de Poing (touches '3' ou '#')
-    if (e.key === '3' || e.key === '#') {
+    if (e.key === '3' || e.key === '#' || e.code === 'Digit3' || e.code === 'Key3') {
       const spell = SPELLS['spell-slot-3'];
       if (spell && spell.unlocked) {
         castTriplePunch();
