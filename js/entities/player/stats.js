@@ -57,11 +57,21 @@ function gainStatXP(statName, amount) {
 }
 
 function gainXP(amount) {
+    console.log('gainXP appelée avec amount:', amount);
+    console.log('Niveau actuel:', player.level);
+    console.log('XP actuel:', player.xp);
+    console.log('XP pour prochain niveau:', player.xpToNextLevel);
+    
     player.xp += amount;
+    let levelUpOccurred = false;
+    
     while (player.xp >= player.xpToNextLevel) {
+        console.log('Level up en cours...');
         player.xp -= player.xpToNextLevel;
         player.level++;
         player.xpToNextLevel = Math.floor(player.xpToNextLevel * 1.2); // courbe exponentielle
+        
+        console.log('Nouveau niveau:', player.level);
         
         // Augmenter les points de vie max de 5 à chaque niveau
         player.maxLife += 5;
@@ -86,10 +96,15 @@ function gainXP(amount) {
             autoSaveOnEvent();
         }
         
-        // Mettre à jour le déverrouillage des sorts
-        if (typeof updateSpellUnlockStatus === 'function') {
-            updateSpellUnlockStatus();
-        }
+        levelUpOccurred = true;
+    }
+    
+    // Mettre à jour le déverrouillage des sorts APRÈS la boucle pour éviter les problèmes de performance
+    if (levelUpOccurred && typeof updateSpellUnlockStatus === 'function') {
+        console.log('Appel de updateSpellUnlockStatus après level up');
+        updateSpellUnlockStatus();
+    } else if (levelUpOccurred) {
+        console.log('updateSpellUnlockStatus non disponible');
     }
     
     // Sauvegarde automatique lors du gain d'XP

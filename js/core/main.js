@@ -515,6 +515,13 @@ function closeChatWindow() {
 
 function addChatMessage(message, type = 'system') {
     const chatMessages = document.getElementById('chat-messages');
+    
+    // Vérifier si l'élément chat existe avant d'essayer d'ajouter le message
+    if (!chatMessages) {
+        console.log('Élément chat-messages non trouvé, message ignoré:', message);
+        return;
+    }
+    
     const messageDiv = document.createElement('div');
     messageDiv.className = `chat-message ${type}`;
     messageDiv.textContent = message;
@@ -702,10 +709,15 @@ function castSpell(slotId, baseMin, baseMax, cooldown, effetSpecial) {
 
 // Démo : cooldown au clic sur le slot
 window.addEventListener('DOMContentLoaded', () => {
-  // Initialiser le système de sorts
-  if (typeof updateSpellUnlockStatus === 'function') {
-    updateSpellUnlockStatus();
-  }
+  // Initialiser le système de sorts après un délai pour s'assurer que le joueur est chargé
+  setTimeout(() => {
+    if (typeof updateSpellUnlockStatus === 'function') {
+      updateSpellUnlockStatus();
+    }
+    if (typeof updateSpellDetailsDisplay === 'function') {
+      updateSpellDetailsDisplay();
+    }
+  }, 100);
   const slot1 = document.getElementById('spell-slot-1');
   const slot2 = document.getElementById('spell-slot-2');
   const slot3 = document.getElementById('spell-slot-3');
@@ -788,30 +800,45 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // Fonction pour vérifier et mettre à jour le déverrouillage des sorts
 function updateSpellUnlockStatus() {
-  if (!player || !player.level) return;
+  console.log('updateSpellUnlockStatus appelée');
+  console.log('player:', player);
+  console.log('player.level:', player ? player.level : 'player non défini');
+  
+  if (!player || !player.level) {
+    console.log('Player ou player.level non défini, sortie de la fonction');
+    return;
+  }
   
   Object.keys(SPELLS).forEach(slotId => {
     const spell = SPELLS[slotId];
     const wasUnlocked = spell.unlocked;
     spell.unlocked = player.level >= spell.levelRequired;
     
+    console.log(`Sort ${spell.name}: niveau requis ${spell.levelRequired}, niveau joueur ${player.level}, déverrouillé: ${spell.unlocked}`);
+    
     // Si le sort vient d'être déverrouillé, afficher un message
-    if (!wasUnlocked && spell.unlocked) {
-      if (typeof addChatMessage === 'function') {
-        addChatMessage(`Nouveau sort déverrouillé : ${spell.name} !`, 'system');
-      }
-    }
+                 if (!wasUnlocked && spell.unlocked) {
+               console.log(`Nouveau sort déverrouillé: ${spell.name}`);
+               // Utiliser console.log au lieu d'addChatMessage pour éviter les erreurs
+               console.log(`🎉 Nouveau sort déverrouillé : ${spell.name} !`);
+             }
   });
   
-  // Mettre à jour l'affichage visuel des sorts
-  updateSpellVisuals();
+  // Mettre à jour l'affichage visuel des sorts de manière différée pour éviter les freezes
+  requestAnimationFrame(() => {
+    updateSpellVisuals();
+  });
 }
 
 // Fonction pour mettre à jour l'affichage visuel des sorts
 function updateSpellVisuals() {
+  console.log('updateSpellVisuals appelée');
+  
   Object.keys(SPELLS).forEach(slotId => {
     const spell = SPELLS[slotId];
     const slotElement = document.getElementById(slotId);
+    
+    console.log(`Traitement du sort ${spell.name} (${slotId}): déverrouillé = ${spell.unlocked}`);
     
     if (slotElement) {
       const wasLocked = slotElement.classList.contains('locked');
@@ -824,6 +851,7 @@ function updateSpellVisuals() {
         
         // Animation si le sort vient d'être déverrouillé
         if (wasLocked) {
+          console.log(`Animation de déverrouillage pour ${spell.name}`);
           slotElement.classList.add('unlocking');
           setTimeout(() => {
             slotElement.classList.remove('unlocking');
@@ -835,13 +863,62 @@ function updateSpellVisuals() {
         slotElement.style.opacity = '0.5';
         slotElement.style.cursor = 'not-allowed';
       }
+    } else {
+      console.log(`Élément DOM non trouvé pour ${slotId}`);
     }
   });
+  
+  console.log('updateSpellVisuals terminée');
+  
+  // Ne pas appeler updateSpellDetailsDisplay ici pour éviter les problèmes de performance
+  // updateSpellDetailsDisplay sera appelée séparément si nécessaire
 }
+
+// Fonction pour mettre à jour l'affichage des détails des sorts
+function updateSpellDetailsDisplay() {
+  // Mettre à jour le niveau requis pour le Coup de poing explosif
+  const explosiveLevelElement = document.querySelector('#sort-damage-panel-explosive .sort-detail-level-star');
+  if (explosiveLevelElement) {
+    explosiveLevelElement.textContent = `⭐ ${SPELLS['spell-slot-2'].levelRequired}`;
+  }
+  
+  // Mettre à jour le niveau requis pour le Triple Coup de Poing
+  const tripleLevelElement = document.querySelector('#sort-damage-panel-triple .sort-detail-level-star');
+  if (tripleLevelElement) {
+    tripleLevelElement.textContent = `⭐ ${SPELLS['spell-slot-3'].levelRequired}`;
+  }
+}
+
+// Fonction de test pour forcer le déverrouillage des sorts (accessible depuis la console)
+window.testSpellUnlock = function() {
+  console.log('Test de déverrouillage des sorts...');
+  console.log('Player:', player);
+  console.log('Player level:', player ? player.level : 'non défini');
+  console.log('SPELLS:', SPELLS);
+  
+  if (typeof updateSpellUnlockStatus === 'function') {
+    updateSpellUnlockStatus();
+  } else {
+    console.log('updateSpellUnlockStatus non disponible');
+  }
+  
+  if (typeof updateSpellVisuals === 'function') {
+    updateSpellVisuals();
+  } else {
+    console.log('updateSpellVisuals non disponible');
+  }
+  
+  if (typeof updateSpellDetailsDisplay === 'function') {
+    updateSpellDetailsDisplay();
+  } else {
+    console.log('updateSpellDetailsDisplay non disponible');
+  }
+};
 
 // Export global des fonctions de gestion des sorts
 window.updateSpellUnlockStatus = updateSpellUnlockStatus;
 window.updateSpellVisuals = updateSpellVisuals;
+window.updateSpellDetailsDisplay = updateSpellDetailsDisplay;
 window.SPELLS = SPELLS;
 
 // Fonction utilitaire pour spawn un monstre depuis la console
