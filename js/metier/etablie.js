@@ -304,14 +304,52 @@ function openWorkshopModal({
               orbeRemoved = true;
             }
           }
+          
+          // S'assurer que l'orbe est aussi supprimé des autres grilles d'inventaire
+          if (window.inventoryEquipement) {
+            for (let slot of window.inventoryEquipement) {
+              if (slot.item && slot.item.id === 'orbe_atypique_niveau10') {
+                slot.item = null;
+              }
+            }
+          }
 
           // Retirer l'ancien équipement de l'inventaire
           let equipRemoved = false;
           for (let slot of window.inventoryAll) {
-            if (slot.item && slot.item.icon && (leftSlot.src.endsWith(slot.item.icon) || slot.item.icon.endsWith(leftSlot.src)) && !equipRemoved) {
+            if (slot.item && slot.item.id === equipId && !equipRemoved) {
               console.log(`Suppression de l'équipement original: ${slot.item.id}`);
               slot.item = null;
               equipRemoved = true;
+            }
+          }
+          
+          // S'assurer que l'équipement original est aussi supprimé des autres grilles d'inventaire
+          if (window.inventoryEquipement) {
+            for (let slot of window.inventoryEquipement) {
+              if (slot.item && slot.item.id === equipId) {
+                console.log(`Suppression de l'équipement original de inventoryEquipement: ${slot.item.id}`);
+                slot.item = null;
+              }
+            }
+          }
+          
+          // Supprimer aussi des autres grilles d'inventaire si elles existent
+          if (window.inventoryPotions) {
+            for (let slot of window.inventoryPotions) {
+              if (slot.item && slot.item.id === equipId) {
+                console.log(`Suppression de l'équipement original de inventoryPotions: ${slot.item.id}`);
+                slot.item = null;
+              }
+            }
+          }
+          
+          if (window.inventoryRessources) {
+            for (let slot of window.inventoryRessources) {
+              if (slot.item && slot.item.id === equipId) {
+                console.log(`Suppression de l'équipement original de inventoryRessources: ${slot.item.id}`);
+                slot.item = null;
+              }
             }
           }
           
@@ -337,6 +375,12 @@ function openWorkshopModal({
           if (typeof updateAllGrids === 'function') updateAllGrids();
           if (typeof updateCraftInventoryGrid === 'function') updateCraftInventoryGrid();
           if (typeof window.enableInventoryDragAndDrop === 'function') window.enableInventoryDragAndDrop();
+          
+          // Forcer la mise à jour de toutes les grilles d'inventaire
+          setTimeout(() => {
+            if (typeof updateAllGrids === 'function') updateAllGrids();
+            if (typeof updateCraftInventoryGrid === 'function') updateCraftInventoryGrid();
+          }, 100);
 
           // Afficher la fiche de l'item amélioré
           improvePreviewDiv.innerHTML = `
