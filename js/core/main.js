@@ -842,6 +842,40 @@ window.addEventListener('DOMContentLoaded', () => {
         }
       }
     }
+    
+    // Debug: Afficher les coordonnées du joueur (touche 'G')
+    if (e.key === 'g' || e.key === 'G') {
+      if (window.player) {
+        console.log(`Position du joueur: X=${window.player.x}, Y=${window.player.y}`);
+        
+        // Créer un élément visuel pour afficher les coordonnées
+        let coordDisplay = document.getElementById('coord-debug');
+        if (!coordDisplay) {
+          coordDisplay = document.createElement('div');
+          coordDisplay.id = 'coord-debug';
+          coordDisplay.style.cssText = `
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            z-index: 1000;
+            pointer-events: none;
+          `;
+          document.body.appendChild(coordDisplay);
+        }
+        coordDisplay.textContent = `X: ${window.player.x}, Y: ${window.player.y}`;
+        coordDisplay.style.display = 'block';
+        
+        // Masquer après 5 secondes
+        setTimeout(() => {
+          coordDisplay.style.display = 'none';
+        }, 5000);
+      }
+    }
   });
 });
 

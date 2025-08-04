@@ -482,9 +482,38 @@ function updatePlayer(ts) {
                                     }
                                 }
                             }
-                            // Calculer la case d'arrivée en fonction de la direction
-                            let destX = closest.x + dx;
-                            let destY = closest.y + dy;
+                            // Position fixe selon la destination
+                            let destX, destY;
+                            
+                            if (destinationMap === "map4") {
+                                // Map 3 → Map 4 : position fixe (croix rouge)
+                                destX = 1;
+                                destY = 11;
+                            } else if (destinationMap === "map3" && window.currentMap === "map4") {
+                                // Map 4 → Map 3 : position fixe (portail ID 3)
+                                destX = 46;
+                                destY = 13;
+                            } else if (destinationMap === "map3" && window.currentMap === "map2") {
+                                // Map 2 → Map 3 : position fixe (portail ID 2)
+                                destX = 24;
+                                destY = 23;
+                            } else if (destinationMap === "map2" && window.currentMap === "map3") {
+                                // Map 3 → Map 2 : position fixe (portail ID 1)
+                                destX = 24;
+                                destY = 1;
+                            } else if (destinationMap === "map2" && window.currentMap === "map1") {
+                                // Map 1 → Map 2 : position fixe (portail ID 2)
+                                destX = 24;
+                                destY = 23;
+                            } else if (destinationMap === "map1" && window.currentMap === "map2") {
+                                // Map 2 → Map 1 : position fixe (portail ID 1)
+                                destX = 28;
+                                destY = 1;
+                            } else {
+                                // Fallback pour les autres cas
+                                destX = closest.x;
+                                destY = closest.y;
+                            }
                             
                             // Vérifier que la case d'arrivée est dans la map
                             if (destX < 0) destX = 0;

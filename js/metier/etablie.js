@@ -276,6 +276,7 @@ function openWorkshopModal({
             id: newItemId,
             name: equipItem.name + ' Atypique',
             type: equipItem.type,
+            slot: equipItem.slot, // Ajouter le slot pour l'équipement
             icon: equipItem.icon,
             description: equipItem.description + ' (Version atypique)',
             stats: newStats,
@@ -285,6 +286,9 @@ function openWorkshopModal({
 
           // Ajouter à la base de données si pas déjà présent
           if (!window.equipmentDatabase[newItemId]) {
+            window.equipmentDatabase[newItemId] = newItem;
+          } else {
+            // Mettre à jour l'item existant avec les nouvelles stats
             window.equipmentDatabase[newItemId] = newItem;
           }
 
@@ -304,10 +308,15 @@ function openWorkshopModal({
           // Retirer l'ancien équipement de l'inventaire
           let equipRemoved = false;
           for (let slot of window.inventoryAll) {
-            if (slot.item && slot.item.id === equipId && !equipRemoved) {
+            if (slot.item && slot.item.icon && (leftSlot.src.endsWith(slot.item.icon) || slot.item.icon.endsWith(leftSlot.src)) && !equipRemoved) {
+              console.log(`Suppression de l'équipement original: ${slot.item.id}`);
               slot.item = null;
               equipRemoved = true;
             }
+          }
+          
+          if (!equipRemoved) {
+            console.warn('Aucun équipement original trouvé à supprimer');
           }
 
           // Ajouter le nouvel équipement atypique à l'inventaire
@@ -317,6 +326,7 @@ function openWorkshopModal({
               alert("Inventaire plein, impossible d'ajouter l'équipement amélioré !");
               return;
             }
+            console.log(`Équipement amélioré ajouté: ${newItemId}`);
           }
 
           // Vider les slots d'amélioration
