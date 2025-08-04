@@ -124,7 +124,17 @@ function updatePlayer(ts) {
                 // Calcul des dégâts avec la force et critique
                 let damage, isCrit;
                 if (typeof computeSpellDamage === 'function') {
-                  const res = computeSpellDamage(3, 6);
+                  // Utiliser les dégâts améliorés s'ils existent, sinon les dégâts de base
+                  let minDamage = 3;
+                  let maxDamage = 6;
+                  if (window.punchDamageMin !== 3 || window.punchDamageMax !== 6) {
+                    minDamage = window.punchDamageMin;
+                    maxDamage = window.punchDamageMax;
+                    console.log(`⚔️ update.js - Coup de Poing amélioré: ${minDamage}-${maxDamage}`);
+                  } else {
+                    console.log(`⚔️ update.js - Coup de Poing de base: ${minDamage}-${maxDamage}`);
+                  }
+                  const res = computeSpellDamage(minDamage, maxDamage);
                   damage = res.damage;
                   isCrit = res.isCrit;
                 } else {
