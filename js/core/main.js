@@ -1265,22 +1265,22 @@ window.showBossChestWindow = function() {
     // Définir les 3 objets disponibles
     const chestItems = [
         {
-            id: "boss_sword_slime",
-            name: "Épée du SlimeBoss",
-            type: "arme",
-            category: "équipement",
-            description: "Une épée forgée dans l'essence du SlimeBoss",
-            image: "assets/equipements/epee_slimeboss.png",
-            stats: { force: 15, defense: 5 }
+            id: "orbe_atypique_niveau1",
+            name: "Orbe Atypique Niveau 1",
+            type: "objet_special",
+            category: "objet_special",
+            description: "Un orbe mystérieux qui dégage une énergie particulière",
+            image: "assets/objets/orbesatypiqueniveau1.png"
         },
         {
-            id: "boss_armor_slime",
-            name: "Armure du SlimeBoss",
-            type: "armure",
+            id: "dague_slime",
+            name: "Dague de Slime",
+            type: "arme",
             category: "équipement",
-            description: "Une armure résistante créée à partir du SlimeBoss",
-            image: "assets/equipements/armure_slimeboss.png",
-            stats: { defense: 20, hp: 50 }
+            description: "Une dague visqueuse qui colle à vos ennemis",
+            image: "assets/equipements/armes/dagueslime.png",
+            stats: { force: 3, agilite: 1 },
+            levelRequired: 10
         },
         {
             id: "boss_potion_slime",
@@ -1307,7 +1307,9 @@ window.showBossChestWindow = function() {
                     transition: all 0.3s ease;
                     min-width: 120px;
                 " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-                    <div style="width: 64px; height: 64px; background: #555; margin: 0 auto 10px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 24px;">📦</div>
+                    <div style="width: 64px; height: 64px; background: #555; margin: 0 auto 10px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                        <img src="${item.image}" alt="${item.name}" style="width: 48px; height: 48px; object-fit: contain;">
+                    </div>
                     <div style="font-weight: bold; margin-bottom: 5px;">${item.name}</div>
                     <div style="font-size: 12px; color: #bdc3c7;">${item.description}</div>
                 </div>
@@ -1335,7 +1337,14 @@ window.showBossChestWindow = function() {
             
             // Ajouter l'objet à l'inventaire
             if (typeof window.addItemToInventory === "function") {
-                window.addItemToInventory(selectedItem);
+                // Déterminer la catégorie selon le type d'objet
+                let category = 'equipement';
+                if (selectedItem.type === 'potion') {
+                    category = 'potions';
+                } else if (selectedItem.type === 'objet_special') {
+                    category = 'equipement'; // Les objets spéciaux vont dans l'équipement
+                }
+                window.addItemToInventory(selectedItem.id, category);
             }
             
             // Fermer la fenêtre

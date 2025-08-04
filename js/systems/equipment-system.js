@@ -271,6 +271,16 @@ const equipmentDatabase = {
         maxStack: 99
     },
     
+    // Orbe atypique niveau 1
+    orbe_atypique_niveau1: {
+        id: 'orbe_atypique_niveau1',
+        name: 'Orbe Atypique Niveau 1',
+        type: 'objet_special',
+        icon: 'assets/objets/orbesatypiqueniveau1.png',
+        description: 'Un orbe mystérieux qui dégage une énergie particulière.',
+        rarity: 'rare',
+        stackable: false
+    },
 
 };
 
