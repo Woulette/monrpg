@@ -59,6 +59,8 @@ function killMonster(monster) {
             monster.permanentDeath = true;
             monster.respawnTime = 0;
             
+            console.log("🔧 Slime tué, type:", monster.type, "map:", window.currentMap);
+            
             // Notifier la mort du slime pour la progression du donjon
             if (typeof window.onSlimeKilled === "function") {
                 window.onSlimeKilled();

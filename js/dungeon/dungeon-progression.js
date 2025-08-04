@@ -68,21 +68,35 @@ window.onSlimeSpawned = function() {
 
 // Fonction appelée quand un slime est tué
 window.onSlimeKilled = function() {
+    console.log("🔧 onSlimeKilled appelée, map actuelle:", window.currentMap);
+    
+    // Compter les slimes présents sur la map
+    if (window.monsters) {
+        const slimesOnMap = window.monsters.filter(m => m.type === "slime" && !m.isDead);
+        console.log("🔧 Slimes présents sur la map:", slimesOnMap.length);
+    }
+    
     if (window.currentMap === "mapdonjonslime") {
         window.dungeonProgression.mapdonjonslime.slimesKilled++;
+        console.log("🔧 Slime tué dans mapdonjonslime, total:", window.dungeonProgression.mapdonjonslime.slimesKilled);
         
         // Vérifier si on peut débloquer le portail
         if (window.dungeonProgression.mapdonjonslime.slimesKilled >= 5 && !window.dungeonProgression.mapdonjonslime.portalUnlocked) {
             window.dungeonProgression.mapdonjonslime.portalUnlocked = true;
+            console.log("✅ Portail débloqué dans mapdonjonslime");
         }
     } else if (window.currentMap === "mapdonjonslime2") {
         window.dungeonProgression.mapdonjonslime2.slimesKilled++;
+        console.log("🔧 Slime tué dans mapdonjonslime2, total:", window.dungeonProgression.mapdonjonslime2.slimesKilled);
         
         // Vérifier si on peut retirer le décor
         if (window.dungeonProgression.mapdonjonslime2.slimesKilled >= 7 && !window.dungeonProgression.mapdonjonslime2.decorRemoved) {
             window.dungeonProgression.mapdonjonslime2.decorRemoved = true;
+            console.log("✅ Condition atteinte pour retirer le décor (7 slimes tués)");
             // Appeler la fonction pour retirer le décor
             window.removeMapdonjonslime2Decor();
+        } else {
+            console.log("❌ Condition non atteinte:", window.dungeonProgression.mapdonjonslime2.slimesKilled, "/ 7 slimes tués");
         }
     }
 };
@@ -124,23 +138,32 @@ function checkMapdonjonslime2Progression() {
 
 // Fonction pour retirer le décor de mapdonjonslime2 (tiles 17408 et 17608)
 window.removeMapdonjonslime2Decor = function() {
+    console.log("🔧 removeMapdonjonslime2Decor appelée");
+    
     // Vérifier si on est sur la bonne map
     if (window.currentMap !== "mapdonjonslime2") {
+        console.log("❌ Pas sur mapdonjonslime2, map actuelle:", window.currentMap);
         return;
     }
     
     // Fonction interne pour effectuer la suppression
     const performRemoval = () => {
+        console.log("🔧 Tentative de suppression des tuiles...");
+        
         // Vérifier si la map est chargée
         if (!window.mapData || !window.mapData.layers) {
+            console.log("❌ mapData ou layers non disponibles");
             return false;
         }
         
         // Trouver la couche 2 (décor) - utiliser l'index 1 car les couches commencent à 0
         const decorLayer = window.mapData.layers[1]; // Couche 2 = index 1
         if (!decorLayer || !decorLayer.data) {
+            console.log("❌ Couche décor non trouvée");
             return false;
         }
+        
+        console.log("✅ Couche décor trouvée, recherche des tuiles 17408 et 17608...");
         
         // Supprimer les tiles 17408 et 17608
         let tilesRemoved = 0;
@@ -148,30 +171,40 @@ window.removeMapdonjonslime2Decor = function() {
             if (decorLayer.data[i] === 17408 || decorLayer.data[i] === 17608) {
                 decorLayer.data[i] = 0; // Remplacer par un tile vide
                 tilesRemoved++;
+                console.log(`🔧 Tuile supprimée à l'index ${i}: ${decorLayer.data[i]}`);
             }
         }
+        
+        console.log(`✅ ${tilesRemoved} tuiles supprimées`);
         
         // Forcer le redessinage de la map
         if (typeof window.redrawMap === "function") {
             window.redrawMap();
+            console.log("✅ Map redessinée");
+        } else {
+            console.log("❌ Fonction redrawMap non disponible");
         }
         
-        return true;
+        return tilesRemoved > 0;
     };
     
     // Essayer immédiatement
     if (performRemoval()) {
+        console.log("✅ Suppression réussie immédiatement");
         return;
     }
     
     // Si ça ne marche pas, attendre un peu et réessayer
     setTimeout(() => {
+        console.log("🔄 Nouvelle tentative après 500ms...");
         if (performRemoval()) {
+            console.log("✅ Suppression réussie après 500ms");
             return;
         }
         
         // Si ça ne marche toujours pas, attendre encore plus longtemps
         setTimeout(() => {
+            console.log("🔄 Dernière tentative après 2000ms...");
             performRemoval();
         }, 2000);
     }, 500);

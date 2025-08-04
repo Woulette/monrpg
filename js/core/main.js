@@ -610,6 +610,29 @@ function castTriplePunch() {
           if (typeof displayDamage === 'function') {
             displayDamage(attackTarget.px, attackTarget.py, damage1, isCrit1 ? 'critique' : 'damage', false);
           }
+          
+          // Vérifier si le monstre meurt après le premier coup
+          if (attackTarget.hp <= 0) {
+            // Appeler killMonster immédiatement
+            if (typeof killMonster === "function") {
+              killMonster(attackTarget);
+            }
+            
+            // Nettoyer les références
+            if (typeof release === "function") release(attackTarget.x, attackTarget.y);
+            if (typeof displayDamage === "function") {
+              displayDamage(player.px, player.py, `+${attackTarget.xpValue || 0} XP`, 'xp', true);
+            }
+            if (typeof gainXP === "function") gainXP(attackTarget.xpValue || 0);
+            if (typeof triggerLoot === 'function') {
+              triggerLoot(attackTarget);
+            }
+            attackTarget.aggro = false;
+            attackTarget.aggroTarget = null;
+            attackTarget = null;
+            window.attackTarget = null;
+            player.inCombat = false;
+          }
         }
       }, 0);
       
@@ -620,6 +643,29 @@ function castTriplePunch() {
           attackTarget.hp -= damage2;
           if (typeof displayDamage === 'function') {
             displayDamage(attackTarget.px, attackTarget.py, damage2, isCrit2 ? 'critique' : 'damage', false);
+          }
+          
+          // Vérifier si le monstre meurt après le deuxième coup
+          if (attackTarget.hp <= 0) {
+            // Appeler killMonster immédiatement
+            if (typeof killMonster === "function") {
+              killMonster(attackTarget);
+            }
+            
+            // Nettoyer les références
+            if (typeof release === "function") release(attackTarget.x, attackTarget.y);
+            if (typeof displayDamage === "function") {
+              displayDamage(player.px, player.py, `+${attackTarget.xpValue || 0} XP`, 'xp', true);
+            }
+            if (typeof gainXP === "function") gainXP(attackTarget.xpValue || 0);
+            if (typeof triggerLoot === 'function') {
+              triggerLoot(attackTarget);
+            }
+            attackTarget.aggro = false;
+            attackTarget.aggroTarget = null;
+            attackTarget = null;
+            window.attackTarget = null;
+            player.inCombat = false;
           }
         }
       }, 300);
@@ -633,8 +679,14 @@ function castTriplePunch() {
             displayDamage(attackTarget.px, attackTarget.py, damage3, isCrit3 ? 'critique' : 'damage', false);
           }
           
-          // Gestion de la mort du monstre après le troisième coup
+          // Vérifier si le monstre meurt après le troisième coup
           if (attackTarget.hp <= 0) {
+            // Appeler killMonster immédiatement
+            if (typeof killMonster === "function") {
+              killMonster(attackTarget);
+            }
+            
+            // Nettoyer les références
             if (typeof release === "function") release(attackTarget.x, attackTarget.y);
             if (typeof displayDamage === "function") {
               displayDamage(player.px, player.py, `+${attackTarget.xpValue || 0} XP`, 'xp', true);
@@ -642,9 +694,6 @@ function castTriplePunch() {
             if (typeof gainXP === "function") gainXP(attackTarget.xpValue || 0);
             if (typeof triggerLoot === 'function') {
               triggerLoot(attackTarget);
-            }
-            if (typeof killMonster === "function") {
-              killMonster(attackTarget);
             }
             attackTarget.aggro = false;
             attackTarget.aggroTarget = null;
@@ -686,6 +735,12 @@ function castSpell(slotId, baseMin, baseMax, cooldown, effetSpecial) {
 
       // NOUVEAU : gestion de la mort du monstre et attribution de l'XP
       if (attackTarget.hp <= 0) {
+        // Appeler killMonster AVANT de nettoyer les références
+        if (typeof killMonster === "function") {
+          killMonster(attackTarget);
+        }
+        
+        // Ensuite nettoyer les références
         if (typeof release === "function") release(attackTarget.x, attackTarget.y);
         if (typeof displayDamage === "function") {
           displayDamage(player.px, player.py, `+${attackTarget.xpValue || 0} XP`, 'xp', true);
@@ -693,9 +748,6 @@ function castSpell(slotId, baseMin, baseMax, cooldown, effetSpecial) {
         if (typeof gainXP === "function") gainXP(attackTarget.xpValue || 0);
         if (typeof triggerLoot === 'function') {
           triggerLoot(attackTarget);
-        }
-        if (typeof killMonster === "function") {
-          killMonster(attackTarget);
         }
         attackTarget.aggro = false;
         attackTarget.aggroTarget = null;
