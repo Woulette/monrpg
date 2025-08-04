@@ -462,6 +462,8 @@ function initSpellUpgradeSystem() {
 
     // Fonction pour afficher la modal d'amélioration
     function showSpellUpgradeModal(spellId, slotIndex, orbeType) {
+        console.log('🔧 showSpellUpgradeModal: Début', { spellId, slotIndex, orbeType });
+        
         const modal = document.getElementById('spell-upgrade-modal');
         const orbeImg = document.getElementById('spell-upgrade-orbe-img');
         const text = document.getElementById('spell-upgrade-text');
@@ -758,27 +760,38 @@ function initSpellUpgradeSystem() {
     // Initialiser les événements des slots d'amélioration
     function initSpellUpgradeSlots() {
         const upgradeSlots = document.querySelectorAll('.sort-upgrade-slot');
+        console.log('🔧 initSpellUpgradeSlots: Nombre de slots trouvés:', upgradeSlots.length);
         
-        upgradeSlots.forEach((slot, index) => {
+        upgradeSlots.forEach((slot, globalIndex) => {
             // Ajouter les attributs data pour identifier le sort et le slot
             const spellContainer = slot.closest('.sort-upgrade-slots');
             let spellId = '';
+            let localIndex = 0;
             
             if (spellContainer.classList.contains('sort-upgrade-slots-punch')) {
                 spellId = 'punch';
+                // Calculer l'index local (0-4) pour les slots punch
+                localIndex = globalIndex % 5;
             } else if (spellContainer.classList.contains('sort-upgrade-slots-explosive')) {
                 spellId = 'explosive';
+                // Calculer l'index local (0-4) pour les slots explosive
+                localIndex = (globalIndex - 5) % 5;
             } else if (spellContainer.classList.contains('sort-upgrade-slots-triple')) {
                 spellId = 'triple';
+                // Calculer l'index local (0-4) pour les slots triple
+                localIndex = (globalIndex - 10) % 5;
             }
             
+            console.log('🔧 Slot global', globalIndex, '- Container classes:', spellContainer.className, '- SpellId:', spellId, '- LocalIndex:', localIndex);
+            
             slot.setAttribute('data-spell', spellId);
-            slot.setAttribute('data-slot', index);
+            slot.setAttribute('data-slot', localIndex);
             
             // Ajouter l'événement de clic gauche pour équiper
             slot.addEventListener('click', (e) => {
                 // Si le slot est déjà amélioré, ne rien faire au clic gauche
                 if (slot.classList.contains('upgraded')) {
+                    console.log('🔧 Slot déjà amélioré, clic ignoré');
                     return;
                 }
                 
@@ -800,6 +813,7 @@ function initSpellUpgradeSystem() {
                     return;
                 }
                 
+                console.log('🔧 Clic sur slot d\'amélioration:', { spellId, slotIndex, orbeType });
                 showSpellUpgradeModal(spellId, slotIndex, orbeType);
             });
             
@@ -1173,10 +1187,11 @@ function castExplosivePunch() {
         minDamage = window.explosiveDamageMin;
         maxDamage = window.explosiveDamageMax;
         console.log(`⚔️ Coup Explosif - Dégâts améliorés utilisés: ${minDamage}-${maxDamage} (base: 12-20)`);
+        console.log(`⚔️ Variables actuelles: window.explosiveDamageMin=${window.explosiveDamageMin}, window.explosiveDamageMax=${window.explosiveDamageMax}`);
       } else {
         console.log(`⚔️ Coup Explosif - Dégâts de base utilisés: ${minDamage}-${maxDamage}`);
+        console.log(`⚔️ Variables actuelles: window.explosiveDamageMin=${window.explosiveDamageMin}, window.explosiveDamageMax=${window.explosiveDamageMax}`);
       }
-      console.log(`⚔️ Variables actuelles: window.explosiveDamageMin=${window.explosiveDamageMin}, window.explosiveDamageMax=${window.explosiveDamageMax}`);
       const { damage, isCrit } = computeSpellDamage(minDamage, maxDamage);
       attackTarget.hp -= damage;
       if (typeof displayDamage === 'function') {
@@ -1192,14 +1207,20 @@ function castExplosivePunch() {
 
 // Lancer le sort Triple Coup de Poing (slot 3)
 function castTriplePunch() {
+  console.log('🔧 castTriplePunch: Début du lancement');
   const slot3 = document.getElementById('spell-slot-3');
   if (slot3 && !slot3.classList.contains('cooldown')) {
     if (typeof attackTarget === 'object' && attackTarget && Math.abs(player.x - attackTarget.x) + Math.abs(player.y - attackTarget.y) === 1 && attackTarget.hp > 0) {
+      console.log('🔧 castTriplePunch: Conditions remplies, lancement du sort');
       // Démarrer le cooldown immédiatement pour éviter les abus
       startSpellCooldown('spell-slot-3', 10.0);
       
       // Premier coup
       setTimeout(() => {
+        console.log('🔧 castTriplePunch: Premier coup - Variables actuelles:', {
+          tripleDamageMin: window.tripleDamageMin,
+          tripleDamageMax: window.tripleDamageMax
+        });
         if (attackTarget && attackTarget.hp > 0) {
           // Utiliser les dégâts améliorés s'ils existent, sinon les dégâts de base
           let minDamage = 6;
@@ -1208,10 +1229,11 @@ function castTriplePunch() {
             minDamage = window.tripleDamageMin;
             maxDamage = window.tripleDamageMax;
             console.log(`⚔️ Triple Coup (1er) - Dégâts améliorés utilisés: ${minDamage}-${maxDamage} (base: 6-10)`);
+            console.log(`⚔️ Variables actuelles: window.tripleDamageMin=${window.tripleDamageMin}, window.tripleDamageMax=${window.tripleDamageMax}`);
           } else {
             console.log(`⚔️ Triple Coup (1er) - Dégâts de base utilisés: ${minDamage}-${maxDamage}`);
+            console.log(`⚔️ Variables actuelles: window.tripleDamageMin=${window.tripleDamageMin}, window.tripleDamageMax=${window.tripleDamageMax}`);
           }
-          console.log(`⚔️ Variables actuelles: window.tripleDamageMin=${window.tripleDamageMin}, window.tripleDamageMax=${window.tripleDamageMax}`);
           const { damage: damage1, isCrit: isCrit1 } = computeSpellDamage(minDamage, maxDamage);
           attackTarget.hp -= damage1;
           if (typeof displayDamage === 'function') {
@@ -1253,10 +1275,11 @@ function castTriplePunch() {
             minDamage = window.tripleDamageMin;
             maxDamage = window.tripleDamageMax;
             console.log(`⚔️ Triple Coup (2ème) - Dégâts améliorés utilisés: ${minDamage}-${maxDamage} (base: 6-10)`);
+            console.log(`⚔️ Variables actuelles: window.tripleDamageMin=${window.tripleDamageMin}, window.tripleDamageMax=${window.tripleDamageMax}`);
           } else {
             console.log(`⚔️ Triple Coup (2ème) - Dégâts de base utilisés: ${minDamage}-${maxDamage}`);
+            console.log(`⚔️ Variables actuelles: window.tripleDamageMin=${window.tripleDamageMin}, window.tripleDamageMax=${window.tripleDamageMax}`);
           }
-          console.log(`⚔️ Variables actuelles: window.tripleDamageMin=${window.tripleDamageMin}, window.tripleDamageMax=${window.tripleDamageMax}`);
           const { damage: damage2, isCrit: isCrit2 } = computeSpellDamage(minDamage, maxDamage);
           attackTarget.hp -= damage2;
           if (typeof displayDamage === 'function') {
@@ -1298,10 +1321,11 @@ function castTriplePunch() {
             minDamage = window.tripleDamageMin;
             maxDamage = window.tripleDamageMax;
             console.log(`⚔️ Triple Coup (3ème) - Dégâts améliorés utilisés: ${minDamage}-${maxDamage} (base: 6-10)`);
+            console.log(`⚔️ Variables actuelles: window.tripleDamageMin=${window.tripleDamageMin}, window.tripleDamageMax=${window.tripleDamageMax}`);
           } else {
             console.log(`⚔️ Triple Coup (3ème) - Dégâts de base utilisés: ${minDamage}-${maxDamage}`);
+            console.log(`⚔️ Variables actuelles: window.tripleDamageMin=${window.tripleDamageMin}, window.tripleDamageMax=${window.tripleDamageMax}`);
           }
-          console.log(`⚔️ Variables actuelles: window.tripleDamageMin=${window.tripleDamageMin}, window.tripleDamageMax=${window.tripleDamageMax}`);
           const { damage: damage3, isCrit: isCrit3 } = computeSpellDamage(minDamage, maxDamage);
           attackTarget.hp -= damage3;
           if (typeof displayDamage === 'function') {
@@ -1439,7 +1463,7 @@ window.addEventListener('DOMContentLoaded', () => {
     slot2.addEventListener('click', () => {
       const spell = SPELLS['spell-slot-2'];
       if (spell && spell.unlocked) {
-        castSpell('spell-slot-2', spell.baseMin, spell.baseMax, spell.cooldown, createExplosionEffect);
+        castExplosivePunch();
       } else if (spell) {
         if (typeof addChatMessage === 'function') {
           addChatMessage(`Niveau ${spell.levelRequired} requis pour ${spell.name}`, 'system');
@@ -1477,7 +1501,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (e.key === '2' || e.key === 'é' || e.key === 'É') {
       const spell = SPELLS['spell-slot-2'];
       if (spell && spell.unlocked) {
-        castSpell('spell-slot-2', spell.baseMin, spell.baseMax, spell.cooldown, createExplosionEffect);
+        castExplosivePunch();
       } else if (spell) {
         if (typeof addChatMessage === 'function') {
           addChatMessage(`Niveau ${spell.levelRequired} requis pour ${spell.name}`, 'system');
