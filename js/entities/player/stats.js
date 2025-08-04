@@ -85,6 +85,11 @@ function gainXP(amount) {
         if (typeof autoSaveOnEvent === 'function') {
             autoSaveOnEvent();
         }
+        
+        // Mettre à jour le déverrouillage des sorts
+        if (typeof updateSpellUnlockStatus === 'function') {
+            updateSpellUnlockStatus();
+        }
     }
     
     // Sauvegarde automatique lors du gain d'XP

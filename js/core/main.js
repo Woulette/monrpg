@@ -4,6 +4,40 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// Système de gestion des sorts avec niveaux requis
+const SPELLS = {
+  'spell-slot-1': {
+    name: 'Coup de poing',
+    icon: '👊',
+    levelRequired: 1,
+    baseMin: 3,
+    baseMax: 6,
+    cooldown: 1.0,
+    specialEffect: null,
+    unlocked: true // Déverrouillé par défaut
+  },
+  'spell-slot-2': {
+    name: 'Coup de poing explosif',
+    icon: '👊💥',
+    levelRequired: 3,
+    baseMin: 12,
+    baseMax: 20,
+    cooldown: 15.0,
+    specialEffect: 'createExplosionEffect',
+    unlocked: false
+  },
+          'spell-slot-3': {
+          name: 'Triple Coup de Poing',
+          icon: 'triplecoupdepoing.png',
+          levelRequired: 7,
+          baseMin: 6,
+          baseMax: 10,
+          cooldown: 8.0,
+          specialEffect: 'triplePunch',
+          unlocked: false
+        }
+};
+
 // Attendre que tous les scripts soient chargés
 document.addEventListener('DOMContentLoaded', () => {
     // Vérifier si le système de menu multi-personnages est actif
@@ -292,21 +326,35 @@ function initUIEventHandlers() {
 
     const punchRow = document.getElementById('sort-punch-row');
     const explosiveRow = document.getElementById('sort-doublepunch-row');
+    const tripleRow = document.getElementById('sort-triplepunch-row');
     const punchPanel = document.getElementById('sort-damage-panel-punch');
     const explosivePanel = document.getElementById('sort-damage-panel-explosive');
+    const triplePanel = document.getElementById('sort-damage-panel-triple');
 
-    if (punchRow && explosiveRow && punchPanel && explosivePanel) {
+    if (punchRow && explosiveRow && tripleRow && punchPanel && explosivePanel && triplePanel) {
         punchRow.addEventListener('click', () => {
             punchPanel.style.display = '';
             explosivePanel.style.display = 'none';
+            triplePanel.style.display = 'none';
             punchRow.classList.add('selected');
             explosiveRow.classList.remove('selected');
+            tripleRow.classList.remove('selected');
         });
         explosiveRow.addEventListener('click', () => {
             punchPanel.style.display = 'none';
             explosivePanel.style.display = '';
+            triplePanel.style.display = 'none';
             punchRow.classList.remove('selected');
             explosiveRow.classList.add('selected');
+            tripleRow.classList.remove('selected');
+        });
+        tripleRow.addEventListener('click', () => {
+            punchPanel.style.display = 'none';
+            explosivePanel.style.display = 'none';
+            triplePanel.style.display = '';
+            punchRow.classList.remove('selected');
+            explosiveRow.classList.remove('selected');
+            tripleRow.classList.add('selected');
         });
     }
 }
@@ -539,9 +587,83 @@ function castExplosivePunch() {
   }
 }
 
+// Lancer le sort Triple Coup de Poing (slot 3)
+function castTriplePunch() {
+  const slot3 = document.getElementById('spell-slot-3');
+  if (slot3 && !slot3.classList.contains('cooldown')) {
+    if (typeof attackTarget === 'object' && attackTarget && Math.abs(player.x - attackTarget.x) + Math.abs(player.y - attackTarget.y) === 1 && attackTarget.hp > 0) {
+      // Démarrer le cooldown immédiatement pour éviter les abus
+      startSpellCooldown('spell-slot-3', 10.0);
+      
+      // Premier coup
+      setTimeout(() => {
+        if (attackTarget && attackTarget.hp > 0) {
+          const { damage: damage1, isCrit: isCrit1 } = computeSpellDamage(6, 10);
+          attackTarget.hp -= damage1;
+          if (typeof displayDamage === 'function') {
+            displayDamage(attackTarget.px, attackTarget.py, damage1, isCrit1 ? 'critique' : 'damage', false);
+          }
+        }
+      }, 0);
+      
+      // Deuxième coup
+      setTimeout(() => {
+        if (attackTarget && attackTarget.hp > 0) {
+          const { damage: damage2, isCrit: isCrit2 } = computeSpellDamage(6, 10);
+          attackTarget.hp -= damage2;
+          if (typeof displayDamage === 'function') {
+            displayDamage(attackTarget.px, attackTarget.py, damage2, isCrit2 ? 'critique' : 'damage', false);
+          }
+        }
+      }, 300);
+      
+      // Troisième coup
+      setTimeout(() => {
+        if (attackTarget && attackTarget.hp > 0) {
+          const { damage: damage3, isCrit: isCrit3 } = computeSpellDamage(6, 10);
+          attackTarget.hp -= damage3;
+          if (typeof displayDamage === 'function') {
+            displayDamage(attackTarget.px, attackTarget.py, damage3, isCrit3 ? 'critique' : 'damage', false);
+          }
+          
+          // Gestion de la mort du monstre après le troisième coup
+          if (attackTarget.hp <= 0) {
+            if (typeof release === "function") release(attackTarget.x, attackTarget.y);
+            if (typeof displayDamage === "function") {
+              displayDamage(player.px, player.py, `+${attackTarget.xpValue || 0} XP`, 'xp', true);
+            }
+            if (typeof gainXP === "function") gainXP(attackTarget.xpValue || 0);
+            if (typeof triggerLoot === 'function') {
+              triggerLoot(attackTarget);
+            }
+            if (typeof killMonster === "function") {
+              killMonster(attackTarget);
+            }
+            attackTarget.aggro = false;
+            attackTarget.aggroTarget = null;
+            attackTarget = null;
+            window.attackTarget = null;
+            player.inCombat = false;
+          }
+        }
+      }, 600);
+    }
+  }
+}
+
 // Fonction générique pour lancer un sort (clic ou clavier)
 function castSpell(slotId, baseMin, baseMax, cooldown, effetSpecial) {
   if (!player.inCombat) return;
+  
+  // Vérifier si le sort est déverrouillé
+  const spell = SPELLS[slotId];
+  if (spell && !spell.unlocked) {
+    if (typeof addChatMessage === 'function') {
+      addChatMessage(`Niveau ${spell.levelRequired} requis pour ${spell.name}`, 'system');
+    }
+    return;
+  }
+  
   const slot = document.getElementById(slotId);
   if (slot && !slot.classList.contains('cooldown')) {
     if (typeof attackTarget === 'object' && attackTarget && Math.abs(player.x - attackTarget.x) + Math.abs(player.y - attackTarget.y) === 1 && attackTarget.hp > 0) {
@@ -580,16 +702,47 @@ function castSpell(slotId, baseMin, baseMax, cooldown, effetSpecial) {
 
 // Démo : cooldown au clic sur le slot
 window.addEventListener('DOMContentLoaded', () => {
+  // Initialiser le système de sorts
+  if (typeof updateSpellUnlockStatus === 'function') {
+    updateSpellUnlockStatus();
+  }
   const slot1 = document.getElementById('spell-slot-1');
   const slot2 = document.getElementById('spell-slot-2');
+  const slot3 = document.getElementById('spell-slot-3');
   if (slot1) {
     slot1.addEventListener('click', () => {
-      castSpell('spell-slot-1', 3, 6, 1.0, null);
+      const spell = SPELLS['spell-slot-1'];
+      if (spell && spell.unlocked) {
+        castSpell('spell-slot-1', spell.baseMin, spell.baseMax, spell.cooldown, null);
+      } else if (spell) {
+        if (typeof addChatMessage === 'function') {
+          addChatMessage(`Niveau ${spell.levelRequired} requis pour ${spell.name}`, 'system');
+        }
+      }
     });
   }
   if (slot2) {
     slot2.addEventListener('click', () => {
-      castSpell('spell-slot-2', 12, 20, 15.0, createExplosionEffect);
+      const spell = SPELLS['spell-slot-2'];
+      if (spell && spell.unlocked) {
+        castSpell('spell-slot-2', spell.baseMin, spell.baseMax, spell.cooldown, createExplosionEffect);
+      } else if (spell) {
+        if (typeof addChatMessage === 'function') {
+          addChatMessage(`Niveau ${spell.levelRequired} requis pour ${spell.name}`, 'system');
+        }
+      }
+    });
+  }
+  if (slot3) {
+    slot3.addEventListener('click', () => {
+      const spell = SPELLS['spell-slot-3'];
+      if (spell && spell.unlocked) {
+        castTriplePunch();
+      } else if (spell) {
+        if (typeof addChatMessage === 'function') {
+          addChatMessage(`Niveau ${spell.levelRequired} requis pour ${spell.name}`, 'system');
+        }
+      }
     });
   }
 
@@ -597,16 +750,99 @@ window.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('keydown', (e) => {
     // Sort 1 : Coup de poing (touches '1' ou '&')
     if (e.key === '1' || e.key === '&') {
-      castSpell('spell-slot-1', 3, 6, 1.0, null);
+      const spell = SPELLS['spell-slot-1'];
+      if (spell && spell.unlocked) {
+        castSpell('spell-slot-1', spell.baseMin, spell.baseMax, spell.cooldown, null);
+      } else if (spell) {
+        if (typeof addChatMessage === 'function') {
+          addChatMessage(`Niveau ${spell.levelRequired} requis pour ${spell.name}`, 'system');
+        }
+      }
     }
     // Sort 2 : Coup de poing explosif (touches '2' ou 'é')
     if (e.key === '2' || e.key === 'é' || e.key === 'É') {
-      castSpell('spell-slot-2', 12, 20, 15.0, createExplosionEffect);
+      const spell = SPELLS['spell-slot-2'];
+      if (spell && spell.unlocked) {
+        castSpell('spell-slot-2', spell.baseMin, spell.baseMax, spell.cooldown, createExplosionEffect);
+      } else if (spell) {
+        if (typeof addChatMessage === 'function') {
+          addChatMessage(`Niveau ${spell.levelRequired} requis pour ${spell.name}`, 'system');
+        }
+      }
+    }
+    // Sort 3 : Triple Coup de Poing (touches '3' ou '#')
+    if (e.key === '3' || e.key === '#') {
+      const spell = SPELLS['spell-slot-3'];
+      if (spell && spell.unlocked) {
+        castTriplePunch();
+      } else if (spell) {
+        if (typeof addChatMessage === 'function') {
+          addChatMessage(`Niveau ${spell.levelRequired} requis pour ${spell.name}`, 'system');
+        }
+      }
     }
   });
 });
 
 // (Tout le code des établies a été déplacé dans js/metier/etablie.js)
+
+// Fonction pour vérifier et mettre à jour le déverrouillage des sorts
+function updateSpellUnlockStatus() {
+  if (!player || !player.level) return;
+  
+  Object.keys(SPELLS).forEach(slotId => {
+    const spell = SPELLS[slotId];
+    const wasUnlocked = spell.unlocked;
+    spell.unlocked = player.level >= spell.levelRequired;
+    
+    // Si le sort vient d'être déverrouillé, afficher un message
+    if (!wasUnlocked && spell.unlocked) {
+      if (typeof addChatMessage === 'function') {
+        addChatMessage(`Nouveau sort déverrouillé : ${spell.name} !`, 'system');
+      }
+    }
+  });
+  
+  // Mettre à jour l'affichage visuel des sorts
+  updateSpellVisuals();
+}
+
+// Fonction pour mettre à jour l'affichage visuel des sorts
+function updateSpellVisuals() {
+  Object.keys(SPELLS).forEach(slotId => {
+    const spell = SPELLS[slotId];
+    const slotElement = document.getElementById(slotId);
+    
+    if (slotElement) {
+      const wasLocked = slotElement.classList.contains('locked');
+      
+      if (spell.unlocked) {
+        slotElement.classList.remove('locked');
+        slotElement.classList.add('unlocked');
+        slotElement.style.opacity = '1';
+        slotElement.style.cursor = 'pointer';
+        
+        // Animation si le sort vient d'être déverrouillé
+        if (wasLocked) {
+          slotElement.classList.add('unlocking');
+          setTimeout(() => {
+            slotElement.classList.remove('unlocking');
+          }, 500);
+        }
+      } else {
+        slotElement.classList.add('locked');
+        slotElement.classList.remove('unlocked');
+        slotElement.style.opacity = '0.5';
+        slotElement.style.cursor = 'not-allowed';
+      }
+    }
+  });
+}
+
+// Export global des fonctions de gestion des sorts
+window.updateSpellUnlockStatus = updateSpellUnlockStatus;
+window.updateSpellVisuals = updateSpellVisuals;
+window.SPELLS = SPELLS;
 
 // Fonction utilitaire pour spawn un monstre depuis la console
 window.spawnMonster = function(type) {
@@ -1153,4 +1389,6 @@ window.emergencyClearAllVisualEffects = function() {
     
     // Tous les effets visuels nettoyés
 };
+
+
 

@@ -72,6 +72,21 @@
   color: #fff;
 }
 
+/* Styles pour les sorts verrouillés */
+.sort-row.locked,
+.spell-slot.locked {
+  opacity: 0.5;
+  filter: grayscale(100%);
+  cursor: not-allowed;
+}
+
+.sort-row.locked:hover,
+.spell-slot.locked:hover {
+  background: #1a1d23;
+  box-shadow: 0 0 0 2px #666;
+  color: #888;
+}
+
 /* Détails du sort à droite */
 .sort-damage-panel {
   flex: 1;
@@ -338,4 +353,53 @@
 
 .spell-slot.cooldown .spell-cooldown {
   opacity: 1;
+}
+
+/* Styles pour les sorts verrouillés/déverrouillés */
+.spell-slot.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.spell-slot.locked::after {
+  content: "🔒";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.2rem;
+  color: #ff6b6b;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.spell-slot.unlocked {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.spell-slot.locked:hover {
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 3px #ff6b6b44;
+}
+
+/* Animation pour les sorts qui se déverrouillent */
+@keyframes spellUnlock {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.spell-slot.unlocking {
+  animation: spellUnlock 0.5s ease-in-out;
 }
