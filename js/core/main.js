@@ -185,6 +185,7 @@ function startGameDirectly() {
                 
                 // Initialiser les gestionnaires d'événements UI
                 initUIEventHandlers();
+    initSpellUpgradeSystem();
                 
                 // Forcer un premier rendu
                 if (typeof drawGame === "function") {
@@ -315,6 +316,10 @@ function initUIEventHandlers() {
     if (sortIcon && sortModal && closeSortModal) {
         sortIcon.onclick = () => {
             sortModal.style.display = 'flex';
+            // Forcer la mise à jour de l'affichage des dégâts
+            setTimeout(() => {
+                updateAllSpellDamageDisplays();
+            }, 50);
         };
         closeSortModal.onclick = () => {
             sortModal.style.display = 'none';
@@ -357,6 +362,461 @@ function initUIEventHandlers() {
             tripleRow.classList.add('selected');
         });
     }
+}
+
+// Système d'amélioration de sorts
+function initSpellUpgradeSystem() {
+    // Variables globales pour l'amélioration de sorts
+    window.currentSpellUpgrade = {
+        spellId: null,
+        slotIndex: null,
+        orbeType: null
+    };
+
+    // Fonction pour vérifier si l'orbe est dans l'inventaire
+    function hasOrbeInInventory(orbeId) {
+        for (let slot of window.inventoryAll) {
+            if (slot.item && slot.item.id === orbeId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Fonction pour retirer l'orbe de l'inventaire
+    function removeOrbeFromInventory(orbeId) {
+        for (let slot of window.inventoryAll) {
+            if (slot.item && slot.item.id === orbeId) {
+                if (slot.item.quantity && slot.item.quantity > 1) {
+                    slot.item.quantity--;
+                } else {
+                    slot.item = null;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Fonction pour afficher la modal d'amélioration
+    function showSpellUpgradeModal(spellId, slotIndex, orbeType) {
+        const modal = document.getElementById('spell-upgrade-modal');
+        const orbeImg = document.getElementById('spell-upgrade-orbe-img');
+        const text = document.getElementById('spell-upgrade-text');
+        
+        // Définir l'orbe selon le type
+        let orbeId, orbeName;
+        switch(orbeType) {
+            case 'atypique':
+                orbeId = 'orbe_atypique_sort_niveau10';
+                orbeName = 'orbe atypique';
+                orbeImg.src = 'assets/objets/orbesatypiquesortniveau10.png';
+                break;
+            case 'rare':
+                orbeId = 'orbe_rare_sort_niveau10';
+                orbeName = 'orbe rare';
+                orbeImg.src = 'assets/objets/orbesatypiquesortniveau10.png'; // Temporaire
+                break;
+            case 'epique':
+                orbeId = 'orbe_epique_sort_niveau10';
+                orbeName = 'orbe épique';
+                orbeImg.src = 'assets/objets/orbesatypiquesortniveau10.png'; // Temporaire
+                break;
+            case 'legendaire':
+                orbeId = 'orbe_legendaire_sort_niveau10';
+                orbeName = 'orbe légendaire';
+                orbeImg.src = 'assets/objets/orbesatypiquesortniveau10.png'; // Temporaire
+                break;
+            default:
+                return;
+        }
+
+        // Vérifier si l'orbe est dans l'inventaire
+        if (!hasOrbeInInventory(orbeId)) {
+            text.textContent = `Vous n'avez pas d'${orbeName} dans votre inventaire.`;
+            return;
+        }
+
+        // Stocker les informations de l'amélioration
+        window.currentSpellUpgrade = {
+            spellId: spellId,
+            slotIndex: slotIndex,
+            orbeType: orbeType,
+            orbeId: orbeId
+        };
+
+        text.textContent = `Voulez-vous équiper votre ${orbeName} ?`;
+        modal.style.display = 'block';
+    }
+
+    // Fonction pour appliquer l'amélioration
+    function applySpellUpgrade() {
+        const upgrade = window.currentSpellUpgrade;
+        if (!upgrade) return;
+
+        // Retirer l'orbe de l'inventaire
+        if (removeOrbeFromInventory(upgrade.orbeId)) {
+            // Appliquer l'amélioration au sort
+            const spellSlot = document.querySelector(`.sort-upgrade-slot[data-spell="${upgrade.spellId}"][data-slot="${upgrade.slotIndex}"]`);
+            if (spellSlot) {
+                // Créer l'image de l'orbe dans le slot
+                const orbeImg = document.createElement('img');
+                orbeImg.src = `assets/objets/orbesatypiquesortniveau10.png`;
+                orbeImg.style.width = '32px';
+                orbeImg.style.height = '32px';
+                orbeImg.style.objectFit = 'contain';
+                
+                // Vider le slot et ajouter l'orbe
+                spellSlot.innerHTML = '';
+                spellSlot.appendChild(orbeImg);
+                spellSlot.classList.add('upgraded');
+                spellSlot.style.borderColor = '#4e9cff';
+                
+                // Stocker les informations de l'orbe dans le slot pour pouvoir le retirer plus tard
+                spellSlot.setAttribute('data-orbe-id', upgrade.orbeId);
+                spellSlot.setAttribute('data-orbe-type', upgrade.orbeType);
+                
+                // Appliquer les bonus de dégâts selon le type d'orbe
+                applySpellDamageBonus(upgrade.spellId, upgrade.orbeType);
+                
+                // Sauvegarder l'état des orbes équipés
+                saveSpellUpgrades();
+                
+                console.log(`Sort ${upgrade.spellId} amélioré avec ${upgrade.orbeType} dans le slot ${upgrade.slotIndex}`);
+            }
+
+            // Mettre à jour l'inventaire
+            if (typeof updateAllGrids === 'function') {
+                updateAllGrids();
+            }
+        } else {
+            console.warn('Impossible de retirer l\'orbe de l\'inventaire');
+        }
+
+        // Fermer la modal
+        document.getElementById('spell-upgrade-modal').style.display = 'none';
+        window.currentSpellUpgrade = null;
+    }
+    
+    // Fonction pour sauvegarder les orbes équipés
+    function saveSpellUpgrades() {
+        const upgrades = [];
+        const upgradeSlots = document.querySelectorAll('.sort-upgrade-slot.upgraded');
+        
+        upgradeSlots.forEach(slot => {
+            const spellId = slot.getAttribute('data-spell');
+            const slotIndex = slot.getAttribute('data-slot');
+            const orbeId = slot.getAttribute('data-orbe-id');
+            const orbeType = slot.getAttribute('data-orbe-type');
+            
+            if (spellId && slotIndex && orbeId && orbeType) {
+                upgrades.push({
+                    spellId: spellId,
+                    slotIndex: parseInt(slotIndex),
+                    orbeId: orbeId,
+                    orbeType: orbeType
+                });
+            }
+        });
+        
+        localStorage.setItem('spellUpgrades', JSON.stringify(upgrades));
+        console.log('Orbes équipés sauvegardés:', upgrades);
+    }
+    
+    // Fonction pour charger les orbes équipés
+    function loadSpellUpgrades() {
+        const savedUpgrades = localStorage.getItem('spellUpgrades');
+        if (savedUpgrades) {
+            try {
+                const upgrades = JSON.parse(savedUpgrades);
+                console.log('Chargement des orbes équipés:', upgrades);
+                
+                upgrades.forEach(upgrade => {
+                    const spellSlot = document.querySelector(`.sort-upgrade-slot[data-spell="${upgrade.spellId}"][data-slot="${upgrade.slotIndex}"]`);
+                    if (spellSlot) {
+                        // Créer l'image de l'orbe dans le slot
+                        const orbeImg = document.createElement('img');
+                        orbeImg.src = `assets/objets/orbesatypiquesortniveau10.png`;
+                        orbeImg.style.width = '32px';
+                        orbeImg.style.height = '32px';
+                        orbeImg.style.objectFit = 'contain';
+                        
+                        // Vider le slot et ajouter l'orbe
+                        spellSlot.innerHTML = '';
+                        spellSlot.appendChild(orbeImg);
+                        spellSlot.classList.add('upgraded');
+                        spellSlot.style.borderColor = '#4e9cff';
+                        
+                        // Stocker les informations de l'orbe
+                        spellSlot.setAttribute('data-orbe-id', upgrade.orbeId);
+                        spellSlot.setAttribute('data-orbe-type', upgrade.orbeType);
+                        
+                        // Appliquer les bonus de dégâts
+                        applySpellDamageBonus(upgrade.spellId, upgrade.orbeType);
+                    }
+                });
+            } catch (error) {
+                console.error('Erreur lors du chargement des orbes équipés:', error);
+            }
+        }
+    }
+    
+    // Fonction pour appliquer les bonus de dégâts aux sorts
+    function applySpellDamageBonus(spellId, orbeType) {
+        let damageMultiplier = 1;
+        
+        // Définir le multiplicateur selon le type d'orbe
+        switch(orbeType) {
+            case 'atypique':
+                damageMultiplier = 1.5; // +50%
+                break;
+            case 'rare':
+                damageMultiplier = 2.0; // +100%
+                break;
+            case 'epique':
+                damageMultiplier = 2.5; // +150%
+                break;
+            case 'legendaire':
+                damageMultiplier = 3.0; // +200%
+                break;
+            default:
+                return;
+        }
+        
+        // Appliquer les bonus selon le sort
+        switch(spellId) {
+            case 'punch':
+                // Coup de Poing : 3-6 → 5-9 (arrondi)
+                window.punchDamageMin = Math.round(3 * damageMultiplier);
+                window.punchDamageMax = Math.round(6 * damageMultiplier);
+                updateSpellDamageDisplay('punch', window.punchDamageMin, window.punchDamageMax);
+                break;
+            case 'explosive':
+                // Coup Explosif : 12-20 → 18-30 (arrondi)
+                window.explosiveDamageMin = Math.round(12 * damageMultiplier);
+                window.explosiveDamageMax = Math.round(20 * damageMultiplier);
+                updateSpellDamageDisplay('explosive', window.explosiveDamageMin, window.explosiveDamageMax);
+                break;
+            case 'triple':
+                // Triple Coup : 6-10 (x3) → 9-15 (x3) (arrondi)
+                window.tripleDamageMin = Math.round(6 * damageMultiplier);
+                window.tripleDamageMax = Math.round(10 * damageMultiplier);
+                updateSpellDamageDisplay('triple', window.tripleDamageMin, window.tripleDamageMax);
+                break;
+        }
+        
+        console.log(`Bonus de dégâts ${orbeType} appliqué au sort ${spellId}: +${Math.round((damageMultiplier - 1) * 100)}%`);
+    }
+    
+    // Fonction pour mettre à jour l'affichage des dégâts
+    function updateSpellDamageDisplay(spellId, minDamage, maxDamage) {
+        let damageElement;
+        
+        switch(spellId) {
+            case 'punch':
+                // Chercher dans le panel punch
+                const punchPanel = document.getElementById('sort-damage-panel-punch');
+                if (punchPanel) {
+                    damageElement = punchPanel.querySelector('.sort-detail-damage-value');
+                    if (damageElement) {
+                        damageElement.textContent = `${minDamage}-${maxDamage}`;
+                        console.log(`Dégâts punch mis à jour: ${minDamage}-${maxDamage}`);
+                    }
+                }
+                break;
+            case 'explosive':
+                // Chercher dans le panel explosive
+                const explosivePanel = document.getElementById('sort-damage-panel-explosive');
+                if (explosivePanel) {
+                    damageElement = explosivePanel.querySelector('.sort-detail-damage-value');
+                    if (damageElement) {
+                        damageElement.textContent = `${minDamage}-${maxDamage}`;
+                        console.log(`Dégâts explosive mis à jour: ${minDamage}-${maxDamage}`);
+                    }
+                }
+                break;
+            case 'triple':
+                // Chercher dans le panel triple
+                const triplePanel = document.getElementById('sort-damage-panel-triple');
+                if (triplePanel) {
+                    damageElement = triplePanel.querySelector('.sort-detail-damage-value');
+                    if (damageElement) {
+                        damageElement.textContent = `${minDamage}-${maxDamage} (x3)`;
+                        console.log(`Dégâts triple mis à jour: ${minDamage}-${maxDamage} (x3)`);
+                    }
+                }
+                break;
+        }
+    }
+
+    // Initialiser les événements des slots d'amélioration
+    function initSpellUpgradeSlots() {
+        const upgradeSlots = document.querySelectorAll('.sort-upgrade-slot');
+        
+        upgradeSlots.forEach((slot, index) => {
+            // Ajouter les attributs data pour identifier le sort et le slot
+            const spellContainer = slot.closest('.sort-upgrade-slots');
+            let spellId = '';
+            
+            if (spellContainer.classList.contains('sort-upgrade-slots-punch')) {
+                spellId = 'punch';
+            } else if (spellContainer.classList.contains('sort-upgrade-slots-explosive')) {
+                spellId = 'explosive';
+            } else if (spellContainer.classList.contains('sort-upgrade-slots-triple')) {
+                spellId = 'triple';
+            }
+            
+            slot.setAttribute('data-spell', spellId);
+            slot.setAttribute('data-slot', index);
+            
+            // Ajouter l'événement de clic gauche pour équiper
+            slot.addEventListener('click', (e) => {
+                // Si le slot est déjà amélioré, ne rien faire au clic gauche
+                if (slot.classList.contains('upgraded')) {
+                    return;
+                }
+                
+                const slotIndex = parseInt(slot.getAttribute('data-slot'));
+                let orbeType = '';
+                
+                // Déterminer le type d'orbe selon le slot
+                switch(slotIndex) {
+                    case 0: orbeType = 'atypique'; break;
+                    case 1: orbeType = 'rare'; break;
+                    case 2: orbeType = 'epique'; break;
+                    case 3: orbeType = 'legendaire'; break;
+                    case 4: orbeType = 'mythique'; break; // Réservé pour l'instant
+                    default: return;
+                }
+                
+                if (orbeType === 'mythique') {
+                    console.log('Slot mythique réservé pour l\'instant');
+                    return;
+                }
+                
+                showSpellUpgradeModal(spellId, slotIndex, orbeType);
+            });
+            
+            // Ajouter l'événement de clic droit pour retirer l'orbe
+            slot.addEventListener('contextmenu', (e) => {
+                e.preventDefault(); // Empêcher le menu contextuel par défaut
+                
+                // Si le slot n'est pas amélioré, ne rien faire
+                if (!slot.classList.contains('upgraded')) {
+                    return;
+                }
+                
+                // Demander confirmation pour retirer l'orbe
+                if (confirm('Voulez-vous retirer l\'orbe de ce slot ?')) {
+                    removeOrbeFromSlot(slot);
+                }
+            });
+        });
+    }
+    
+    // Fonction pour retirer l'orbe d'un slot
+    function removeOrbeFromSlot(slot) {
+        const orbeId = slot.getAttribute('data-orbe-id');
+        const orbeType = slot.getAttribute('data-orbe-type');
+        const spellId = slot.getAttribute('data-spell');
+        
+        // Vider le slot
+        slot.innerHTML = '';
+        slot.classList.remove('upgraded');
+        slot.style.borderColor = '#444a55';
+        slot.removeAttribute('data-orbe-id');
+        slot.removeAttribute('data-orbe-type');
+        
+        // Retirer les bonus de dégâts
+        if (spellId && orbeType) {
+            removeSpellDamageBonus(spellId, orbeType);
+        }
+        
+        // Remettre l'orbe dans l'inventaire
+        if (orbeId && typeof addItemToInventory === 'function') {
+            const result = addItemToInventory(orbeId, 'equipement');
+            if (result) {
+                console.log(`Orbe ${orbeType} remis dans l'inventaire`);
+            } else {
+                console.warn('Inventaire plein, impossible de remettre l\'orbe');
+            }
+        }
+        
+        // Sauvegarder l'état des orbes équipés
+        saveSpellUpgrades();
+        
+        // Mettre à jour l'inventaire
+        if (typeof updateAllGrids === 'function') {
+            updateAllGrids();
+        }
+    }
+    
+    // Fonction pour retirer les bonus de dégâts
+    function removeSpellDamageBonus(spellId, orbeType) {
+        // Remettre les dégâts de base
+        switch(spellId) {
+            case 'punch':
+                window.punchDamageMin = 3;
+                window.punchDamageMax = 6;
+                updateSpellDamageDisplay('punch', 3, 6);
+                break;
+            case 'explosive':
+                window.explosiveDamageMin = 12;
+                window.explosiveDamageMax = 20;
+                updateSpellDamageDisplay('explosive', 12, 20);
+                break;
+            case 'triple':
+                window.tripleDamageMin = 6;
+                window.tripleDamageMax = 10;
+                updateSpellDamageDisplay('triple', 6, 10);
+                break;
+        }
+        
+        console.log(`Bonus de dégâts ${orbeType} retiré du sort ${spellId}`);
+    }
+
+    // Initialiser les événements de la modal
+    function initSpellUpgradeModalEvents() {
+        const modal = document.getElementById('spell-upgrade-modal');
+        const closeBtn = document.getElementById('close-spell-upgrade');
+        const yesBtn = document.getElementById('spell-upgrade-yes');
+        const noBtn = document.getElementById('spell-upgrade-no');
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+                window.currentSpellUpgrade = null;
+            });
+        }
+
+        if (yesBtn) {
+            yesBtn.addEventListener('click', applySpellUpgrade);
+        }
+
+        if (noBtn) {
+            noBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+                window.currentSpellUpgrade = null;
+            });
+        }
+
+        // Fermer en cliquant à l'extérieur
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                window.currentSpellUpgrade = null;
+            }
+        });
+    }
+
+    // Initialiser le système
+    initSpellUpgradeSlots();
+    initSpellUpgradeModalEvents();
+    
+    // Charger les orbes équipés au démarrage
+    setTimeout(() => {
+        loadSpellUpgrades();
+    }, 100);
 }
 
 // Fonction de diagnostic des performances
@@ -581,7 +1041,10 @@ function castExplosivePunch() {
   const slot2 = document.getElementById('spell-slot-2');
   if (slot2 && !slot2.classList.contains('cooldown')) {
     if (typeof attackTarget === 'object' && attackTarget && Math.abs(player.x - attackTarget.x) + Math.abs(player.y - attackTarget.y) === 1 && attackTarget.hp > 0) {
-      const { damage, isCrit } = computeSpellDamage(12, 20);
+      // Utiliser les dégâts améliorés s'ils existent, sinon les dégâts de base
+      const minDamage = window.explosiveDamageMin || 12;
+      const maxDamage = window.explosiveDamageMax || 20;
+      const { damage, isCrit } = computeSpellDamage(minDamage, maxDamage);
       attackTarget.hp -= damage;
       if (typeof displayDamage === 'function') {
         displayDamage(attackTarget.px, attackTarget.py, damage, isCrit ? 'critique' : 'damage', false);
@@ -605,7 +1068,10 @@ function castTriplePunch() {
       // Premier coup
       setTimeout(() => {
         if (attackTarget && attackTarget.hp > 0) {
-          const { damage: damage1, isCrit: isCrit1 } = computeSpellDamage(6, 10);
+          // Utiliser les dégâts améliorés s'ils existent, sinon les dégâts de base
+          const minDamage = window.tripleDamageMin || 6;
+          const maxDamage = window.tripleDamageMax || 10;
+          const { damage: damage1, isCrit: isCrit1 } = computeSpellDamage(minDamage, maxDamage);
           attackTarget.hp -= damage1;
           if (typeof displayDamage === 'function') {
             displayDamage(attackTarget.px, attackTarget.py, damage1, isCrit1 ? 'critique' : 'damage', false);
@@ -639,7 +1105,10 @@ function castTriplePunch() {
       // Deuxième coup
       setTimeout(() => {
         if (attackTarget && attackTarget.hp > 0) {
-          const { damage: damage2, isCrit: isCrit2 } = computeSpellDamage(6, 10);
+          // Utiliser les dégâts améliorés s'ils existent, sinon les dégâts de base
+          const minDamage = window.tripleDamageMin || 6;
+          const maxDamage = window.tripleDamageMax || 10;
+          const { damage: damage2, isCrit: isCrit2 } = computeSpellDamage(minDamage, maxDamage);
           attackTarget.hp -= damage2;
           if (typeof displayDamage === 'function') {
             displayDamage(attackTarget.px, attackTarget.py, damage2, isCrit2 ? 'critique' : 'damage', false);
@@ -673,7 +1142,10 @@ function castTriplePunch() {
       // Troisième coup
       setTimeout(() => {
         if (attackTarget && attackTarget.hp > 0) {
-          const { damage: damage3, isCrit: isCrit3 } = computeSpellDamage(6, 10);
+          // Utiliser les dégâts améliorés s'ils existent, sinon les dégâts de base
+          const minDamage = window.tripleDamageMin || 6;
+          const maxDamage = window.tripleDamageMax || 10;
+          const { damage: damage3, isCrit: isCrit3 } = computeSpellDamage(minDamage, maxDamage);
           attackTarget.hp -= damage3;
           if (typeof displayDamage === 'function') {
             displayDamage(attackTarget.px, attackTarget.py, damage3, isCrit3 ? 'critique' : 'damage', false);
@@ -723,7 +1195,16 @@ function castSpell(slotId, baseMin, baseMax, cooldown, effetSpecial) {
   const slot = document.getElementById(slotId);
   if (slot && !slot.classList.contains('cooldown')) {
     if (typeof attackTarget === 'object' && attackTarget && Math.abs(player.x - attackTarget.x) + Math.abs(player.y - attackTarget.y) === 1 && attackTarget.hp > 0) {
-      const { damage, isCrit } = computeSpellDamage(baseMin, baseMax);
+      // Utiliser les dégâts améliorés selon le slot
+      let minDamage = baseMin;
+      let maxDamage = baseMax;
+      
+      if (slotId === 'spell-slot-1' && window.punchDamageMin && window.punchDamageMax) {
+        minDamage = window.punchDamageMin;
+        maxDamage = window.punchDamageMax;
+      }
+      
+      const { damage, isCrit } = computeSpellDamage(minDamage, maxDamage);
       attackTarget.hp -= damage;
       if (typeof displayDamage === 'function') {
         displayDamage(attackTarget.px, attackTarget.py, damage, isCrit ? 'critique' : 'damage', false);
@@ -1317,13 +1798,12 @@ window.showBossChestWindow = function() {
             levelRequired: 10
         },
         {
-            id: "boss_potion_slime",
-            name: "Potion du SlimeBoss",
-            type: "potion",
-            category: "consommable",
-            description: "Une potion magique qui restaure complètement la vie",
-            image: "assets/objets/potion_slimeboss.png",
-            effect: "restore_full_hp"
+            id: "orbe_atypique_sort_niveau10",
+            name: "Orbe Atypique Sort Niveau 10",
+            type: "objet_special",
+            category: "objet_special",
+            description: "Un orbe mystérieux qui dégage une énergie magique particulière. Permet d'améliorer les sorts de niveau 10 ou inférieur.",
+            image: "assets/objets/orbesatypiquesortniveau10.png"
         }
     ];
     
@@ -1652,6 +2132,24 @@ window.emergencyClearAllVisualEffects = function() {
     
     // Tous les effets visuels nettoyés
 };
+
+// Fonction pour mettre à jour tous les affichages de dégâts
+function updateAllSpellDamageDisplays() {
+    // Mettre à jour les dégâts punch
+    if (window.punchDamageMin && window.punchDamageMax) {
+        updateSpellDamageDisplay('punch', window.punchDamageMin, window.punchDamageMax);
+    }
+    
+    // Mettre à jour les dégâts explosive
+    if (window.explosiveDamageMin && window.explosiveDamageMax) {
+        updateSpellDamageDisplay('explosive', window.explosiveDamageMin, window.explosiveDamageMax);
+    }
+    
+    // Mettre à jour les dégâts triple
+    if (window.tripleDamageMin && window.tripleDamageMax) {
+        updateSpellDamageDisplay('triple', window.tripleDamageMin, window.tripleDamageMax);
+    }
+}
 
 
 

@@ -285,6 +285,167 @@
   box-shadow: 0 0 0 3px #4e9cff44;
 }
 
+/* Styles pour l'interface d'amélioration de sorts */
+.spell-upgrade-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  background: #23272e;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  z-index: 2000;
+  display: none;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #f5f5f5;
+}
+
+.spell-upgrade-header {
+  background: #2c313a;
+  padding: 20px;
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.spell-upgrade-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.spell-upgrade-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.spell-upgrade-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.spell-upgrade-content {
+  padding: 20px;
+  text-align: center;
+}
+
+.spell-upgrade-orbe {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2c313a;
+  border: 2px solid #4e9cff;
+}
+
+.spell-upgrade-orbe img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.spell-upgrade-text {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  color: #e0e0e0;
+}
+
+.spell-upgrade-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.spell-upgrade-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.spell-upgrade-btn-yes {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+}
+
+.spell-upgrade-btn-yes:hover {
+  background: linear-gradient(135deg, #45a049, #3d8b40);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.spell-upgrade-btn-no {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  color: white;
+}
+
+.spell-upgrade-btn-no:hover {
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+}
+
+/* Styles pour les slots améliorés */
+.sort-upgrade-slot.upgraded {
+  border-color: #4e9cff;
+  box-shadow: 0 0 0 3px #4e9cff44;
+  background: linear-gradient(135deg, #2c313a, #23272e);
+}
+
+.sort-upgrade-slot.upgraded:hover {
+  border-color: #5ba0ff;
+  box-shadow: 0 0 0 4px #5ba0ff44;
+}
+
+.sort-upgrade-slot.upgraded img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* Indicateur pour les slots améliorés qu'on peut retirer */
+.sort-upgrade-slot.upgraded::after {
+  content: "🔄";
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 0.8rem;
+  color: #4e9cff;
+  background: #23272e;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.sort-upgrade-slot.upgraded:hover::after {
+  opacity: 1;
+}
+
 #spell-shortcut-bar {
   position: absolute;
   display: flex;

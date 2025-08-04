@@ -282,6 +282,18 @@ const equipmentDatabase = {
             stackable: false,
             levelRequired: 10
         },
+        
+        // Orbe atypique sort niveau 10
+        orbe_atypique_sort_niveau10: {
+            id: 'orbe_atypique_sort_niveau10',
+            name: 'Orbe Atypique Sort Niveau 10',
+            type: 'objet_special',
+            icon: 'assets/objets/orbesatypiquesortniveau10.png',
+            description: 'Un orbe mystérieux qui dégage une énergie magique particulière. Permet d\'améliorer les sorts de niveau 10 ou inférieur.',
+            rarity: 'rare',
+            stackable: false,
+            levelRequired: 10
+        },
 
 };
 
