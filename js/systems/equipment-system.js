@@ -297,9 +297,53 @@ const equipmentDatabase = {
 
 };
 
-// Fonction pour équiper un item
+// Fonction pour créer dynamiquement un équipement atypique
+function createAtypicalEquipment(baseItemId) {
+    const baseItem = equipmentDatabase[baseItemId];
+    if (!baseItem) {
+        console.error(`Équipement de base ${baseItemId} non trouvé`);
+        return null;
+    }
+    
+    const atypicalId = baseItemId + '_atypique';
+    
+    // Créer les nouvelles stats (50% d'augmentation arrondie)
+    const newStats = {};
+    if (baseItem.stats) {
+        Object.entries(baseItem.stats).forEach(([stat, value]) => {
+            newStats[stat] = Math.round(value * 1.5);
+        });
+    }
+    
+    // Créer l'équipement atypique
+    const atypicalItem = {
+        id: atypicalId,
+        name: baseItem.name + ' Atypique',
+        type: baseItem.type,
+        slot: baseItem.slot,
+        icon: baseItem.icon,
+        description: baseItem.description + ' (Version atypique)',
+        stats: newStats,
+        levelRequired: baseItem.levelRequired,
+        rarity: 'atypique'
+    };
+    
+    // Ajouter à la base de données
+    equipmentDatabase[atypicalId] = atypicalItem;
+    
+    return atypicalItem;
+}
+
+// Fonction pour équiper un item (modifiée pour gérer les équipements atypiques)
 function equipItem(itemId) {
-    const item = equipmentDatabase[itemId];
+    let item = equipmentDatabase[itemId];
+    
+    // Si l'item n'est pas trouvé et qu'il s'agit d'un équipement atypique
+    if (!item && itemId.endsWith('_atypique')) {
+        const baseItemId = itemId.replace('_atypique', '');
+        item = createAtypicalEquipment(baseItemId);
+    }
+    
     if (!item) {
         console.error(`Équipement ${itemId} non trouvé`);
         return false;
@@ -490,4 +534,5 @@ window.unequipItem = unequipItem;
 window.getCurrentEquipment = getCurrentEquipment;
 window.isSlotOccupied = isSlotOccupied;
 window.getItemInSlot = getItemInSlot;
-window.initEquipmentSystem = initEquipmentSystem; 
+window.initEquipmentSystem = initEquipmentSystem;
+window.createAtypicalEquipment = createAtypicalEquipment; 

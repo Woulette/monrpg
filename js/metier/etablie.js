@@ -261,28 +261,35 @@ function openWorkshopModal({
             return;
           }
 
-          // Créer la version atypique de l'équipement
-          const newStats = {};
-          if (equipItem.stats) {
-            Object.entries(equipItem.stats).forEach(([stat, value]) => {
-              // Augmentation de 50% arrondie
-              newStats[stat] = Math.round(value * 1.5);
-            });
-          }
-
           // Créer le nouvel item atypique
           const newItemId = equipId + '_atypique';
-          const newItem = {
-            id: newItemId,
-            name: equipItem.name + ' Atypique',
-            type: equipItem.type,
-            slot: equipItem.slot, // Ajouter le slot pour l'équipement
-            icon: equipItem.icon,
-            description: equipItem.description + ' (Version atypique)',
-            stats: newStats,
-            levelRequired: equipItem.levelRequired,
-            rarity: 'atypique'
-          };
+          
+          // Utiliser la fonction createAtypicalEquipment si elle existe
+          let newItem;
+          if (typeof window.createAtypicalEquipment === 'function') {
+            newItem = window.createAtypicalEquipment(equipId);
+          } else {
+            // Fallback si la fonction n'existe pas
+            const newStats = {};
+            if (equipItem.stats) {
+              Object.entries(equipItem.stats).forEach(([stat, value]) => {
+                // Augmentation de 50% arrondie
+                newStats[stat] = Math.round(value * 1.5);
+              });
+            }
+
+            newItem = {
+              id: newItemId,
+              name: equipItem.name + ' Atypique',
+              type: equipItem.type,
+              slot: equipItem.slot, // Ajouter le slot pour l'équipement
+              icon: equipItem.icon,
+              description: equipItem.description + ' (Version atypique)',
+              stats: newStats,
+              levelRequired: equipItem.levelRequired,
+              rarity: 'atypique'
+            };
+          }
 
           // Ajouter à la base de données si pas déjà présent
           if (!window.equipmentDatabase[newItemId]) {
