@@ -529,6 +529,59 @@ window.spawnMaitreCorbeau = spawnMaitreCorbeau;
 window.spawnCorbeauElite = spawnCorbeauElite;
 window.spawnSlimeBoss = spawnSlimeBoss;
 
+// Fonction pour créer des Aluineeks (pour map4)
+function spawnAluineeks(count = 8) {
+    
+    // Zone de patrouille sur toute la map (48x25)
+    const PATROL_ZONE = { x: 0, y: 0, width: 48, height: 25 };
+    const RESPAWN_DELAY = 30000; // 30 secondes en millisecondes
+    
+    for (let i = 0; i < count; i++) {
+        // Générer une position aléatoire sur toute la map
+        let sx, sy;
+        let attempts = 0;
+        const maxAttempts = 100;
+        
+        do {
+            sx = Math.floor(Math.random() * PATROL_ZONE.width);
+            sy = Math.floor(Math.random() * PATROL_ZONE.height);
+            attempts++;
+        } while (
+            attempts < maxAttempts && 
+            (window.isBlocked && window.isBlocked(sx, sy)) || // Éviter les collisions
+            isInForbiddenSpawnZone(sx, sy) // Éviter les zones interdites
+        );
+        
+        // Si on n'a pas trouvé de position libre, prendre une position aléatoire
+        if (attempts >= maxAttempts) {
+            sx = Math.floor(Math.random() * PATROL_ZONE.width);
+            sy = Math.floor(Math.random() * PATROL_ZONE.height);
+        }
+        
+        // Générer un niveau aléatoire entre 8 et 12
+        const level = Math.floor(Math.random() * 5) + 8;
+        
+        // Utiliser la fonction spécialisée pour créer l'Aluineeks
+        if (typeof window.createAluineeks === 'function') {
+            const newMonster = window.createAluineeks(sx, sy, level);
+            window.monsters.push(newMonster);
+            
+            // Marquer la position comme occupée
+            if (typeof occupy === "function") {
+                occupy(sx, sy);
+            }
+        }
+    }
+    
+    // Assigner l'image aux Aluineeks si elle est déjà chargée
+    if (typeof assignMonsterImages === "function") {
+        assignMonsterImages();
+    }
+}
+
+// Export global
+window.createAluineeks = createAluineeks;
+
 // Fonction de debug pour afficher la zone interdite
 window.showForbiddenSpawnZone = function() {
     const currentMap = window.currentMap;

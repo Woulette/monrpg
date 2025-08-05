@@ -10,7 +10,9 @@ function preloadLootImages() {
         'assets/objets/orbe_speciale.png',
         'assets/objets/geleeslime.png',
         'assets/objets/noyauslime.png',
-        'assets/objets/mucusslime.png'
+        'assets/objets/mucusslime.png',
+        'assets/objets/osdeneeks.png',
+        'assets/objets/cranedeneeks.png'
     ];
     
     imagesToPreload.forEach(src => {
@@ -113,6 +115,28 @@ const resourceDatabase = {
         rarity: 'common',
         stackable: true,
         maxStack: 99
+    },
+    'osdeneeks': {
+        id: 'osdeneeks',
+        name: 'Os de Neeks',
+        type: 'ressource',
+        category: 'organe',
+        icon: 'assets/objets/osdeneeks.png',
+        description: 'Un os mystérieux d\'Aluineeks, utile pour la fabrication.',
+        rarity: 'common',
+        stackable: true,
+        maxStack: 99
+    },
+    'cranedeneeks': {
+        id: 'cranedeneeks',
+        name: 'Crâne de Neeks',
+        type: 'ressource',
+        category: 'organe',
+        icon: 'assets/objets/cranedeneeks.png',
+        description: 'Un crâne mystérieux d\'Aluineeks, utile pour la fabrication.',
+        rarity: 'common',
+        stackable: true,
+        maxStack: 99
     }
 };
 
@@ -179,6 +203,27 @@ const lootTables = {
             chance: 50, // 50% de chance
             minAmount: 10,
             maxAmount: 18
+        }
+    },
+    'aluineeks': { // Type de monstre Aluineeks
+        resources: [
+            {
+                id: 'osdeneeks',
+                chance: 20, // 20% de chance
+                minQuantity: 1,
+                maxQuantity: 1
+            },
+            {
+                id: 'cranedeneeks',
+                chance: 20, // 20% de chance
+                minQuantity: 1,
+                maxQuantity: 1
+            }
+        ],
+        pecka: {
+            chance: 80, // 80% de chance
+            minAmount: 5,
+            maxAmount: 12
         }
     }
 };

@@ -45,12 +45,21 @@ slimeBossImg.onload = () => {
     }
 };
 
+const aluineeksImg = new Image();
+aluineeksImg.src = "assets/personnages/aluineeks.png";
+aluineeksImg.onload = () => {
+    if (typeof assignMonsterImages === "function") {
+        assignMonsterImages();
+    }
+};
+
 // Export global des images
 window.corbeauImg = corbeauImg;
 window.maitreCorbeauImg = maitreCorbeauImg;
 window.corbeauEliteImg = corbeauEliteImg;
 window.slimeImg = slimeImg;
 window.slimeBossImg = slimeBossImg;
+window.aluineeksImg = aluineeksImg;
 
 // Fonction de synchronisation forcée des coordonnées des monstres
 function syncMonsterCoordinates() {
@@ -80,6 +89,8 @@ function assignMonsterImages() {
                 m.img = window.slimeBossImg;
             } else if (m.type === "crow") {
                 m.img = window.corbeauImg;
+            } else if (m.type === "aluineeks") {
+                m.img = window.aluineeksImg;
             } else {
                 m.img = window.corbeauImg; // Fallback pour les autres types
             }
@@ -150,6 +161,11 @@ function drawMonsters(ctx) {
                 monsterHeight = 64;
                 offsetX = (TILE_SIZE / 2) - (monsterSize / 2);
                 offsetY = (TILE_SIZE / 2) - (monsterHeight / 2);
+            } else if (monster.type === "aluineeks") {
+                monsterSize = 32;
+                monsterHeight = 32;
+                offsetX = (TILE_SIZE / 2) - (monsterSize / 2);
+                offsetY = (TILE_SIZE / 2) - (monsterHeight / 2);
             } else {
                 offsetX = (TILE_SIZE / 2) - (monsterSize / 2);
                 offsetY = (TILE_SIZE / 2) - (monsterHeight / 2);
@@ -181,7 +197,7 @@ function drawMonsters(ctx) {
                     ctx.fillStyle = "#ff0000";
                 }
                 
-                let nomAffiche = monster.name || (monster.type === "maitrecorbeau" ? "Maitrecorbeau" : monster.type === "corbeauelite" ? "Corbeau d'élite" : monster.type === "slimeboss" ? "SlimeBoss" : "Corbeau");
+                let nomAffiche = monster.name || (monster.type === "maitrecorbeau" ? "Maitrecorbeau" : monster.type === "corbeauelite" ? "Corbeau d'élite" : monster.type === "slimeboss" ? "SlimeBoss" : monster.type === "aluineeks" ? "Aluineeks" : "Corbeau");
                 ctx.fillText(`${nomAffiche} Lv ${monster.level || 1}`, textX, textY);
                 ctx.restore();
             }
@@ -249,6 +265,13 @@ function drawMonsters(ctx) {
                 ctx.drawImage(
                     monster.img,
                     monster.frame * 64, 0, 64, 64,
+                    monster.px + offsetX + (window.mapOffsetX || 0), monster.py + offsetY + (window.mapOffsetY || 0), monsterSize, monsterHeight
+                );
+            } else if (monster.type === "aluineeks") {
+                // Affichage statique pour les Aluineeks (pas d'animation)
+                ctx.drawImage(
+                    monster.img,
+                    0, 0, 32, 32,
                     monster.px + offsetX + (window.mapOffsetX || 0), monster.py + offsetY + (window.mapOffsetY || 0), monsterSize, monsterHeight
                 );
             } else {
@@ -419,6 +442,8 @@ window.forceReassignMonsterImages = function() {
                 monster.img = window.corbeauEliteImg;
             } else if (monster.type === "maitrecorbeau") {
                 monster.img = window.maitreCorbeauImg;
+            } else if (monster.type === "aluineeks") {
+                monster.img = window.aluineeksImg;
             }
             reassignedCount++;
         }
