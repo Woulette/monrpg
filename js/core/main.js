@@ -38,6 +38,14 @@ const SPELLS = {
         }
 };
 
+// Variables globales pour le combo Triple Coup de Poing
+window.triplePunchCombo = {
+  currentStep: 0,        // 0, 1, 2, 3 (étape actuelle du combo)
+  lastPressTime: 0,      // Timestamp du dernier appui
+  comboTimeout: 2000,    // 2 secondes pour compléter le combo
+  isActive: false        // Si le combo est en cours
+};
+
 // Attendre que tous les scripts soient chargés
 document.addEventListener('DOMContentLoaded', () => {
     // Vérifier si le système de menu multi-personnages est actif
@@ -1205,7 +1213,120 @@ function castExplosivePunch() {
   }
 }
 
-// Lancer le sort Triple Coup de Poing (slot 3)
+// Fonction pour gérer le combo Triple Coup de Poing
+function handleTriplePunchCombo() {
+  const now = Date.now();
+  const combo = window.triplePunchCombo;
+  
+  // Si le combo a expiré, le réinitialiser
+  if (combo.isActive && (now - combo.lastPressTime) > combo.comboTimeout) {
+    console.log('🔧 Triple Coup: Combo expiré, réinitialisation');
+    combo.currentStep = 0;
+    combo.isActive = false;
+  }
+  
+  // Vérifier les conditions de base
+  const slot3 = document.getElementById('spell-slot-3');
+  if (!slot3 || slot3.classList.contains('cooldown')) {
+    console.log('🔧 Triple Coup: Sort en cooldown ou non disponible');
+    return;
+  }
+  
+  if (!attackTarget || attackTarget.hp <= 0 || 
+      Math.abs(player.x - attackTarget.x) + Math.abs(player.y - attackTarget.y) !== 1) {
+    console.log('🔧 Triple Coup: Cible invalide ou trop éloignée');
+    // Réinitialiser le combo si pas de cible valide
+    combo.currentStep = 0;
+    combo.isActive = false;
+    return;
+  }
+  
+  // Démarrer ou continuer le combo
+  if (!combo.isActive) {
+    console.log('🔧 Triple Coup: Début du combo');
+    combo.isActive = true;
+    combo.currentStep = 1;
+    combo.lastPressTime = now;
+    
+    // NE PAS démarrer le cooldown ici, seulement à la fin du combo
+  } else {
+    combo.currentStep++;
+    combo.lastPressTime = now;
+    console.log(`🔧 Triple Coup: Combo étape ${combo.currentStep}/3`);
+  }
+  
+  // Exécuter le coup correspondant à l'étape
+  executeTriplePunchStep(combo.currentStep);
+  
+  // Si le combo est complet, le réinitialiser ET démarrer le cooldown
+  if (combo.currentStep >= 3) {
+    console.log('🔧 Triple Coup: Combo terminé, démarrage du cooldown');
+    startSpellCooldown('spell-slot-3', 10.0); // Cooldown seulement à la fin
+    combo.currentStep = 0;
+    combo.isActive = false;
+  }
+}
+
+// Fonction pour exécuter une étape du combo
+function executeTriplePunchStep(step) {
+  if (!attackTarget || attackTarget.hp <= 0) {
+    console.log(`🔧 Triple Coup étape ${step}: Cible invalide`);
+    return;
+  }
+  
+  console.log(`🔧 Triple Coup étape ${step}: Exécution`);
+  
+  // Utiliser les dégâts améliorés s'ils existent, sinon les dégâts de base
+  let minDamage = 6;
+  let maxDamage = 10;
+  if (window.tripleDamageMin !== 6 || window.tripleDamageMax !== 10) {
+    minDamage = window.tripleDamageMin;
+    maxDamage = window.tripleDamageMax;
+    console.log(`⚔️ Triple Coup (${step}) - Dégâts améliorés utilisés: ${minDamage}-${maxDamage} (base: 6-10)`);
+  } else {
+    console.log(`⚔️ Triple Coup (${step}) - Dégâts de base utilisés: ${minDamage}-${maxDamage}`);
+  }
+  
+  const { damage, isCrit } = computeSpellDamage(minDamage, maxDamage);
+  attackTarget.hp -= damage;
+  
+  if (typeof displayDamage === 'function') {
+    displayDamage(attackTarget.px, attackTarget.py, damage, isCrit ? 'critique' : 'damage', false);
+  }
+  
+  // Vérifier si le monstre meurt
+  if (attackTarget.hp <= 0) {
+    console.log(`🔧 Triple Coup étape ${step}: Monstre vaincu`);
+    
+    // Appeler killMonster immédiatement
+    if (typeof killMonster === "function") {
+      killMonster(attackTarget);
+    }
+    
+    // Nettoyer les références
+    if (typeof release === "function") release(attackTarget.x, attackTarget.y);
+    if (typeof displayDamage === "function") {
+      displayDamage(player.px, player.py, `+${attackTarget.xpValue || 0} XP`, 'xp', true);
+    }
+    if (typeof gainXP === "function") gainXP(attackTarget.xpValue || 0);
+    if (typeof triggerLoot === 'function') {
+      triggerLoot(attackTarget);
+    }
+    attackTarget.aggro = false;
+    attackTarget.aggroTarget = null;
+    attackTarget = null;
+    window.attackTarget = null;
+    player.inCombat = false;
+    
+    // Réinitialiser le combo ET déclencher le cooldown car la cible est morte
+    console.log('🔧 Triple Coup: Monstre vaincu, déclenchement du cooldown');
+    startSpellCooldown('spell-slot-3', 10.0);
+    window.triplePunchCombo.currentStep = 0;
+    window.triplePunchCombo.isActive = false;
+  }
+}
+
+// Lancer le sort Triple Coup de Poing (slot 3) - ANCIENNE VERSION (gardée pour compatibilité)
 function castTriplePunch() {
   console.log('🔧 castTriplePunch: Début du lancement');
   const slot3 = document.getElementById('spell-slot-3');
@@ -1475,7 +1596,7 @@ window.addEventListener('DOMContentLoaded', () => {
     slot3.addEventListener('click', () => {
       const spell = SPELLS['spell-slot-3'];
       if (spell && spell.unlocked) {
-        castTriplePunch();
+        handleTriplePunchCombo(); // Utiliser le nouveau système de combo
       } else if (spell) {
         if (typeof addChatMessage === 'function') {
           addChatMessage(`Niveau ${spell.levelRequired} requis pour ${spell.name}`, 'system');
@@ -1512,7 +1633,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (e.key === '3' || e.key === '#' || e.code === 'Digit3' || e.code === 'Key3') {
       const spell = SPELLS['spell-slot-3'];
       if (spell && spell.unlocked) {
-        castTriplePunch();
+        handleTriplePunchCombo(); // Utiliser le nouveau système de combo
       } else if (spell) {
         if (typeof addChatMessage === 'function') {
           addChatMessage(`Niveau ${spell.levelRequired} requis pour ${spell.name}`, 'system');
