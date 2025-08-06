@@ -3,6 +3,7 @@ let inventoryAll = Array.from({ length: 80 }, () => ({ item: null, category: nul
 let inventoryEquipement = Array.from({ length: 80 }, () => ({ item: null, category: 'equipement' }));
 let inventoryPotions = Array.from({ length: 80 }, () => ({ item: null, category: 'potions' }));
 let inventoryRessources = Array.from({ length: 80 }, () => ({ item: null, category: 'ressources' }));
+let inventoryRessourcesAlchimiste = Array.from({ length: 80 }, () => ({ item: null, category: 'ressources_alchimiste' }));
 
 // Inventaire principal (pour compatibilité avec le système d'équipement)
 let inventory = inventoryAll;
@@ -13,6 +14,7 @@ window.inventoryAll = inventoryAll;
 window.inventoryEquipement = inventoryEquipement;
 window.inventoryPotions = inventoryPotions;
 window.inventoryRessources = inventoryRessources;
+window.inventoryRessourcesAlchimiste = inventoryRessourcesAlchimiste;
 
 // Initialiser l'équipement
 window.equippedItems = {
@@ -39,6 +41,7 @@ function resetInventory() {
     window.inventoryEquipement = Array.from({ length: 80 }, () => ({ item: null, category: 'equipement' }));
     window.inventoryPotions = Array.from({ length: 80 }, () => ({ item: null, category: 'potions' }));
     window.inventoryRessources = Array.from({ length: 80 }, () => ({ item: null, category: 'ressources' }));
+    window.inventoryRessourcesAlchimiste = Array.from({ length: 80 }, () => ({ item: null, category: 'ressources_alchimiste' }));
     
     // Mettre à jour l'affichage
     if (typeof updateAllGrids === 'function') {
@@ -84,6 +87,7 @@ function saveInventoryForCharacter(characterId) {
             inventoryEquipement: window.inventoryEquipement || [],
             inventoryPotions: window.inventoryPotions || [],
             inventoryRessources: window.inventoryRessources || [],
+            inventoryRessourcesAlchimiste: window.inventoryRessourcesAlchimiste || [],
             equippedItems: window.equippedItems || {
                 coiffe: null,
                 cape: null,
@@ -129,6 +133,9 @@ function loadInventoryForCharacter(characterId) {
         }
         if (inventoryData.inventoryRessources) {
             window.inventoryRessources = inventoryData.inventoryRessources;
+        }
+        if (inventoryData.inventoryRessourcesAlchimiste) {
+            window.inventoryRessourcesAlchimiste = inventoryData.inventoryRessourcesAlchimiste;
         }
         
         // Restaurer l'équipement
@@ -180,6 +187,8 @@ function getInventoryByCategory(category) {
             return window.inventoryPotions;
         case 'ressources':
             return window.inventoryRessources;
+        case 'ressources_alchimiste':
+            return window.inventoryRessourcesAlchimiste;
         default:
             return window.inventoryAll;
     }

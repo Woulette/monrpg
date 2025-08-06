@@ -129,11 +129,18 @@ function createAttackEffect(x, y, isPlayer) {
 
 // Créer un effet spécial pour les coups critiques
 function createCritEffect(x, y, isPlayer) {
+    // Nettoyer les anciens effets de coup critique avant d'en créer un nouveau
+    for (let i = damageEffects.length - 1; i >= 0; i--) {
+        if (damageEffects[i].type === 'crit_flash') {
+            damageEffects.splice(i, 1);
+        }
+    }
+    
     const effect = {
         x: x + TILE_SIZE / 2,
         y: y + TILE_SIZE / 2,
         startTime: Date.now(),
-        duration: 800,
+        duration: 400, // Réduit de 600 à 400ms
         type: 'crit_flash',
         isPlayer: isPlayer,
         size: 0,
@@ -256,57 +263,46 @@ function drawDamageEffects(ctx) {
             ctx.fillRect(effect.x + (window.mapOffsetX || 0), effect.y + (window.mapOffsetY || 0), TILE_SIZE, TILE_SIZE);
             ctx.restore();
         } else if (effect.type === 'crit_flash') {
-            // Effet spécial pour les coups critiques - explosion impressionnante
+            // Effet spécial pour les coups critiques - version localisée sans voile global
             const progress = (Date.now() - effect.startTime) / effect.duration;
             const alpha = effect.alpha * (1 - progress);
             
-            // Créer une explosion plus impressionnante
-            const numParticles = 16;
-            const baseSize = 6;
-            const explosionRadius = 45;
-            const colors = ['#ff0000', '#ffff00', '#ff6600', '#ff0066', '#ffffff'];
-            
             ctx.save();
-            ctx.globalAlpha = alpha;
+            ctx.globalAlpha = alpha * 0.4; // Opacité très réduite
             
-            // Premier cercle d'explosion
-            for (let i = 0; i < numParticles; i++) {
-                const angle = (i / numParticles) * 2 * Math.PI;
-                const distance = explosionRadius * progress;
-                const particleX = effect.x + Math.cos(angle) * distance + (window.mapOffsetX || 0);
-                const particleY = effect.y + Math.sin(angle) * distance + (window.mapOffsetY || 0);
-                const particleSize = baseSize * (1 - progress * 0.3);
-                
-                // Couleurs variées
-                ctx.fillStyle = colors[i % colors.length];
-                ctx.beginPath();
-                ctx.arc(particleX, particleY, particleSize, 0, 2 * Math.PI);
-                ctx.fill();
-            }
+            // Effet de pulsation très localisé autour du monstre
+            const pulseRadius = 20 * progress;
+            const pulseWidth = 2 * (1 - progress);
             
-            // Deuxième cercle d'explosion (plus petit, plus rapide)
-            const innerRadius = 20;
-            const innerParticles = 8;
-            for (let i = 0; i < innerParticles; i++) {
-                const angle = (i / innerParticles) * 2 * Math.PI;
-                const distance = innerRadius * progress * 1.5;
-                const particleX = effect.x + Math.cos(angle) * distance + (window.mapOffsetX || 0);
-                const particleY = effect.y + Math.sin(angle) * distance + (window.mapOffsetY || 0);
-                const particleSize = baseSize * 1.5 * (1 - progress * 0.7);
+            // Cercle de pulsation rouge (plus petit)
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = pulseWidth;
+            ctx.beginPath();
+            ctx.arc(effect.x + (window.mapOffsetX || 0), effect.y + (window.mapOffsetY || 0), pulseRadius, 0, 2 * Math.PI);
+            ctx.stroke();
+            
+            // Cercle de pulsation jaune (encore plus petit)
+            const innerRadius = pulseRadius * 0.6;
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = pulseWidth * 0.6;
+            ctx.beginPath();
+            ctx.arc(effect.x + (window.mapOffsetX || 0), effect.y + (window.mapOffsetY || 0), innerRadius, 0, 2 * Math.PI);
+            ctx.stroke();
+            
+            // Quelques points lumineux très petits autour du monstre
+            const numPoints = 4; // Réduit de 6 à 4
+            const pointRadius = 10; // Réduit de 15 à 10
+            for (let i = 0; i < numPoints; i++) {
+                const angle = (i / numPoints) * 2 * Math.PI;
+                const pointX = effect.x + Math.cos(angle) * pointRadius + (window.mapOffsetX || 0);
+                const pointY = effect.y + Math.sin(angle) * pointRadius + (window.mapOffsetY || 0);
+                const pointSize = 1 * (1 - progress); // Très petit
                 
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath();
-                ctx.arc(particleX, particleY, particleSize, 0, 2 * Math.PI);
+                ctx.arc(pointX, pointY, pointSize, 0, 2 * Math.PI);
                 ctx.fill();
             }
-            
-            // Flash central
-            const flashSize = 12 * (1 - progress);
-            ctx.fillStyle = '#ffffff';
-            ctx.globalAlpha = alpha * 0.8;
-            ctx.beginPath();
-            ctx.arc(effect.x + (window.mapOffsetX || 0), effect.y + (window.mapOffsetY || 0), flashSize, 0, 2 * Math.PI);
-            ctx.fill();
             
             ctx.restore();
         } else if (effect.type === 'explosion_flash') {

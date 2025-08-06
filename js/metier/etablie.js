@@ -87,6 +87,7 @@ function openWorkshopModal({
   recipes,
   cssPrefix
 }) {
+  console.log('🔧 Ouverture établi:', { idPrefix, titleText, cssPrefix });
   // Supprimer la fenêtre existante si elle existe
   const existingModal = document.getElementById(`${idPrefix}-workshop-modal`);
   if (existingModal) existingModal.remove();
@@ -123,7 +124,15 @@ function openWorkshopModal({
   improveTab.textContent = 'Amélioration';
   improveTab.className = `${cssPrefix}improve-tab`;
   const craftTitle = document.createElement('h3');
-  craftTitle.textContent = 'Craft - Niveau 100';
+  // Déterminer le métier selon le cssPrefix
+  let metierKey = '';
+  if (cssPrefix.includes('tailleur')) metierKey = 'tailleur';
+  else if (cssPrefix.includes('cordonnier')) metierKey = 'cordonnier';
+  else if (cssPrefix.includes('bijoutier')) metierKey = 'bijoutier';
+  
+  // Titre dynamique selon le métier
+  const niveau = window.metiers?.[metierKey]?.niveau || 1;
+  craftTitle.textContent = `Craft - Niveau ${niveau}`;
   craftTitle.className = `${cssPrefix}craft-title`;
   craftHeader.appendChild(craftTab);
   craftHeader.appendChild(craftTitle);
@@ -133,10 +142,23 @@ function openWorkshopModal({
   const craftViews = document.createElement('div');
   craftViews.className = `${cssPrefix}craft-views`;
   craftContainer.appendChild(craftViews);
-  // Vue Craft (7 slots)
+  // Vue Craft (slots selon niveau de métier)
   const craftGrid = document.createElement('div');
   craftGrid.className = `${cssPrefix}craft-grid`;
-  const craftSlotsCount = 7;
+  // Déterminer le nombre de slots selon le niveau du métier
+  let craftSlotsCount = 2; // Par défaut 2 slots
+  if (window.getMetierSlots && window.metiers && window.metiers[metierKey]) {
+    craftSlotsCount = window.getMetierSlots(metierKey);
+  } else if (window.metiers && window.metiers[metierKey]) {
+    // Fallback : calculer directement
+    const niveauSlots = window.metiers[metierKey].niveau || 1;
+    if (niveauSlots >= 100) craftSlotsCount = 7;
+    else if (niveauSlots >= 80) craftSlotsCount = 6;
+    else if (niveauSlots >= 60) craftSlotsCount = 5;
+    else if (niveauSlots >= 40) craftSlotsCount = 4;
+    else if (niveauSlots >= 20) craftSlotsCount = 3;
+    else craftSlotsCount = 2;
+  }
   for (let i = 0; i < craftSlotsCount; i++) {
     const craftSlot = document.createElement('div');
     craftSlot.className = `${cssPrefix}craft-slot`;
@@ -518,6 +540,21 @@ function openWorkshopModal({
     name.className = `${cssPrefix}recipe-name`;
     row.appendChild(icon);
     row.appendChild(name);
+    
+    // XP gagné (à droite dans la même ligne)
+    if (recipe.xpGagne) {
+      const xpText = document.createElement('span');
+      xpText.textContent = `+${recipe.xpGagne} XP`;
+      xpText.className = `${cssPrefix}xp-text`;
+      xpText.style.marginLeft = 'auto';
+      xpText.style.color = '#bfa14a';
+      xpText.style.fontWeight = 'bold';
+      xpText.style.fontSize = '0.9em';
+      xpText.style.alignSelf = 'center';
+      xpText.style.marginTop = '10px';
+      row.appendChild(xpText);
+    }
+    
     recipeBox.appendChild(row);
     // Ingrédients
     const ingredientsRow = document.createElement('div');

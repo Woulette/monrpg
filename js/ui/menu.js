@@ -85,8 +85,8 @@ function createCharacter(slotIndex, name, avatar) {
         level: 1,
         xp: 0,
         xpToNextLevel: 100,
-        life: 100,
-        maxLife: 100,
+        life: 50,
+        maxLife: 50,
         // Stats de base
         baseForce: 1,
         baseIntelligence: 1,
@@ -148,7 +148,7 @@ function createCharacter(slotIndex, name, avatar) {
         autoFollow: false,
         isDead: false,
         deathTime: 0,
-        respawnTime: 30000,
+        respawnTime: 3000, // 3 secondes pour le respawn
         // Date de création
         createdAt: Date.now(),
         lastPlayed: Date.now()
@@ -178,13 +178,31 @@ function createCharacter(slotIndex, name, avatar) {
         window.resetPlayer();
     }
     
-    // Réinitialiser les propriétés des PNJ
-    if (typeof window.resetPNJProperties === 'function') {
-        window.resetPNJProperties();
+    // RÉINITIALISER LES SORTS POUR LE NOUVEAU PERSONNAGE
+    if (typeof window.resetSpellsToDefault === 'function') {
+        try {
+            window.resetSpellsToDefault();
+        } catch (error) {
+            console.error('Erreur lors de la réinitialisation des sorts:', error);
+        }
     }
     
-    // Démarrer automatiquement le jeu avec le nouveau personnage
-    startGame(slotIndex);
+    // RÉINITIALISER LES ORBES ÉQUIPÉES POUR LE NOUVEAU PERSONNAGE
+    if (typeof window.resetSpellUpgrades === 'function') {
+        try {
+            window.resetSpellUpgrades();
+        } catch (error) {
+            console.error('Erreur lors de la réinitialisation des orbes:', error);
+        }
+    }
+    
+    console.log(`✅ Personnage "${name}" créé avec succès dans le slot ${slotIndex}`);
+    
+    // Mettre à jour l'affichage des slots
+    updateCharacterSlotsDisplay();
+    
+    // Retourner au menu de sélection
+    showCharacterSelectionMenu();
     
     return character;
 }
@@ -558,6 +576,101 @@ function initializeGame(character) {
     window.playerAvatar = character.avatar;
     window.currentCharacterId = character.id;
     
+    // RÉINITIALISER COMPLÈTEMENT LE JOUEUR GLOBAL AVANT DE CHARGER LES DONNÉES
+    // Cela évite que le joueur hérite des données du personnage précédent
+    if (typeof player !== 'undefined') {
+        // Réinitialiser toutes les propriétés du joueur aux valeurs par défaut
+        player.level = 1;
+        player.xp = 0;
+        player.xpToNextLevel = 100;
+        player.life = 100;
+        player.maxLife = 100;
+        player.x = 25;
+        player.y = 12;
+        player.px = 25 * 32;
+        player.py = 12 * 32;
+        player.spawnX = 25;
+        player.spawnY = 12;
+        player.direction = 0;
+        player.frame = 0;
+        player.moving = false;
+        player.moveTarget = { x: 25, y: 12 };
+        player.path = [];
+        player.inCombat = false;
+        player.lastCombatTime = 0;
+        player.lastRegenTime = 0;
+        player.autoFollow = false;
+        player.isDead = false;
+        player.deathTime = 0;
+        player.respawnTime = 3000; // 3 secondes pour le respawn
+        
+        // Stats de base
+        player.baseForce = 1;
+        player.baseIntelligence = 1;
+        player.baseAgilite = 1;
+        player.baseDefense = 1;
+        player.baseChance = 1;
+        player.baseVitesse = 1;
+        player.baseVie = 1;
+        
+        // Stats de combat
+        player.combatForce = 0;
+        player.combatIntelligence = 0;
+        player.combatAgilite = 0;
+        player.combatDefense = 0;
+        player.combatChance = 0;
+        player.combatVitesse = 0;
+        player.combatVie = 0;
+        
+        // Stats d'équipement
+        player.equipForce = 0;
+        player.equipIntelligence = 0;
+        player.equipAgilite = 0;
+        player.equipDefense = 0;
+        player.equipChance = 0;
+        player.equipVitesse = 0;
+        player.equipVie = 0;
+        
+        // Stats totales
+        player.force = 1;
+        player.intelligence = 1;
+        player.agilite = 1;
+        player.defense = 1;
+        player.chance = 1;
+        player.vitesse = 1;
+        player.vie = 1;
+        
+        // XP des stats
+        player.forceXp = 0;
+        player.intelligenceXp = 0;
+        player.agiliteXp = 0;
+        player.defenseXp = 0;
+        player.chanceXp = 0;
+        player.vitesseXp = 0;
+        
+        // Points et monnaie
+        player.statPoints = 0;
+        player.pecka = 0;
+    }
+    
+    // RÉINITIALISER LES SORTS POUR LE NOUVEAU PERSONNAGE
+    if (typeof window.resetSpellsToDefault === 'function') {
+        try {
+            window.resetSpellsToDefault();
+        } catch (error) {
+            console.error('Erreur lors de la réinitialisation des sorts:', error);
+        }
+    }
+    
+    // RÉINITIALISER LES ORBES ÉQUIPÉES POUR LE NOUVEAU PERSONNAGE
+    if (typeof window.resetSpellUpgrades === 'function') {
+        try {
+            window.resetSpellUpgrades();
+        } catch (error) {
+            console.error('Erreur lors de la réinitialisation des orbes:', error);
+        }
+    }
+    
     // Charger les sorts débloqués pour ce personnage
     if (typeof window.loadUnlockedSpells === 'function') {
         window.loadUnlockedSpells();
@@ -650,6 +763,26 @@ window.returnToMenu = function() {
     if (gameState === "playing" && window.currentCharacterId) {
         if (typeof window.autoSaveOnEvent === 'function') {
             window.autoSaveOnEvent();
+        }
+    }
+    
+    // RÉINITIALISER LES SORTS À LEUR ÉTAT PAR DÉFAUT
+    // Cela évite que les sorts débloqués d'un personnage soient hérités par un autre
+    if (typeof window.resetSpellsToDefault === 'function') {
+        try {
+            window.resetSpellsToDefault();
+        } catch (error) {
+            console.error('Erreur lors de la réinitialisation des sorts:', error);
+        }
+    }
+    
+    // RÉINITIALISER LES ORBES ÉQUIPÉES À LEUR ÉTAT PAR DÉFAUT
+    // Cela évite que les orbes équipées d'un personnage soient héritées par un autre
+    if (typeof window.resetSpellUpgrades === 'function') {
+        try {
+            window.resetSpellUpgrades();
+        } catch (error) {
+            console.error('Erreur lors de la réinitialisation des orbes:', error);
         }
     }
     

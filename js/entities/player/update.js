@@ -183,22 +183,29 @@ function updatePlayer(ts) {
 
                 // Riposte du monstre si vivant (sauf pour les slimes et boss slime qui ont leur propre système d'attaque)
                 if (attackTarget.hp > 0 && attackTarget.type !== "slime" && attackTarget.type !== "slimeboss") {
-                    // Calcul des dégâts du monstre : dégâts de base + force du monstre avec variation de 25%
-                    const monsterBaseDamage = attackTarget.damage !== undefined ? attackTarget.damage : 3;
-                    const monsterTotalDamage = monsterBaseDamage + (attackTarget.force || 0);
-                    const variation = 0.25; // 25% de variation
-                    const randomFactor = 1 + (Math.random() * 2 - 1) * variation; // Entre 0.75 et 1.25
-                    const monsterDamage = Math.max(1, Math.floor(monsterTotalDamage * randomFactor) - player.defense);
-                    player.life -= monsterDamage;
-                    if (player.life < 0) player.life = 0;
-                    
-                    // Afficher les dégâts reçus par le joueur
-                    if (typeof displayDamage === "function") {
-                        displayDamage(player.px, player.py, monsterDamage, 'damage', true);
+                    // Cooldown de riposte pour éviter les attaques doubles
+                    const riposteCooldown = 1000; // 1 seconde de cooldown
+                    if (!attackTarget.lastRiposte || (currentTime - attackTarget.lastRiposte) >= riposteCooldown) {
+                        // Calcul des dégâts du monstre : dégâts de base + force du monstre avec variation de 25%
+                        const monsterBaseDamage = attackTarget.damage !== undefined ? attackTarget.damage : 3;
+                        const monsterTotalDamage = monsterBaseDamage + (attackTarget.force || 0);
+                        const variation = 0.25; // 25% de variation
+                        const randomFactor = 1 + (Math.random() * 2 - 1) * variation; // Entre 0.75 et 1.25
+                        const monsterDamage = Math.max(1, Math.floor(monsterTotalDamage * randomFactor) - player.defense);
+                        player.life -= monsterDamage;
+                        if (player.life < 0) player.life = 0;
+                        
+                        // Afficher les dégâts reçus par le joueur
+                        if (typeof displayDamage === "function") {
+                            displayDamage(player.px, player.py, monsterDamage, 'damage', true);
+                        }
+                        
+                        // XP défense pour avoir reçu des dégâts
+                        gainStatXP('defense', 1);
+                        
+                        // Marquer le temps de la dernière riposte
+                        attackTarget.lastRiposte = currentTime;
                     }
-                    
-                    // XP défense pour avoir reçu des dégâts
-                    gainStatXP('defense', 1);
                 }
 
                 // Monstre mort
@@ -308,7 +315,7 @@ function updatePlayer(ts) {
             const tileIndex = player.y * layer.width + player.x;
             const tileId = layer.data[tileIndex];
             
-            if (tileId === 1 || tileId === 2 || tileId === 3 || tileId === 4 || tileId === 12008 || tileId === 12208 || tileId === 15408 || tileId === 15608 || tileId === 6 || tileId === 7) {
+            if (tileId === 1 || tileId === 2 || tileId === 3 || tileId === 4 || tileId === 12008 || tileId === 12208 || tileId === 15408 || tileId === 15608 || tileId === 6 || tileId === 7 || tileId === 7203 || tileId === 7403) {
                 portalFound = true;
                 portalGid = tileId;
                 break;
@@ -383,6 +390,39 @@ function updatePlayer(ts) {
                 // Gestion spéciale pour mapdonjonslimeboss
                 // Pas de portail de sortie - le joueur doit tuer le SlimeBoss pour sortir
                 // Le boss sera implémenté plus tard
+            } else if (window.currentMap === "map4") {
+                // Gestion spéciale pour la map4
+                if (portalGid === 7203 || portalGid === 7403) {
+                    // Portails 7203 et 7403 → Map zonealuineeks1
+                    destinationMap = "mapzonealuineeks1";
+                    targetPortalId = null; // Position fixe
+                } else if (portalGid === 4) {
+                    // Portail ID 4 → Map 3
+                    destinationMap = "map3";
+                    targetPortalId = 3;
+                } else if (portalGid === 3) {
+                    // Portail ID 3 → Map 3
+                    destinationMap = "map3";
+                    targetPortalId = 4;
+                }
+            } else if (window.currentMap === "mapzonealuineeks1") {
+                // Gestion spéciale pour mapzonealuineeks1
+                if (portalGid === 2) {
+                    // Portail ID 2 → Map 4
+                    destinationMap = "map4";
+                    targetPortalId = null; // Position fixe
+                } else if (portalGid === 1) {
+                    // Portail ID 1 → Map mazonehaut1aluineeks1
+                    destinationMap = "mazonehaut1aluineeks1";
+                    targetPortalId = null; // Position fixe
+                }
+            } else if (window.currentMap === "mazonehaut1aluineeks1") {
+                // Gestion spéciale pour mazonehaut1aluineeks1
+                if (portalGid === 2) {
+                    // Portail ID 2 → Map zonealuineeks1
+                    destinationMap = "mapzonealuineeks1";
+                    targetPortalId = null; // Position fixe
+                }
             } else if (window.currentMap === "maison") {
                 // Gestion spéciale pour la maison
                 if (portalGid === 7) {
@@ -444,6 +484,38 @@ function updatePlayer(ts) {
                             return;
                         }
                         
+                        // Gestion spéciale pour mapzonealuineeks1 depuis mazonehaut1aluineeks1 - position fixe
+                        if (destinationMap === "mapzonealuineeks1" && window.currentMap === "mazonehaut1aluineeks1") {
+                            if (typeof teleportPlayer === "function") {
+                                teleportPlayer(destinationMap, 23, 1);
+                            }
+                            return;
+                        }
+                        
+                        // Gestion spéciale pour mapzonealuineeks1 depuis map4 - position fixe
+                        if (destinationMap === "mapzonealuineeks1" && window.currentMap === "map4") {
+                            if (typeof teleportPlayer === "function") {
+                                teleportPlayer(destinationMap, 23, 23);
+                            }
+                            return;
+                        }
+                        
+                        // Gestion spéciale pour map4 depuis mapzonealuineeks1 - position fixe
+                        if (destinationMap === "map4" && window.currentMap === "mapzonealuineeks1") {
+                            if (typeof teleportPlayer === "function") {
+                                teleportPlayer(destinationMap, 22, 5);
+                            }
+                            return;
+                        }
+                        
+                        // Gestion spéciale pour mazonehaut1aluineeks1 depuis mapzonealuineeks1 - position fixe
+                        if (destinationMap === "mazonehaut1aluineeks1" && window.currentMap === "mapzonealuineeks1") {
+                            if (typeof teleportPlayer === "function") {
+                                teleportPlayer(destinationMap, 23, 23);
+                            }
+                            return;
+                        }
+                        
                         // Chercher le portail de destination dans tous les calques
                         let targetPortal = null;
                         
@@ -495,7 +567,23 @@ function updatePlayer(ts) {
                             // Position fixe selon la destination
                             let destX, destY;
                             
-                            if (destinationMap === "map4") {
+                            if (destinationMap === "mapzonealuineeks1" && window.currentMap === "map4") {
+                                // Map 4 → Map zonealuineeks1 : position fixe
+                                destX = 23;
+                                destY = 23;
+                                                    } else if (destinationMap === "map4" && window.currentMap === "mapzonealuineeks1") {
+                            // Map zonealuineeks1 → Map 4 : position fixe
+                            destX = 22;
+                            destY = 5;
+                        } else if (destinationMap === "mazonehaut1aluineeks1" && window.currentMap === "mapzonealuineeks1") {
+                            // Map zonealuineeks1 → Map mazonehaut1aluineeks1 : position fixe
+                            destX = 23;
+                            destY = 23;
+                        } else if (destinationMap === "mapzonealuineeks1" && window.currentMap === "mazonehaut1aluineeks1") {
+                            // Map mazonehaut1aluineeks1 → Map zonealuineeks1 : position fixe
+                            destX = 23;
+                            destY = 1;
+                        } else if (destinationMap === "map4") {
                                 // Map 3 → Map 4 : position fixe (croix rouge)
                                 destX = 1;
                                 destY = 11;

@@ -1,3 +1,4 @@
+
 // Moteur principal du jeu - Core
 // Nettoyé et validé le 30/07/2025 - par Cursor
 
@@ -35,8 +36,36 @@ const SPELLS = {
           cooldown: 8.0,
           specialEffect: 'triplePunch',
           unlocked: false
+        },
+        'spell-slot-4': {
+          name: 'Poingheal',
+          icon: '💚',
+          levelRequired: 15,
+          baseMin: 10,
+          baseMax: 15,
+          cooldown: 12.0,
+          specialEffect: 'poinghealEffect',
+          unlocked: false
+        },
+        'spell-slot-5': {
+          name: 'Rassemblement',
+          icon: 'assets/sorts/rassemblement.png',
+          levelRequired: 25,
+          baseMin: 10,
+          baseMax: 15,
+          cooldown: 20.0,
+          specialEffect: 'rassemblementEffect',
+          unlocked: false,
+          gatherRadius: 5,
+          gatherDuration: 3000,
+          showPreview: true
         }
 };
+
+// Système de traçage des modifications des sorts (version simplifiée)
+function traceSpellModification(slotId, oldValue, newValue, reason) {
+  // Fonction vide - logs supprimés
+}
 
 // Variables globales pour le combo Triple Coup de Poing
 window.triplePunchCombo = {
@@ -340,34 +369,81 @@ function initUIEventHandlers() {
     const punchRow = document.getElementById('sort-punch-row');
     const explosiveRow = document.getElementById('sort-doublepunch-row');
     const tripleRow = document.getElementById('sort-triplepunch-row');
+    const poinghealRow = document.getElementById('sort-poingheal-row');
+    const rassemblementRow = document.getElementById('sort-rassemblement-row');
     const punchPanel = document.getElementById('sort-damage-panel-punch');
     const explosivePanel = document.getElementById('sort-damage-panel-explosive');
     const triplePanel = document.getElementById('sort-damage-panel-triple');
+    const poinghealPanel = document.getElementById('sort-damage-panel-poingheal');
+    const rassemblementPanel = document.getElementById('sort-damage-panel-rassemblement');
 
     if (punchRow && explosiveRow && tripleRow && punchPanel && explosivePanel && triplePanel) {
         punchRow.addEventListener('click', () => {
             punchPanel.style.display = '';
             explosivePanel.style.display = 'none';
             triplePanel.style.display = 'none';
+            poinghealPanel.style.display = 'none';
+            rassemblementPanel.style.display = 'none';
             punchRow.classList.add('selected');
             explosiveRow.classList.remove('selected');
             tripleRow.classList.remove('selected');
+            poinghealRow.classList.remove('selected');
+            rassemblementRow.classList.remove('selected');
         });
         explosiveRow.addEventListener('click', () => {
             punchPanel.style.display = 'none';
             explosivePanel.style.display = '';
             triplePanel.style.display = 'none';
+            poinghealPanel.style.display = 'none';
+            rassemblementPanel.style.display = 'none';
             punchRow.classList.remove('selected');
             explosiveRow.classList.add('selected');
             tripleRow.classList.remove('selected');
+            poinghealRow.classList.remove('selected');
+            rassemblementRow.classList.remove('selected');
         });
         tripleRow.addEventListener('click', () => {
             punchPanel.style.display = 'none';
             explosivePanel.style.display = 'none';
             triplePanel.style.display = '';
+            poinghealPanel.style.display = 'none';
+            rassemblementPanel.style.display = 'none';
             punchRow.classList.remove('selected');
             explosiveRow.classList.remove('selected');
             tripleRow.classList.add('selected');
+            poinghealRow.classList.remove('selected');
+            rassemblementRow.classList.remove('selected');
+        });
+    }
+    
+    // Ajouter les gestionnaires pour les nouveaux sorts
+    if (poinghealRow && poinghealPanel) {
+        poinghealRow.addEventListener('click', () => {
+            punchPanel.style.display = 'none';
+            explosivePanel.style.display = 'none';
+            triplePanel.style.display = 'none';
+            poinghealPanel.style.display = '';
+            rassemblementPanel.style.display = 'none';
+            punchRow.classList.remove('selected');
+            explosiveRow.classList.remove('selected');
+            tripleRow.classList.remove('selected');
+            poinghealRow.classList.add('selected');
+            rassemblementRow.classList.remove('selected');
+        });
+    }
+    
+    if (rassemblementRow && rassemblementPanel) {
+        rassemblementRow.addEventListener('click', () => {
+            punchPanel.style.display = 'none';
+            explosivePanel.style.display = 'none';
+            triplePanel.style.display = 'none';
+            poinghealPanel.style.display = 'none';
+            rassemblementPanel.style.display = '';
+            punchRow.classList.remove('selected');
+            explosiveRow.classList.remove('selected');
+            tripleRow.classList.remove('selected');
+            poinghealRow.classList.remove('selected');
+            rassemblementRow.classList.add('selected');
         });
     }
 }
@@ -602,6 +678,10 @@ function initSpellUpgradeSystem() {
     
     // Fonction pour sauvegarder les orbes équipés
     function saveSpellUpgrades() {
+        if (!window.currentCharacterId) {
+            return;
+        }
+        
         const upgrades = [];
         const upgradeSlots = document.querySelectorAll('.sort-upgrade-slot.upgraded');
         
@@ -621,17 +701,22 @@ function initSpellUpgradeSystem() {
             }
         });
         
-        localStorage.setItem('spellUpgrades', JSON.stringify(upgrades));
-        console.log('Orbes équipés sauvegardés:', upgrades);
+        const saveKey = `monrpg_spell_upgrades_${window.currentCharacterId}`;
+        localStorage.setItem(saveKey, JSON.stringify(upgrades));
     }
     
     // Fonction pour charger les orbes équipés
     function loadSpellUpgrades() {
-        const savedUpgrades = localStorage.getItem('spellUpgrades');
+        if (!window.currentCharacterId) {
+            return;
+        }
+        
+        const saveKey = `monrpg_spell_upgrades_${window.currentCharacterId}`;
+        const savedUpgrades = localStorage.getItem(saveKey);
+        
         if (savedUpgrades) {
             try {
                 const upgrades = JSON.parse(savedUpgrades);
-                console.log('Chargement des orbes équipés:', upgrades);
                 
                 upgrades.forEach(upgrade => {
                     const spellSlot = document.querySelector(`.sort-upgrade-slot[data-spell="${upgrade.spellId}"][data-slot="${upgrade.slotIndex}"]`);
@@ -715,6 +800,20 @@ function initSpellUpgradeSystem() {
                 console.log('🎯 applySpellDamageBonus: Triple - Base 6-10 → Amélioré', window.tripleDamageMin + '-' + window.tripleDamageMax);
                 updateSpellDamageDisplay('triple', window.tripleDamageMin, window.tripleDamageMax);
                 break;
+            case 'poingheal':
+                // Poingheal : 10-15 → 15-23 (arrondi)
+                window.poinghealDamageMin = Math.round(10 * damageMultiplier);
+                window.poinghealDamageMax = Math.round(15 * damageMultiplier);
+                console.log('🎯 applySpellDamageBonus: Poingheal - Base 10-15 → Amélioré', window.poinghealDamageMin + '-' + window.poinghealDamageMax);
+                updateSpellDamageDisplay('poingheal', window.poinghealDamageMin, window.poinghealDamageMax);
+                break;
+            case 'rassemblement':
+                // Rassemblement : 10-15 → 15-23 (arrondi)
+                window.rassemblementDamageMin = Math.round(10 * damageMultiplier);
+                window.rassemblementDamageMax = Math.round(15 * damageMultiplier);
+                console.log('🎯 applySpellDamageBonus: Rassemblement - Base 10-15 → Amélioré', window.rassemblementDamageMin + '-' + window.rassemblementDamageMax);
+                updateSpellDamageDisplay('rassemblement', window.rassemblementDamageMin, window.rassemblementDamageMax);
+                break;
             default:
                 console.error('❌ applySpellDamageBonus: Sort inconnu', spellId);
                 return;
@@ -762,6 +861,28 @@ function initSpellUpgradeSystem() {
                     }
                 }
                 break;
+            case 'poingheal':
+                // Chercher dans le panel poingheal
+                const poinghealPanel = document.getElementById('sort-damage-panel-poingheal');
+                if (poinghealPanel) {
+                    damageElement = poinghealPanel.querySelector('.sort-detail-damage-value');
+                    if (damageElement) {
+                        damageElement.textContent = `${minDamage}-${maxDamage}`;
+                        console.log(`Dégâts poingheal mis à jour: ${minDamage}-${maxDamage}`);
+                    }
+                }
+                break;
+            case 'rassemblement':
+                // Chercher dans le panel rassemblement
+                const rassemblementPanel = document.getElementById('sort-damage-panel-rassemblement');
+                if (rassemblementPanel) {
+                    damageElement = rassemblementPanel.querySelector('.sort-detail-damage-value');
+                    if (damageElement) {
+                        damageElement.textContent = `${minDamage}-${maxDamage}`;
+                        console.log(`Dégâts rassemblement mis à jour: ${minDamage}-${maxDamage}`);
+                    }
+                }
+                break;
         }
     }
 
@@ -788,6 +909,14 @@ function initSpellUpgradeSystem() {
                 spellId = 'triple';
                 // Calculer l'index local (0-4) pour les slots triple
                 localIndex = (globalIndex - 10) % 5;
+            } else if (spellContainer.classList.contains('sort-upgrade-slots-poingheal')) {
+                spellId = 'poingheal';
+                // Calculer l'index local (0-4) pour les slots poingheal
+                localIndex = (globalIndex - 15) % 5;
+            } else if (spellContainer.classList.contains('sort-upgrade-slots-rassemblement')) {
+                spellId = 'rassemblement';
+                // Calculer l'index local (0-4) pour les slots rassemblement
+                localIndex = (globalIndex - 20) % 5;
             }
             
             console.log('🔧 Slot global', globalIndex, '- Container classes:', spellContainer.className, '- SpellId:', spellId, '- LocalIndex:', localIndex);
@@ -905,6 +1034,16 @@ function initSpellUpgradeSystem() {
                 window.tripleDamageMin = 6;
                 window.tripleDamageMax = 10;
                 updateSpellDamageDisplay('triple', 6, 10);
+                break;
+            case 'poingheal':
+                window.poinghealDamageMin = 10;
+                window.poinghealDamageMax = 15;
+                updateSpellDamageDisplay('poingheal', 10, 15);
+                break;
+            case 'rassemblement':
+                window.rassemblementDamageMin = 10;
+                window.rassemblementDamageMax = 15;
+                updateSpellDamageDisplay('rassemblement', 10, 15);
                 break;
         }
         
@@ -1188,6 +1327,8 @@ function castExplosivePunch() {
   const slot2 = document.getElementById('spell-slot-2');
   if (slot2 && !slot2.classList.contains('cooldown')) {
     if (typeof attackTarget === 'object' && attackTarget && Math.abs(player.x - attackTarget.x) + Math.abs(player.y - attackTarget.y) === 1 && attackTarget.hp > 0) {
+      // Démarrer le cooldown immédiatement pour éviter les abus
+      startSpellCooldown('spell-slot-2', 15.0);
       // Utiliser les dégâts améliorés s'ils existent, sinon les dégâts de base
       let minDamage = 12;
       let maxDamage = 20;
@@ -1201,13 +1342,97 @@ function castExplosivePunch() {
         console.log(`⚔️ Variables actuelles: window.explosiveDamageMin=${window.explosiveDamageMin}, window.explosiveDamageMax=${window.explosiveDamageMax}`);
       }
       const { damage, isCrit } = computeSpellDamage(minDamage, maxDamage);
-      attackTarget.hp -= damage;
+      
+      // Gain d'XP de force à chaque attaque
+      if (typeof gainStatXP === "function") {
+        gainStatXP('force', 1);
+      }
+      if (isCrit) {
+        // Gain d'XP d'agilité lors d'un coup critique
+        if (typeof gainStatXP === "function") {
+          gainStatXP('agilite', 1);
+        }
+      }
+      
+      // Attaque du joueur
+      const baseDamage = damage;
+      // Prendre en compte la défense du monstre, minimum 1 dégât
+      const finalDamage = Math.max(1, baseDamage - (attackTarget.defense || 0));
+      attackTarget.hp -= finalDamage;
+      
+      // DÉCLENCHER L'AGGRO SEULEMENT LORS D'UNE VRAIE ATTAQUE
+      attackTarget.aggro = true;
+      attackTarget.aggroTarget = player;
+      attackTarget.lastCombat = Date.now(); // Mettre à jour le timer de combat pour maintenir l'aggro
+      player.inCombat = true;
+      
       if (typeof displayDamage === 'function') {
-        displayDamage(attackTarget.px, attackTarget.py, damage, isCrit ? 'critique' : 'damage', false);
+        displayDamage(attackTarget.px, attackTarget.py, finalDamage, isCrit ? 'critique' : 'damage', false);
       }
       if (typeof createExplosionEffect === 'function') {
         createExplosionEffect(attackTarget.px, attackTarget.py);
       }
+      
+      // Aligner le monstre sur sa case pendant le combat
+      if (typeof alignMonsterToGrid === 'function') {
+        alignMonsterToGrid(attackTarget);
+      }
+
+      // Riposte du monstre si vivant (sauf pour les slimes et boss slime qui ont leur propre système d'attaque)
+      if (attackTarget.hp > 0 && attackTarget.type !== "slime" && attackTarget.type !== "slimeboss") {
+        // Cooldown de riposte pour éviter les attaques doubles
+        const riposteCooldown = 1000; // 1 seconde de cooldown
+        if (!attackTarget.lastRiposte || (currentTime - attackTarget.lastRiposte) >= riposteCooldown) {
+          // Calcul des dégâts du monstre : dégâts de base + force du monstre avec variation de 25%
+          const monsterBaseDamage = attackTarget.damage !== undefined ? attackTarget.damage : 3;
+          const monsterTotalDamage = monsterBaseDamage + (attackTarget.force || 0);
+          const variation = 0.25; // 25% de variation
+          const randomFactor = 1 + (Math.random() * 2 - 1) * variation; // Entre 0.75 et 1.25
+          const monsterDamage = Math.max(1, Math.floor(monsterTotalDamage * randomFactor) - player.defense);
+          player.life -= monsterDamage;
+          if (player.life < 0) player.life = 0;
+          
+          // Afficher les dégâts reçus par le joueur
+          if (typeof displayDamage === "function") {
+            displayDamage(player.px, player.py, monsterDamage, 'damage', true);
+          }
+          
+          // XP défense pour avoir reçu des dégâts
+          if (typeof gainStatXP === "function") {
+            gainStatXP('defense', 1);
+          }
+          
+          // Marquer le temps de la dernière riposte
+          attackTarget.lastRiposte = currentTime;
+        }
+      }
+
+      // Monstre mort
+      if (attackTarget.hp <= 0) {
+        if (typeof release === "function") release(attackTarget.x, attackTarget.y);
+        
+        // Afficher l'XP gagné au-dessus du joueur
+        if (typeof displayDamage === "function") {
+          displayDamage(player.px, player.py, `+${attackTarget.xpValue || 0} XP`, 'xp', true);
+        }
+        
+        if (typeof gainXP === "function") gainXP(attackTarget.xpValue || 0);
+        
+        // Déclencher le système de loot
+        if (typeof triggerLoot === 'function') {
+          triggerLoot(attackTarget);
+        }
+        
+        if (typeof killMonster === "function") {
+          killMonster(attackTarget);
+        }
+        attackTarget.aggro = false;
+        attackTarget.aggroTarget = null;
+        attackTarget = null;
+        window.attackTarget = null;
+        player.inCombat = false;
+      }
+      
       startSpellCooldown('spell-slot-2', 15.0);
     }
   }
@@ -1288,10 +1513,66 @@ function executeTriplePunchStep(step) {
   }
   
   const { damage, isCrit } = computeSpellDamage(minDamage, maxDamage);
-  attackTarget.hp -= damage;
+  
+  // Gain d'XP de force à chaque attaque
+  if (typeof gainStatXP === "function") {
+    gainStatXP('force', 1);
+  }
+  if (isCrit) {
+    // Gain d'XP d'agilité lors d'un coup critique
+    if (typeof gainStatXP === "function") {
+      gainStatXP('agilite', 1);
+    }
+  }
+  
+  // Attaque du joueur
+  const baseDamage = damage;
+  // Prendre en compte la défense du monstre, minimum 1 dégât
+  const finalDamage = Math.max(1, baseDamage - (attackTarget.defense || 0));
+  attackTarget.hp -= finalDamage;
+  
+  // DÉCLENCHER L'AGGRO SEULEMENT LORS D'UNE VRAIE ATTAQUE
+  attackTarget.aggro = true;
+  attackTarget.aggroTarget = player;
+  attackTarget.lastCombat = Date.now(); // Mettre à jour le timer de combat pour maintenir l'aggro
+  player.inCombat = true;
   
   if (typeof displayDamage === 'function') {
-    displayDamage(attackTarget.px, attackTarget.py, damage, isCrit ? 'critique' : 'damage', false);
+    displayDamage(attackTarget.px, attackTarget.py, finalDamage, isCrit ? 'critique' : 'damage', false);
+  }
+  
+  // Aligner le monstre sur sa case pendant le combat
+  if (typeof alignMonsterToGrid === 'function') {
+    alignMonsterToGrid(attackTarget);
+  }
+
+  // Riposte du monstre si vivant (sauf pour les slimes et boss slime qui ont leur propre système d'attaque)
+  if (attackTarget.hp > 0 && attackTarget.type !== "slime" && attackTarget.type !== "slimeboss") {
+    // Cooldown de riposte pour éviter les attaques doubles
+    const riposteCooldown = 1000; // 1 seconde de cooldown
+    if (!attackTarget.lastRiposte || (Date.now() - attackTarget.lastRiposte) >= riposteCooldown) {
+      // Calcul des dégâts du monstre : dégâts de base + force du monstre avec variation de 25%
+      const monsterBaseDamage = attackTarget.damage !== undefined ? attackTarget.damage : 3;
+      const monsterTotalDamage = monsterBaseDamage + (attackTarget.force || 0);
+      const variation = 0.25; // 25% de variation
+      const randomFactor = 1 + (Math.random() * 2 - 1) * variation; // Entre 0.75 et 1.25
+      const monsterDamage = Math.max(1, Math.floor(monsterTotalDamage * randomFactor) - player.defense);
+      player.life -= monsterDamage;
+      if (player.life < 0) player.life = 0;
+      
+      // Afficher les dégâts reçus par le joueur
+      if (typeof displayDamage === "function") {
+        displayDamage(player.px, player.py, monsterDamage, 'damage', true);
+      }
+      
+      // XP défense pour avoir reçu des dégâts
+      if (typeof gainStatXP === "function") {
+        gainStatXP('defense', 1);
+      }
+      
+      // Marquer le temps de la dernière riposte
+      attackTarget.lastRiposte = Date.now();
+    }
   }
   
   // Vérifier si le monstre meurt
@@ -1497,6 +1778,9 @@ function castSpell(slotId, baseMin, baseMax, cooldown, effetSpecial) {
   const slot = document.getElementById(slotId);
   if (slot && !slot.classList.contains('cooldown')) {
     if (typeof attackTarget === 'object' && attackTarget && Math.abs(player.x - attackTarget.x) + Math.abs(player.y - attackTarget.y) === 1 && attackTarget.hp > 0) {
+      // Démarrer le cooldown immédiatement pour éviter les abus
+      startSpellCooldown(slotId, cooldown);
+      
       // Utiliser les dégâts améliorés selon le slot (ignorer les paramètres baseMin/baseMax)
       let minDamage, maxDamage;
       
@@ -1529,7 +1813,6 @@ function castSpell(slotId, baseMin, baseMax, cooldown, effetSpecial) {
       if (typeof effetSpecial === 'function') {
         effetSpecial(attackTarget.px, attackTarget.py);
       }
-      startSpellCooldown(slotId, cooldown);
 
       // NOUVEAU : gestion de la mort du monstre et attribution de l'XP
       if (attackTarget.hp <= 0) {
@@ -1681,13 +1964,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // Fonction pour vérifier et mettre à jour le déverrouillage des sorts
 function updateSpellUnlockStatus() {
-  console.log('updateSpellUnlockStatus appelée');
-  console.log('player:', player);
-  console.log('player.level:', player ? player.level : 'player non défini');
-  console.log('window.currentCharacterId:', window.currentCharacterId);
-  
   if (!player || !player.level) {
-    console.log('Player ou player.level non défini, sortie de la fonction');
     return;
   }
   
@@ -1700,23 +1977,17 @@ function updateSpellUnlockStatus() {
     // Vérifier si le sort doit être déverrouillé basé sur le niveau actuel
     const shouldBeUnlocked = player.level >= spell.levelRequired;
     
-    // Si le sort n'est pas encore débloqué ET que le joueur a le niveau requis, le déverrouiller
+    // Débloquer le sort si le niveau requis est atteint
     if (!spell.unlocked && shouldBeUnlocked) {
       spell.unlocked = true;
       anySpellUnlocked = true;
-      console.log(`Nouveau sort déverrouillé: ${spell.name}`);
-      console.log(`🎉 Nouveau sort déverrouillé : ${spell.name} !`);
     }
-    
-    console.log(`Sort ${spell.name}: niveau requis ${spell.levelRequired}, niveau joueur ${player.level}, déverrouillé: ${spell.unlocked}`);
   });
 
   // Sauvegarder l'état des sorts débloqués APRÈS avoir traité tous les sorts
   // Seulement si un personnage est connecté
   if (window.currentCharacterId) {
     saveUnlockedSpells();
-  } else {
-    console.log('Aucun personnage connecté, pas de sauvegarde des sorts');
   }
   
   // Mettre à jour l'affichage visuel des sorts de manière différée pour éviter les freezes
@@ -1725,10 +1996,19 @@ function updateSpellUnlockStatus() {
   });
 }
 
+// Fonction pour vérifier s'il existe une sauvegarde explicite des sorts pour ce personnage
+function hasExplicitSpellSave() {
+  if (!window.currentCharacterId) return false;
+  
+  const saveKey = `monrpg_unlocked_spells_${window.currentCharacterId}`;
+  const savedData = localStorage.getItem(saveKey);
+  
+  return savedData !== null;
+}
+
 // Fonction pour sauvegarder les sorts débloqués
 function saveUnlockedSpells() {
   if (!window.currentCharacterId) {
-    console.log('Aucun personnage connecté, impossible de sauvegarder les sorts');
     return;
   }
   
@@ -1744,47 +2024,40 @@ function saveUnlockedSpells() {
   
   const saveKey = `monrpg_unlocked_spells_${window.currentCharacterId}`;
   localStorage.setItem(saveKey, JSON.stringify(unlockedSpellsData));
-  console.log('Sorts débloqués sauvegardés:', unlockedSpellsData);
 }
 
 // Fonction pour charger les sorts débloqués
 function loadUnlockedSpells() {
-  console.log('loadUnlockedSpells appelée');
-  console.log('window.currentCharacterId:', window.currentCharacterId);
-  console.log('player:', player);
-  console.log('player.level:', player ? player.level : 'N/A');
-  
   if (!window.currentCharacterId) {
-    console.log('Aucun personnage connecté, impossible de charger les sorts');
     return;
   }
+  
+  // RÉINITIALISER COMPLÈTEMENT L'ÉTAT DES SORTS AVANT TOUT
+  // Cela évite que les sorts débloqués d'un personnage soient hérités par un autre
+  Object.keys(SPELLS).forEach(slotId => {
+    const spell = SPELLS[slotId];
+    // Réinitialiser à l'état par défaut (seul le premier sort est débloqué par défaut)
+    spell.unlocked = (slotId === 'spell-slot-1');
+  });
   
   const saveKey = `monrpg_unlocked_spells_${window.currentCharacterId}`;
   const savedData = localStorage.getItem(saveKey);
   
-  console.log('Clé de sauvegarde:', saveKey);
-  console.log('Données sauvegardées trouvées:', !!savedData);
-  
   if (savedData) {
     try {
       const unlockedSpellsData = JSON.parse(savedData);
-      console.log('Données de sorts débloqués chargées:', unlockedSpellsData);
       
       Object.keys(unlockedSpellsData).forEach(slotId => {
         if (SPELLS[slotId]) {
           const savedSpell = unlockedSpellsData[slotId];
           const currentSpell = SPELLS[slotId];
           
-          console.log(`Traitement du sort ${currentSpell.name}: sauvegardé comme débloqué = ${savedSpell.unlocked}`);
-          
           // Si le sort était débloqué dans la sauvegarde, le restaurer comme débloqué
           if (savedSpell.unlocked) {
             currentSpell.unlocked = true;
-            console.log(`Sort ${currentSpell.name} restauré comme débloqué (était sauvegardé comme débloqué)`);
           } else {
-            // Si le sort n'était pas débloqué dans la sauvegarde, utiliser la logique normale
+            // Si le sort n'était pas débloqué dans la sauvegarde, vérifier le niveau actuel
             currentSpell.unlocked = player && player.level >= currentSpell.levelRequired;
-            console.log(`Sort ${currentSpell.name} non sauvegardé, vérification niveau: ${player ? player.level : 'N/A'} >= ${currentSpell.levelRequired}`);
           }
         }
       });
@@ -1792,26 +2065,19 @@ function loadUnlockedSpells() {
       console.error('Erreur lors du chargement des sorts débloqués:', error);
     }
   } else {
-    console.log('Aucune sauvegarde de sorts débloqués trouvée');
     // Pour un nouveau personnage, initialiser les sorts basés sur son niveau
-    console.log('Initialisation des sorts pour nouveau personnage basée sur le niveau');
     Object.keys(SPELLS).forEach(slotId => {
       const spell = SPELLS[slotId];
       spell.unlocked = player && player.level >= spell.levelRequired;
-      console.log(`Sort ${spell.name}: niveau requis ${spell.levelRequired}, niveau joueur ${player ? player.level : 'N/A'}, déverrouillé: ${spell.unlocked}`);
     });
   }
 }
 
 // Fonction pour mettre à jour l'affichage visuel des sorts
 function updateSpellVisuals() {
-  console.log('updateSpellVisuals appelée');
-  
   Object.keys(SPELLS).forEach(slotId => {
     const spell = SPELLS[slotId];
     const slotElement = document.getElementById(slotId);
-    
-    console.log(`Traitement du sort ${spell.name} (${slotId}): déverrouillé = ${spell.unlocked}`);
     
     if (slotElement) {
       const wasLocked = slotElement.classList.contains('locked');
@@ -1824,7 +2090,6 @@ function updateSpellVisuals() {
         
         // Animation si le sort vient d'être déverrouillé
         if (wasLocked) {
-          console.log(`Animation de déverrouillage pour ${spell.name}`);
           slotElement.classList.add('unlocking');
           setTimeout(() => {
             slotElement.classList.remove('unlocking');
@@ -1836,15 +2101,8 @@ function updateSpellVisuals() {
         slotElement.style.opacity = '0.5';
         slotElement.style.cursor = 'not-allowed';
       }
-    } else {
-      console.log(`Élément DOM non trouvé pour ${slotId}`);
     }
   });
-  
-  console.log('updateSpellVisuals terminée');
-  
-  // Ne pas appeler updateSpellDetailsDisplay ici pour éviter les problèmes de performance
-  // updateSpellDetailsDisplay sera appelée séparément si nécessaire
 }
 
 // Fonction pour mettre à jour l'affichage des détails des sorts
@@ -1864,27 +2122,16 @@ function updateSpellDetailsDisplay() {
 
 // Fonction de test pour forcer le déverrouillage des sorts (accessible depuis la console)
 window.testSpellUnlock = function() {
-  console.log('Test de déverrouillage des sorts...');
-  console.log('Player:', player);
-  console.log('Player level:', player ? player.level : 'non défini');
-  console.log('SPELLS:', SPELLS);
-  
   if (typeof updateSpellUnlockStatus === 'function') {
     updateSpellUnlockStatus();
-  } else {
-    console.log('updateSpellUnlockStatus non disponible');
   }
   
   if (typeof updateSpellVisuals === 'function') {
     updateSpellVisuals();
-  } else {
-    console.log('updateSpellVisuals non disponible');
   }
   
   if (typeof updateSpellDetailsDisplay === 'function') {
     updateSpellDetailsDisplay();
-  } else {
-    console.log('updateSpellDetailsDisplay non disponible');
   }
 };
 
@@ -1894,6 +2141,9 @@ window.updateSpellVisuals = updateSpellVisuals;
 window.updateSpellDetailsDisplay = updateSpellDetailsDisplay;
 window.saveUnlockedSpells = saveUnlockedSpells;
 window.loadUnlockedSpells = loadUnlockedSpells;
+window.resetSpellsToDefault = resetSpellsToDefault;
+window.resetSpellUpgrades = resetSpellUpgrades;
+window.hasExplicitSpellSave = hasExplicitSpellSave;
 window.SPELLS = SPELLS;
 
 // Fonction utilitaire pour spawn un monstre depuis la console
@@ -2465,6 +2715,53 @@ function updateAllSpellDamageDisplays() {
     // Mettre à jour les dégâts triple
     if (window.tripleDamageMin && window.tripleDamageMax) {
         updateSpellDamageDisplay('triple', window.tripleDamageMin, window.tripleDamageMax);
+    }
+}
+
+// Fonction pour réinitialiser complètement l'état des sorts
+function resetSpellsToDefault() {
+    // Vérifier que SPELLS existe
+    if (!SPELLS || typeof SPELLS !== 'object') {
+        return;
+    }
+    
+    Object.keys(SPELLS).forEach(slotId => {
+        const spell = SPELLS[slotId];
+        if (spell && typeof spell === 'object') {
+            // Réinitialiser à l'état par défaut (seul le premier sort est débloqué par défaut)
+            spell.unlocked = (slotId === 'spell-slot-1');
+        }
+    });
+}
+
+// Fonction pour réinitialiser les orbes équipées
+function resetSpellUpgrades() {
+    // Vérifier que le DOM est prêt
+    if (!document || !document.querySelectorAll) {
+        return;
+    }
+    
+    const upgradeSlots = document.querySelectorAll('.sort-upgrade-slot.upgraded');
+    upgradeSlots.forEach(slot => {
+        // Retirer l'orbe du slot
+        slot.innerHTML = '';
+        slot.classList.remove('upgraded');
+        slot.style.borderColor = '';
+        slot.removeAttribute('data-orbe-id');
+        slot.removeAttribute('data-orbe-type');
+    });
+    
+    // Réinitialiser les dégâts de base
+    window.punchDamageMin = 3;
+    window.punchDamageMax = 6;
+    window.explosiveDamageMin = 12;
+    window.explosiveDamageMax = 20;
+    window.tripleDamageMin = 6;
+    window.tripleDamageMax = 10;
+    
+    // Mettre à jour l'affichage des dégâts seulement si la fonction existe
+    if (typeof updateAllSpellDamageDisplays === 'function') {
+        updateAllSpellDamageDisplays();
     }
 }
 

@@ -14,12 +14,16 @@
     <link rel="stylesheet" href="assets/css/etablie.css">
     <link rel="stylesheet" href="assets/css/etablie-cordonnier.css">
     <link rel="stylesheet" href="assets/css/etablie-bijoutier.css">
+    <link rel="stylesheet" href="assets/css/etablie-alchimiste.css">
     <link rel="stylesheet" href="assets/css/metier.css">
     <link rel="stylesheet" href="assets/css/sort.css">
+    <link rel="stylesheet" href="assets/css/utility-bar.css">
     <link rel="stylesheet" href="assets/css/menu.css">
     <link rel="stylesheet" href="assets/css/pnj.css">
     <link rel="stylesheet" href="assets/css/quetes.css">
     <link rel="stylesheet" href="assets/css/map.css">
+    <link rel="stylesheet" href="css/rassemblement-preview.css">
+    <link rel="stylesheet" href="assets/css/harvesting.css">
     
 
     <!-- Charger utils.js en tout premier pour les fonctions globales -->
@@ -303,10 +307,18 @@
                     <button class="inventory-tab" data-category="equipement" title="Équipements">🗡️</button>
                     <button class="inventory-tab" data-category="potions" title="Potions">🧪</button>
                     <button class="inventory-tab" data-category="ressources" title="Ressources">🌿</button>
+    
                 </div>
                 
                 <div id="inventory-grid">
                   <!-- Les slots seront générés en JS -->
+                </div>
+                
+                <!-- Zone de suppression d'items -->
+                <div id="inventory-trash-zone">
+                    <div id="trash-container" title="Cliquez ou glissez un objet ici pour le supprimer">
+                        <span id="trash-icon">🗑️</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -546,6 +558,14 @@
               </span>
               <span class="sort-row-name">Triple Coup de Poing</span>
             </div>
+                      <div class="sort-row" id="sort-poingheal-row">
+            <img src="assets/sorts/poingheal.png" alt="Poingheal" class="sort-row-icon">
+            <span class="sort-row-name">Poingheal</span>
+          </div>
+                      <div class="sort-row" id="sort-rassemblement-row">
+                         <img src="assets/sorts/rassemblement.png" alt="Rassemblement" class="sort-row-icon">
+            <span class="sort-row-name">Rassemblement</span>
+          </div>
             <!-- D'autres sorts viendront ici -->
           </div>
           <div class="sort-damage-panel" id="sort-damage-panel-punch">
@@ -616,6 +636,60 @@
               <div class="sort-upgrade-slot"></div>
             </div>
           </div>
+          <div class="sort-damage-panel" id="sort-damage-panel-poingheal" style="display:none;">
+            <div class="sort-detail-level sort-detail-level-centered">
+              <span class="sort-detail-level-label">Niveau requis :</span> <span class="sort-detail-level-star">⭐ 15</span>
+            </div>
+                         <div class="sort-detail-header sort-detail-header-left">
+               <img src="assets/sorts/poingheal.png" alt="Poingheal" class="sort-detail-icon">
+               <span class="sort-detail-name">Poingheal</span>
+             </div>
+            <p class="sort-desc">Un coup de poing qui soigne le lanceur de 20% des dégâts infligés.</p>
+            <div class="sort-detail-row sort-detail-row-poingheal">
+              <span class="sort-detail-damage-label">Dégâts :</span>
+              <span class="sort-detail-damage-value">10-15</span>
+              <span class="sort-detail-damage-icon">💥</span>
+            </div>
+            <div class="sort-detail-row sort-detail-row-poingheal">
+              <span class="sort-detail-damage-label">Soin :</span>
+              <span class="sort-detail-damage-value">20% des dégâts</span>
+              <span class="sort-detail-damage-icon">💚</span>
+            </div>
+            <div class="sort-upgrade-slots sort-upgrade-slots-poingheal">
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+            </div>
+          </div>
+          <div class="sort-damage-panel" id="sort-damage-panel-rassemblement" style="display:none;">
+            <div class="sort-detail-level sort-detail-level-centered">
+              <span class="sort-detail-level-label">Niveau requis :</span> <span class="sort-detail-level-star">⭐ 25</span>
+            </div>
+            <div class="sort-detail-header sort-detail-header-left">
+                               <img src="assets/sorts/rassemblement.png" alt="Rassemblement" class="sort-detail-icon">
+              <span class="sort-detail-name">Rassemblement</span>
+            </div>
+            <p class="sort-desc">Un sort puissant qui rassemble les ennemis proches vers le point d'impact.</p>
+                           <div class="sort-detail-row sort-detail-row-rassemblement">
+                 <span class="sort-detail-damage-label">Dégâts :</span>
+                 <span class="sort-detail-damage-value">10-15</span>
+                 <span class="sort-detail-damage-icon">💥</span>
+               </div>
+            <div class="sort-detail-row sort-detail-row-rassemblement">
+              <span class="sort-detail-damage-label">Effet :</span>
+              <span class="sort-detail-damage-value">Rassemble les ennemis</span>
+              <span class="sort-detail-damage-icon">🌪️</span>
+            </div>
+            <div class="sort-upgrade-slots sort-upgrade-slots-rassemblement">
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -633,6 +707,14 @@
         <img src="assets/sorts/triplecoupdepoing.png" alt="Triple Coup de Poing" style="width: 24px; height: 24px;">
         <span class="spell-cooldown" id="cooldown-3"></span>
       </div>
+                 <div class="spell-slot" id="spell-slot-4">
+             <img src="assets/sorts/poingheal.png" alt="Poingheal" class="spell-icon">
+             <span class="spell-cooldown" id="cooldown-4"></span>
+           </div>
+                 <div class="spell-slot" id="spell-slot-5">
+                           <img src="assets/sorts/rassemblement.png" alt="Rassemblement" class="spell-icon">
+             <span class="spell-cooldown" id="cooldown-5"></span>
+           </div>
       <div class="spell-slot empty"></div>
       <div class="spell-slot empty"></div>
       <div class="spell-slot empty"></div>
@@ -641,6 +723,18 @@
       <div class="spell-slot empty"></div>
       <div class="spell-slot empty"></div>
       <div class="spell-slot empty"></div>
+    </div>
+
+    <!-- Barre utilitaire latérale -->
+    <div id="utility-bar">
+      <div class="utility-slot empty" title="Slot utilitaire 1"></div>
+      <div class="utility-slot empty" title="Slot utilitaire 2"></div>
+      <div class="utility-slot empty" title="Slot utilitaire 3"></div>
+      <div class="utility-slot empty" title="Slot utilitaire 4"></div>
+      <div class="utility-slot empty" title="Slot utilitaire 5"></div>
+      <div class="utility-slot empty" title="Slot utilitaire 6"></div>
+      <div class="utility-slot empty" title="Slot utilitaire 7"></div>
+      <div class="utility-slot empty" title="Slot utilitaire 8"></div>
     </div>
 
     <!-- Modal d'amélioration de sorts -->
@@ -725,13 +819,23 @@
 <script src="js/systems/damage-display.js"></script>
 <script src="js/systems/equipment-system.js"></script>
 <script src="js/systems/loot-system.js"></script>
+<script src="js/systems/potion-system.js"></script>
+
+<script src="js/systems/utility-bar.js"></script>
 <script src="js/systems/minimap.js"></script>
 <script src="js/systems/map-system.js"></script>
-<script src="js/metier/etablie.js"></script>
+        <script src="js/metier/etablie.js"></script>
+    <script src="js/metier/etabliealchimiste.js"></script>
+    <script src="js/metier/craftalchimiste.js"></script>
+    <script src="js/metier/fusionalchimiste.js"></script>
         <script src="js/metier/niveaudemetier.js"></script>
+        <script src="js/metier/recolte.js"></script>
+        <script src="js/metier/ressource-alchimiste.js"></script>
         <script src="multiplayer/client/player-name-manager.js"></script>
         <script src="multiplayer/client/multiplayer-manager.js"></script>
         <script src="multiplayer/monster-sync.js"></script>
+        <script src="js/sort/poingheal.js"></script>
+        <script src="js/sort/rassemblement.js"></script>
 
 
 </body>

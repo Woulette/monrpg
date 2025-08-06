@@ -9,9 +9,24 @@ function showEquipmentTooltip(item, element) {
     tooltip.id = 'equipment-tooltip';
     
     // Contenu du tooltip
+    let description = item.description || 'Aucune description disponible';
+    
+    // Utiliser la description courte pour les potions si disponible
+    if (item.type === 'potion' || item.category === 'potion') {
+        description = item.shortDescription || item.description || 'Potion magique';
+        
+        // Ajouter les informations d'effet pour les potions
+        if (item.healAmount) {
+            description += `\n💚 Restaure ${item.healAmount} points de vie`;
+        }
+        if (item.cooldown) {
+            description += `\n⏰ Cooldown: ${item.cooldown / 1000}s`;
+        }
+    }
+    
     let tooltipContent = `
-        <div class="item-name">${item.name}</div>
-        <div class="item-description">${item.description}</div>
+        <div class="item-name">${item.name || 'Objet inconnu'}</div>
+        <div class="item-description" style="white-space: pre-line;">${description}</div>
     `;
     
     // Ajouter les stats si elles existent
@@ -27,7 +42,7 @@ function showEquipmentTooltip(item, element) {
         tooltipContent += '</div>';
     }
     
-    tooltipContent += `<div class="item-type">${item.type.toUpperCase()}</div>`;
+    tooltipContent += `<div class="item-type">${item.type ? item.type.toUpperCase() : 'OBJET'}</div>`;
     
     tooltip.innerHTML = tooltipContent;
     

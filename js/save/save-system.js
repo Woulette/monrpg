@@ -141,6 +141,12 @@ class SaveSystem {
                 currentMap: window.currentMap,
                 lastSaveTime: Date.now(),
                 slimeBossDefeated: window.slimeBossDefeated || false
+            },
+            metiers: window.metiers || {
+                tailleur: { niveau: 1, xp: 0, xpToNext: 100 },
+                cordonnier: { niveau: 1, xp: 0, xpToNext: 100 },
+                bijoutier: { niveau: 1, xp: 0, xpToNext: 100 },
+                alchimiste: { niveau: 1, xp: 0, xpToNext: 100 }
             }
         };
 
@@ -171,16 +177,23 @@ class SaveSystem {
         }
 
         try {
-            const saveData = localStorage.getItem(`monrpg_save_${window.currentCharacterId}`);
+            const saveKey = `monrpg_save_${window.currentCharacterId}`;
+            const saveData = localStorage.getItem(saveKey);
+            
             if (!saveData) {
                 return false;
             }
 
             const data = JSON.parse(saveData);
             
+            // Vérifier que les données correspondent au bon personnage
+            if (data.characterId && data.characterId !== window.currentCharacterId) {
+                console.error('ERREUR: Les données chargées ne correspondent pas au personnage actuel!');
+                return false;
+            }
+            
             // Restaurer les données du joueur
             if (data.player && typeof player !== 'undefined') {
-                
                 // Restaurer la position sauvegardée
                 player.x = data.player.x || player.x;
                 player.y = data.player.y || player.y;
@@ -271,7 +284,8 @@ class SaveSystem {
                 // Système de mort et respawn
                 player.isDead = data.player.isDead || false;
                 player.deathTime = data.player.deathTime || 0;
-                player.respawnTime = data.player.respawnTime || 30000;
+                // Forcer le respawnTime à 3 secondes pour corriger les anciennes sauvegardes
+        player.respawnTime = 3000; // 3 secondes
                 
                 // Anciennes propriétés pour compatibilité
                 player.stats = data.player.stats || {};
@@ -324,6 +338,19 @@ class SaveSystem {
                 }
             }
 
+            // Restaurer les données des métiers
+            if (data.metiers) {
+                window.metiers = data.metiers;
+            } else {
+                // Valeurs par défaut si aucune donnée sauvegardée
+                window.metiers = {
+                    tailleur: { niveau: 1, xp: 0, xpToNext: 100 },
+                    cordonnier: { niveau: 1, xp: 0, xpToNext: 100 },
+                    bijoutier: { niveau: 1, xp: 0, xpToNext: 100 },
+                    alchimiste: { niveau: 1, xp: 0, xpToNext: 100 }
+                };
+            }
+
             return true;
         } catch (error) {
             console.error('❌ Erreur lors du chargement:', error);
@@ -370,6 +397,14 @@ class SaveSystem {
         if (typeof window.deleteQuestsForCharacter === 'function') {
             window.deleteQuestsForCharacter(window.currentCharacterId);
         }
+        
+        // Réinitialiser les métiers
+        window.metiers = {
+            tailleur: { niveau: 1, xp: 0, xpToNext: 100 },
+            cordonnier: { niveau: 1, xp: 0, xpToNext: 100 },
+            bijoutier: { niveau: 1, xp: 0, xpToNext: 100 },
+            alchimiste: { niveau: 1, xp: 0, xpToNext: 100 }
+        };
         
     }
 

@@ -271,6 +271,17 @@ const equipmentDatabase = {
         maxStack: 99
     },
     
+    pissenlit: {
+        id: 'pissenlit',
+        name: 'Pissenlit',
+        type: 'ressource',
+        icon: 'assets/objets/ressources_alchimiste/pissenlit.png',
+        description: 'Une plante commune utilisée par les alchimistes pour leurs potions.',
+        rarity: 'common',
+        stackable: true,
+        maxStack: 99
+    },
+    
             // Orbe atypique niveau 10
         orbe_atypique_niveau10: {
             id: 'orbe_atypique_niveau10',
@@ -291,6 +302,30 @@ const equipmentDatabase = {
             icon: 'assets/objets/orbesatypiquesortniveau10.png',
             description: 'Un orbe mystérieux qui dégage une énergie magique particulière. Permet d\'améliorer les sorts de niveau 10 ou inférieur.',
             rarity: 'rare',
+            stackable: false,
+            levelRequired: 10
+        },
+
+        // Orbe rare équipement niveau 10
+        orbe_rare_equipement_niveau10: {
+            id: 'orbe_rare_equipement_niveau10',
+            name: 'Orbe Rare Équipement Niveau 10',
+            type: 'objet_special',
+            icon: 'assets/objets/orbesrareniveau10.png',
+            description: 'Un orbe rare d\'une puissance supérieure. Permet d\'améliorer considérablement les équipements de niveau 10 ou inférieur.',
+            rarity: 'epic',
+            stackable: false,
+            levelRequired: 10
+        },
+        
+        // Orbe rare sort niveau 10
+        orbe_rare_sort_niveau10: {
+            id: 'orbe_rare_sort_niveau10',
+            name: 'Orbe Rare Sort Niveau 10',
+            type: 'objet_special',
+            icon: 'assets/objets/orbesraredesortniveau10.png',
+            description: 'Un orbe rare d\'une puissance magique supérieure. Permet d\'améliorer considérablement les sorts de niveau 10 ou inférieur.',
+            rarity: 'epic',
             stackable: false,
             levelRequired: 10
         },

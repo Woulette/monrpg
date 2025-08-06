@@ -170,7 +170,7 @@ class WorldMapSystem {
             'map21', 'map22', 'map23', 'map24', 'map25', 'map26', 'map27', 'map28', 'map29', 'map30',
             'map31', 'map32', 'map33', 'map34', 'map35', 'map36', 'map37', 'map38', 'map39', 'map40',
             'map41', 'map42', 'map43', 'map44', 'map45', 'map46', 'map47', 'map48', 'map49', 'map50',
-            'maison', 'mapdonjonslime', 'mapdonjonslime2', 'mapdonjonslimeboss'
+            'maison', 'mapdonjonslime', 'mapdonjonslime2', 'mapdonjonslimeboss', 'mapzonealuineeks1', 'mazonehaut1aluineeks1'
         ];
         
         const validMaps = [];
@@ -229,6 +229,8 @@ class WorldMapSystem {
             'map2': { x: 0, y: 400 },                  // map2 au milieu (Y = 400)
             'map3': { x: 0, y: 0 },                  // map3 en haut (Y = 0)
             'map4': { x: 770, y: 0 },                 // map4 au-dessus de map3 (Y = -400)
+            'mapzonealuineeks1': { x: 770, y: -400 },     // mapzonealuineeks1 à droite de map4
+            'mazonehaut1aluineeks1': { x: 770, y: -800 }, // mazonehaut1aluineeks1 à droite de mapzonealuineeks1
             // Pour les futures maps : map5 = Y = -800, map6 = Y = -1200, etc.
         };
         

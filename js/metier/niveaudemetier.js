@@ -16,6 +16,11 @@ const metiers = {
     niveau: 1,
     xp: 0,
     xpToNext: 100,
+  },
+  alchimiste: {
+    niveau: 1,
+    xp: 0,
+    xpToNext: 100,
   }
 };
 
@@ -37,15 +42,31 @@ function getMetierSlots(metier) {
 
 // Fonction pour gagner de l'XP dans un métier
 function gainMetierXP(metier, amount) {
-  if (!metiers[metier]) return;
-  metiers[metier].xp += amount;
+  console.log(`🔍 gainMetierXP appelé - métier: ${metier}, amount: ${amount}`);
+  console.log(`🔍 métiers[${metier}] existe?`, !!metiers[metier]);
+  console.log(`🔍 window.metiers[${metier}] existe?`, !!window.metiers[metier]);
+  
+  if (!window.metiers) {
+    console.error("❌ window.metiers n'existe pas!");
+    return;
+  }
+  
+  if (!window.metiers[metier]) {
+    console.error(`❌ window.metiers[${metier}] n'existe pas!`);
+    return;
+  }
+  
+  console.log(`🔍 XP actuel: ${window.metiers[metier].xp}`);
+  window.metiers[metier].xp += amount;
+  console.log(`🔍 XP après ajout: ${window.metiers[metier].xp}`);
+  
   // Passage de niveau si assez d'XP
-  while (metiers[metier].xp >= metiers[metier].xpToNext) {
-    metiers[metier].xp -= metiers[metier].xpToNext;
-    metiers[metier].niveau++;
-    // Courbe exponentielle simple
-    metiers[metier].xpToNext = Math.floor(metiers[metier].xpToNext * 1.2);
-    // TODO : feedback visuel/sonore de montée de niveau
+  while (window.metiers[metier].xp >= window.metiers[metier].xpToNext) {
+    window.metiers[metier].xp -= window.metiers[metier].xpToNext;
+    window.metiers[metier].niveau++;
+    console.log(`🎉 NIVEAU UP! ${metier} niveau ${window.metiers[metier].niveau}`);
+    // Courbe exponentielle avec 12% d'augmentation
+    window.metiers[metier].xpToNext = Math.floor(window.metiers[metier].xpToNext * 1.12);
   }
 }
 
@@ -53,6 +74,73 @@ function gainMetierXP(metier, amount) {
 window.metiers = metiers;
 window.getMetierSlots = getMetierSlots;
 window.gainMetierXP = gainMetierXP;
+
+// Fonction pour réinitialiser tous les métiers au niveau 1
+window.resetMetiersToLevel1 = function() {
+  window.metiers = {
+    tailleur: {
+      niveau: 1,
+      xp: 0,
+      xpToNext: 100,
+    },
+    cordonnier: {
+      niveau: 1,
+      xp: 0,
+      xpToNext: 100,
+    },
+    bijoutier: {
+      niveau: 1,
+      xp: 0,
+      xpToNext: 100,
+    },
+    alchimiste: {
+      niveau: 1,
+      xp: 0,
+      xpToNext: 100,
+    }
+  };
+  console.log("✅ Tous les métiers ont été remis au niveau 1");
+  console.log("🔍 État des métiers après reset:", window.metiers);
+  
+  // Forcer une sauvegarde pour que ça persiste
+  if (window.forceSaveOnEvent) {
+    window.forceSaveOnEvent();
+    console.log("💾 Sauvegarde forcée après reset des métiers");
+  }
+};
+
+// Fonction de test pour l'XP d'alchimie
+window.testAlchemyXP = function() {
+  console.log("🧪 Test XP Alchimie");
+  console.log("🔍 État initial:", window.metiers?.alchimiste);
+  
+  if (window.gainMetierXP) {
+    window.gainMetierXP('alchimiste', 10);
+    console.log("🔍 État après +10 XP:", window.metiers?.alchimiste);
+  } else {
+    console.error("❌ gainMetierXP non disponible");
+  }
+};
+
+// Fonction pour forcer la réinitialisation complète des métiers
+window.forceResetMetiers = function() {
+  console.log("🔧 FORCE RESET des métiers");
+  
+  // Réinitialiser complètement
+  window.metiers = {
+    tailleur: { niveau: 1, xp: 0, xpToNext: 100 },
+    cordonnier: { niveau: 1, xp: 0, xpToNext: 100 },
+    bijoutier: { niveau: 1, xp: 0, xpToNext: 100 },
+    alchimiste: { niveau: 1, xp: 0, xpToNext: 100 }
+  };
+  
+  console.log("✅ Métiers réinitialisés:", window.metiers);
+  
+  // Test immédiat
+  console.log("🧪 Test immédiat +10 XP alchimie...");
+  window.gainMetierXP('alchimiste', 10);
+  console.log("🔍 Résultat:", window.metiers.alchimiste);
+};
 
 // Utilisation de la vraie base de données equipmentDatabase pour les stats
 function getItemStatsAndDesc(nom) {
@@ -193,6 +281,113 @@ const metierRecettes = {
         { nom: 'Noyau de Slime', icon: 'assets/objets/noyauslime.png', quantite: 1 }
       ]
     }
+  ],
+  alchimiste: [
+    {
+      nom: 'Potion de Soin Basique',
+      icon: 'assets/objets/potion_soin_basique.png',
+      niveauRequis: 1,
+      description: 'Une potion qui restaure 50 points de vie.',
+      ingredients: [
+        { nom: 'Pissenlit', icon: 'assets/objets/pissenlit.png', quantite: 3 }
+      ]
+    },
+    {
+      nom: 'Potion de Force',
+      icon: 'assets/objets/potion_force.png',
+      niveauRequis: 3,
+      description: 'Une potion qui augmente temporairement la force.',
+      ingredients: [
+        { nom: 'Pissenlit', icon: 'assets/objets/pissenlit.png', quantite: 5 },
+        { nom: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantite: 2 }
+      ]
+    },
+    {
+      nom: 'Potion de Vitesse',
+      icon: 'assets/objets/potion_vitesse.png',
+      niveauRequis: 5,
+      description: 'Une potion qui augmente temporairement la vitesse.',
+      ingredients: [
+        { nom: 'Pissenlit', icon: 'assets/objets/pissenlit.png', quantite: 4 },
+        { nom: 'Mucus de Slime', icon: 'assets/objets/mucusslime.png', quantite: 1 }
+      ]
+    },
+    {
+      nom: 'Potion de Régénération',
+      icon: 'assets/objets/potion_regeneration.png',
+      niveauRequis: 8,
+      description: 'Une potion qui restaure progressivement la vie.',
+      ingredients: [
+        { nom: 'Pissenlit', icon: 'assets/objets/pissenlit.png', quantite: 6 },
+        { nom: 'Noyau de Slime', icon: 'assets/objets/noyauslime.png', quantite: 1 }
+      ]
+    },
+    {
+      nom: 'Orbe Rare Équipement Niveau 10',
+      icon: 'assets/objets/orbesrareniveau10.png',
+      niveauRequis: 15,
+      description: 'Un orbe rare permettant d\'améliorer considérablement les équipements.',
+      ingredients: [
+        { nom: 'Particule', icon: 'assets/objets/particulerare.png', quantite: 10 }
+      ],
+      type: 'fusion'
+    },
+    {
+      nom: 'Orbe Rare Sort Niveau 10',
+      icon: 'assets/objets/orbesraredesortniveau10.png',
+      niveauRequis: 20,
+      description: 'Un orbe rare permettant d\'améliorer considérablement les sorts.',
+      ingredients: [
+        { nom: 'Particule', icon: 'assets/objets/particulerare.png', quantite: 10 }
+      ],
+      type: 'fusion'
+    }
+  ]
+};
+
+// Base de données des ressources récoltables par métier
+const metierResources = {
+  alchimiste: [
+         {
+       nom: 'Pissenlit',
+       icon: 'assets/objets/ressources_alchimiste/pissenlit.png',
+       niveauRequis: 1,
+       description: 'Une fleur commune utilisée en alchimie.',
+       localisation: 'Map 1 - Zones herbeuses',
+       respawn: '120 secondes'
+     },
+    {
+      nom: 'Lavande',
+      icon: 'assets/objets/lavande.png',
+      niveauRequis: 5,
+      description: 'Une herbe aromatique aux propriétés calmantes.',
+      localisation: 'Map 2 - Collines',
+      respawn: '180 secondes'
+    },
+    {
+      nom: 'Sauge',
+      icon: 'assets/objets/sauge.png',
+      niveauRequis: 10,
+      description: 'Une herbe médicinale puissante.',
+      localisation: 'Map 3 - Forêt',
+      respawn: '240 secondes'
+    },
+    {
+      nom: 'Mandragore',
+      icon: 'assets/objets/mandragore.png',
+      niveauRequis: 20,
+      description: 'Une plante rare aux propriétés magiques.',
+      localisation: 'Map 4 - Donjons',
+      respawn: '300 secondes'
+    },
+    {
+      nom: 'Orchidée Noire',
+      icon: 'assets/objets/orchidee_noire.png',
+      niveauRequis: 50,
+      description: 'Une fleur mystérieuse aux pouvoirs exceptionnels.',
+      localisation: 'Map 5 - Zones sombres',
+      respawn: '600 secondes'
+    }
   ]
 };
 
@@ -221,6 +416,22 @@ const metierItemStats = {
   Corbaneau: {
     stats: { 'chance': 1, 'agilite': 1 },
     description: 'Un anneau mystérieux.'
+  },
+  'Potion de Soin Basique': {
+    stats: { 'vie': 50 },
+    description: 'Une potion qui restaure 50 points de vie.'
+  },
+  'Potion de Force': {
+    stats: { 'force': 5 },
+    description: 'Une potion qui augmente temporairement la force de 5 points.'
+  },
+  'Potion de Vitesse': {
+    stats: { 'vitesse': 3 },
+    description: 'Une potion qui augmente temporairement la vitesse de 3 points.'
+  },
+  'Potion de Régénération': {
+    stats: { 'vie': 100, 'regeneration': 10 },
+    description: 'Une potion qui restaure 100 points de vie et régénère 10 points par seconde pendant 10 secondes.'
   }
 };
 
@@ -270,16 +481,81 @@ function openMetierModal() {
       key: 'bijoutier',
       nom: 'Bijoutier',
       svg: `<svg class='metier-icon-svg' width='32' height='32' viewBox='0 0 32 32'><circle cx='16' cy='16' r='10' fill='#ffe17d' stroke='#bfa14a' stroke-width='2'/><circle cx='16' cy='16' r='5' fill='#8d8d8d' stroke='#684726' stroke-width='2'/></svg>`
+    },
+    {
+      key: 'alchimiste',
+      nom: 'Alchimiste',
+      svg: `<svg class='metier-icon-svg' width='32' height='32' viewBox='0 0 32 32'><circle cx='16' cy='12' r='6' fill='#4CAF50' stroke='#2E7D32' stroke-width='2'/><rect x='12' y='18' width='8' height='10' rx='2' fill='#8BC34A' stroke='#2E7D32' stroke-width='2'/><circle cx='14' cy='20' r='1.5' fill='#2E7D32'/><circle cx='18' cy='20' r='1.5' fill='#2E7D32'/></svg>`
     }
   ];
 
-  // Panneau recettes à droite
+  // Panneau principal à droite avec onglets
+  const rightPanel = document.createElement('div');
+  rightPanel.className = 'metier-right-panel';
+  
+  // Onglets
+  const tabsContainer = document.createElement('div');
+  tabsContainer.className = 'metier-tabs';
+  
+  const craftTab = document.createElement('div');
+  craftTab.className = 'metier-tab active';
+  craftTab.textContent = 'Craft';
+  craftTab.onclick = () => switchTab('craft');
+  
+  const resourcesTab = document.createElement('div');
+  resourcesTab.className = 'metier-tab';
+  resourcesTab.textContent = 'Ressources';
+  resourcesTab.onclick = () => switchTab('resources');
+  
+  tabsContainer.appendChild(craftTab);
+  tabsContainer.appendChild(resourcesTab);
+  rightPanel.appendChild(tabsContainer);
+  
+  // Panneau recettes
   const recettePanel = document.createElement('div');
   recettePanel.className = 'metier-recette-panel empty';
   recettePanel.textContent = 'Sélectionne un métier à gauche pour voir les recettes.';
+  
+  // Panneau ressources
+  const resourcesPanel = document.createElement('div');
+  resourcesPanel.className = 'metier-resources-panel empty';
+  resourcesPanel.style.display = 'none';
+  resourcesPanel.textContent = 'Sélectionne un métier à gauche pour voir les ressources.';
+  
+  rightPanel.appendChild(recettePanel);
+  rightPanel.appendChild(resourcesPanel);
 
   // Sélection dynamique
   let selectedMetier = null;
+  let currentTab = 'craft';
+  
+  // Fonction pour changer d'onglet
+  function switchTab(tabName) {
+    currentTab = tabName;
+    
+    // Mettre à jour les onglets visuellement
+    tabsContainer.querySelectorAll('.metier-tab').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    if (tabName === 'craft') {
+      craftTab.classList.add('active');
+    } else {
+      resourcesTab.classList.add('active');
+    }
+    
+    // Afficher/masquer les panneaux
+    recettePanel.style.display = tabName === 'craft' ? 'block' : 'none';
+    resourcesPanel.style.display = tabName === 'resources' ? 'block' : 'none';
+    
+    // Recharger le contenu si un métier est sélectionné
+    if (selectedMetier) {
+      if (tabName === 'craft') {
+        renderRecettes(selectedMetier);
+      } else {
+        renderResources(selectedMetier);
+      }
+    }
+  }
 
   function renderRecettes(metierKey) {
     recettePanel.innerHTML = '';
@@ -486,6 +762,106 @@ function openMetierModal() {
     });
   }
 
+  function renderResources(metierKey) {
+    resourcesPanel.innerHTML = '';
+    resourcesPanel.classList.remove('empty');
+    const resources = metierResources[metierKey] || [];
+    if (!resources.length) {
+      resourcesPanel.classList.add('empty');
+      resourcesPanel.textContent = 'Aucune ressource disponible pour ce métier.';
+      return;
+    }
+    const niveauMetier = window.metiers[metierKey]?.niveau || 1;
+    resources.forEach((resource, idx) => {
+      const canHarvest = niveauMetier >= resource.niveauRequis;
+      const box = document.createElement('div');
+      box.style.display = 'flex';
+      box.style.alignItems = 'center';
+      box.style.gap = '18px';
+      box.style.background = canHarvest ? '#fff' : '#e7e7e7';
+      box.style.borderRadius = '12px';
+      box.style.border = '2px solid #4CAF50';
+      box.style.boxShadow = '0 2px 8px #4CAF5022';
+      box.style.padding = '14px 18px';
+      box.style.marginBottom = '14px';
+      box.style.opacity = canHarvest ? '1' : '0.6';
+      box.style.cursor = 'pointer';
+      
+      // Icône
+      const img = document.createElement('img');
+      img.src = resource.icon;
+      img.alt = resource.nom;
+      img.style.width = '48px';
+      img.style.height = '48px';
+      img.style.objectFit = 'contain';
+      img.style.borderRadius = '8px';
+      img.style.background = '#e8f5e8';
+      img.style.border = '1.5px solid #4CAF50';
+      box.appendChild(img);
+      
+      // Infos
+      const info = document.createElement('div');
+      info.style.display = 'flex';
+      info.style.flexDirection = 'column';
+      info.style.gap = '4px';
+      
+      // Nom
+      const nom = document.createElement('div');
+      nom.textContent = resource.nom;
+      nom.style.fontWeight = 'bold';
+      nom.style.fontSize = '1.15em';
+      nom.style.color = '#2E7D32';
+      info.appendChild(nom);
+      
+      // Description
+      if (resource.description) {
+        const desc = document.createElement('div');
+        desc.textContent = resource.description;
+        desc.style.fontSize = '0.98em';
+        desc.style.color = '#444';
+        info.appendChild(desc);
+      }
+      
+      // Localisation
+      if (resource.localisation) {
+        const loc = document.createElement('div');
+        loc.textContent = '📍 ' + resource.localisation;
+        loc.style.fontSize = '0.95em';
+        loc.style.color = '#666';
+        info.appendChild(loc);
+      }
+      
+      // Niveau requis
+      const niveau = document.createElement('div');
+      niveau.textContent = 'Niveau requis : ' + resource.niveauRequis;
+      niveau.style.fontSize = '0.95em';
+      niveau.style.color = canHarvest ? '#4CAF50' : '#e53935';
+      info.appendChild(niveau);
+      
+      // Respawn
+      if (resource.respawn) {
+        const respawn = document.createElement('div');
+        respawn.textContent = '⏱️ Respawn : ' + resource.respawn;
+        respawn.style.fontSize = '0.95em';
+        respawn.style.color = '#666';
+        info.appendChild(respawn);
+      }
+      
+      // Message si pas le niveau
+      if (!canHarvest) {
+        const msg = document.createElement('div');
+        msg.textContent = 'Niveau insuffisant pour récolter.';
+        msg.style.color = '#e53935';
+        msg.style.fontWeight = 'bold';
+        msg.style.fontSize = '0.98em';
+        info.appendChild(msg);
+      }
+      
+      box.appendChild(info);
+      resourcesPanel.appendChild(box);
+    });
+  }
+
   metierData.forEach(metier => {
     const row = document.createElement('div');
     row.className = 'metier-row';
@@ -531,13 +907,19 @@ function openMetierModal() {
       metierList.querySelectorAll('.metier-row').forEach(r => r.classList.remove('selected'));
       row.classList.add('selected');
       selectedMetier = metier.key;
-      renderRecettes(metier.key);
+      
+      // Afficher le contenu selon l'onglet actuel
+      if (currentTab === 'craft') {
+        renderRecettes(metier.key);
+      } else {
+        renderResources(metier.key);
+      }
     };
     metierList.appendChild(row);
   });
 
   main.appendChild(metierList);
-  main.appendChild(recettePanel);
+  main.appendChild(rightPanel);
   content.appendChild(main);
   overlay.appendChild(content);
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };

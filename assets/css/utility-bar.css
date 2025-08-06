@@ -1,0 +1,300 @@
+/* Barre utilitaire latérale */
+#utility-bar {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(26, 188, 156, 0.92); /* Couleur verte/bleue pour différencier */
+    border-radius: 0 12px 12px 0; /* Coins arrondis à droite seulement */
+    padding: 10px 12px 10px 8px;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.3);
+    z-index: 1200;
+    /* Position sera définie via JavaScript */
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left: none;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Animation d'apparition */
+#utility-bar.show {
+    transform: translateY(-50%) translateX(0);
+    opacity: 1;
+}
+
+#utility-bar.hide {
+    transform: translateY(-50%) translateX(-100%);
+    opacity: 0;
+}
+
+/* Slots utilitaires */
+.utility-slot {
+    width: 54px;
+    height: 54px;
+    background: #2c3e50;
+    border: 3px solid #34495e;
+    border-radius: 10px;
+    box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.2),
+        0 2px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+/* Hover effect */
+.utility-slot:hover {
+    border-color: #1abc9c;
+    box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.2),
+        0 0 0 2px rgba(26, 188, 156, 0.4),
+        0 4px 12px rgba(0, 0, 0, 0.4);
+    transform: scale(1.05);
+}
+
+/* Slot vide */
+.utility-slot.empty {
+    background: #34495e;
+    opacity: 0.6;
+    border-style: dashed;
+    border-color: #52677a;
+    cursor: default;
+}
+
+.utility-slot.empty:hover {
+    border-color: #1abc9c;
+    border-style: solid;
+    opacity: 0.8;
+    cursor: copy; /* Curseur pour indiquer qu'on peut drop */
+    transform: scale(1.02);
+}
+
+/* État de drag over */
+.utility-slot.drag-over {
+    border-color: #f39c12 !important;
+    background: rgba(243, 156, 18, 0.1) !important;
+    box-shadow: 
+        inset 0 2px 4px rgba(243, 156, 18, 0.2),
+        0 0 0 3px rgba(243, 156, 18, 0.5),
+        0 4px 16px rgba(243, 156, 18, 0.3);
+    transform: scale(1.08);
+}
+
+/* Icônes des objets */
+.utility-item-icon {
+    width: 36px;
+    height: 36px;
+    pointer-events: none;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    z-index: 1;
+}
+
+/* Si c'est du texte/emoji au lieu d'image */
+.utility-slot span.utility-item-icon {
+    font-size: 1.8rem;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: auto;
+}
+
+/* Quantité des objets */
+.utility-item-quantity {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: rgba(231, 76, 60, 0.9);
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 8px;
+    min-width: 16px;
+    text-align: center;
+    line-height: 1.2;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Effets de cooldown pour les potions */
+.utility-slot .cooldown-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    border-radius: 7px;
+    z-index: 3;
+    pointer-events: none;
+}
+
+/* Animation de pulsation pour les objets utilisables */
+.utility-slot.usable {
+    animation: usable-pulse 2s ease-in-out infinite;
+}
+
+@keyframes usable-pulse {
+    0%, 100% {
+        box-shadow: 
+            inset 0 2px 4px rgba(0, 0, 0, 0.2),
+            0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    50% {
+        box-shadow: 
+            inset 0 2px 4px rgba(0, 0, 0, 0.2),
+            0 0 0 1px rgba(26, 188, 156, 0.3),
+            0 2px 12px rgba(26, 188, 156, 0.2);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1600px) {
+    #utility-bar {
+        padding: 8px 6px 8px 10px;
+    }
+    
+    .utility-slot {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .utility-item-icon {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .utility-slot span.utility-item-icon {
+        font-size: 1.5rem;
+    }
+    
+    .utility-item-quantity {
+        font-size: 10px;
+        bottom: 1px;
+        right: 1px;
+    }
+}
+
+@media (max-width: 1200px) {
+    #utility-bar {
+        padding: 6px 4px 6px 8px;
+        gap: 6px;
+    }
+    
+    .utility-slot {
+        width: 40px;
+        height: 40px;
+        border-width: 2px;
+    }
+    
+    .utility-item-icon {
+        width: 26px;
+        height: 26px;
+    }
+    
+    .utility-slot span.utility-item-icon {
+        font-size: 1.3rem;
+    }
+    
+    .utility-item-quantity {
+        font-size: 9px;
+        padding: 0px 3px;
+    }
+}
+
+@media (max-width: 900px) {
+    #utility-bar {
+        right: 5px;
+        padding: 5px 3px 5px 6px;
+        gap: 4px;
+    }
+    
+    .utility-slot {
+        width: 36px;
+        height: 36px;
+        border-width: 2px;
+    }
+    
+    .utility-item-icon {
+        width: 22px;
+        height: 22px;
+    }
+    
+    .utility-slot span.utility-item-icon {
+        font-size: 1.1rem;
+    }
+}
+
+/* Mode masqué (pour toggle) */
+#utility-bar.collapsed {
+    transform: translateY(-50%) translateX(calc(-100% + 20px));
+}
+
+#utility-bar.collapsed:hover {
+    transform: translateY(-50%) translateX(0);
+}
+
+/* Indicateur de toggle quand masqué */
+#utility-bar.collapsed::before {
+    content: "⚡";
+    position: absolute;
+    right: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(26, 188, 156, 0.9);
+    width: 20px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 10px 10px 0;
+    font-size: 12px;
+    color: white;
+    cursor: pointer;
+    z-index: -1;
+}
+
+/* Tooltip pour les objets */
+.utility-slot[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    margin-left: 8px;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.utility-slot[title]:hover::before {
+    content: "";
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-right-color: rgba(0, 0, 0, 0.9);
+    margin-left: 3px;
+    z-index: 1000;
+    pointer-events: none;
+}

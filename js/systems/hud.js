@@ -289,6 +289,36 @@ function positionHudIcons() {
         const minWidth = slotCount * 36 + (slotCount - 1) * 8 + 10;
         spellBar.style.width = Math.max(rect.width * 0.38, minWidth) + 'px';
     }
+
+    // Barre utilitaire latérale
+    const utilityBar = document.getElementById('utility-bar');
+    if (utilityBar && canvas) {
+        utilityBar.style.position = 'fixed';
+        utilityBar.style.left = (rect.left + rect.width + 10) + 'px'; // 10px après le bord droit du canvas
+        utilityBar.style.top = (rect.top + rect.height * 0.5) + 'px';
+        utilityBar.style.transform = 'translateY(-50%)';
+        utilityBar.style.zIndex = 1200;
+        utilityBar.style.display = 'flex';
+        
+        // Hauteur proportionnelle au canvas avec limites
+        const slotCount = utilityBar.querySelectorAll('.utility-slot').length;
+        const minHeight = slotCount * 54 + (slotCount - 1) * 8 + 20; // slots + gaps + padding
+        const maxHeight = rect.height * 0.8; // Maximum 80% de la hauteur du canvas
+        const finalHeight = Math.min(Math.max(rect.height * 0.6, minHeight), maxHeight);
+        
+        // Si la hauteur calculée est trop petite, réduire le nombre de slots visibles
+        if (finalHeight < minHeight) {
+            const availableSlots = Math.floor((finalHeight - 20) / (54 + 8));
+            utilityBar.querySelectorAll('.utility-slot').forEach((slot, index) => {
+                slot.style.display = index < availableSlots ? 'flex' : 'none';
+            });
+        } else {
+            // Afficher tous les slots
+            utilityBar.querySelectorAll('.utility-slot').forEach(slot => {
+                slot.style.display = 'flex';
+            });
+        }
+    }
 }
 
 // Variable globale pour l'état de la mini-carte

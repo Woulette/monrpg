@@ -98,29 +98,30 @@ function attachGridEvents(grid, category) {
         let clickTimeout = null;
         let isDoubleClick = false;
         
-        // Supprimer les anciens événements
-        slot.replaceWith(slot.cloneNode(true));
-        const newSlot = grid.querySelector(`[data-index="${slot.dataset.index}"]`);
-        
         // Clic simple pour ouvrir la fenêtre détaillée
-        newSlot.addEventListener('click', function(e) {
+        slot.addEventListener('click', function(e) {
             if (isDoubleClick) return;
             
+            console.log('🖱️ Clic simple sur slot:', this.dataset.index);
             const index = parseInt(this.dataset.index);
             const targetInventory = getInventoryByCategory(category);
             const slotData = targetInventory[index];
             
             if (slotData && slotData.item) {
+                console.log('🖱️ Objet trouvé:', slotData.item.name);
                 clickTimeout = setTimeout(() => {
                     if (!isDoubleClick) {
+                        console.log('🖱️ Ouverture fenêtre détaillée pour:', slotData.item.name);
                         showEquipmentDetailModal(slotData.item, index);
                     }
                 }, 200);
+            } else {
+                console.log('🖱️ Aucun objet dans ce slot');
             }
         });
         
-        // Double-clic pour équiper
-        newSlot.addEventListener('dblclick', function(e) {
+        // Double-clic pour utiliser/équiper
+        slot.addEventListener('dblclick', function(e) {
             e.preventDefault();
             e.stopPropagation();
             
@@ -131,12 +132,80 @@ function attachGridEvents(grid, category) {
                 clickTimeout = null;
             }
             
+            console.log('🖱️ Double-clic sur slot:', this.dataset.index);
             const index = parseInt(this.dataset.index);
             const targetInventory = getInventoryByCategory(category);
             const slotData = targetInventory[index];
             
             if (slotData && slotData.item) {
-                handleItemClick(slotData.item, index, category);
+                console.log('🖱️ Double-clic sur:', slotData.item.name);
+                
+                // Vérifier si c'est une potion
+                console.log('🔍 Type:', slotData.item.type);
+                console.log('🔍 Category:', slotData.item.category);
+                console.log('🔍 ID:', slotData.item.id);
+                
+                const isPotion = slotData.item.type === 'consommable' || 
+                               slotData.item.type === 'potion' ||
+                               slotData.item.category === 'potion' || 
+                               (slotData.item.id && slotData.item.id.includes('potion'));
+                
+                console.log('🔍 Est une potion:', isPotion);
+                
+                if (isPotion) {
+                    // Utiliser la potion directement
+                    console.log('🧪 Double-clic sur potion, utilisation directe');
+                    
+                    // Déterminer l'ID de la potion (priorité à l'ID, puis au nom)
+                    let potionId = slotData.item.id;
+                    if (!potionId) {
+                        // Si pas d'ID, essayer de déduire depuis le nom
+                        if (slotData.item.name === 'Potion de Soin Basique') {
+                            potionId = 'potion_soin_basique';
+                        }
+                    }
+                    
+                    console.log('🔍 ID de potion déterminé:', potionId);
+                    
+                    if (potionId && typeof window.useHealingPotion === 'function') {
+                        if (window.useHealingPotion(potionId)) {
+                            console.log('✅ Potion utilisée avec succès');
+                            
+                            // Retirer la potion de l'inventaire en utilisant l'index du slot
+                            const targetInventory = getInventoryByCategory(category);
+                            if (targetInventory && targetInventory[index]) {
+                                // Réduire la quantité ou supprimer l'item
+                                if (targetInventory[index].item.quantity && targetInventory[index].item.quantity > 1) {
+                                    targetInventory[index].item.quantity -= 1;
+                                    console.log('✅ Quantité de potion réduite');
+                                } else {
+                                    // Supprimer complètement l'item du slot
+                                    targetInventory[index] = { item: null, category: category };
+                                    console.log('✅ Potion supprimée du slot');
+                                }
+                                
+                                // Mettre à jour l'affichage
+                                if (typeof window.updateAllGrids === 'function') {
+                                    window.updateAllGrids();
+                                }
+                                
+                                // Synchroniser avec l'inventaire principal
+                                if (typeof window.removeItemFromInventory === 'function') {
+                                    window.removeItemFromInventory(potionId, 1);
+                                }
+                            }
+                        } else {
+                            console.log('❌ Échec de l\'utilisation de la potion');
+                        }
+                    } else {
+                        console.error('❌ ID de potion invalide ou système non disponible:', potionId);
+                    }
+                } else {
+                    // Pour les autres objets, utiliser le système existant
+                    if (typeof window.handleItemClick === 'function') {
+                        window.handleItemClick(slotData.item, index, category);
+                    }
+                }
             }
             
             setTimeout(() => {
@@ -145,7 +214,7 @@ function attachGridEvents(grid, category) {
         });
         
         // Gestion des tooltips
-        newSlot.addEventListener('mouseenter', function() {
+        slot.addEventListener('mouseenter', function() {
             const index = parseInt(this.dataset.index);
             const targetInventory = getInventoryByCategory(category);
             const slotData = targetInventory[index];
@@ -155,7 +224,7 @@ function attachGridEvents(grid, category) {
             }
         });
         
-        newSlot.addEventListener('mouseleave', function() {
+        slot.addEventListener('mouseleave', function() {
             hideEquipmentTooltip();
         });
     });
@@ -167,6 +236,13 @@ function updateAllGrids() {
     categories.forEach(category => {
         updateGridContent(category);
     });
+    
+    // Activer le drag & drop vers la poubelle après mise à jour
+    setTimeout(() => {
+        if (typeof window.enableTrashDragAndDrop === 'function') {
+            window.enableTrashDragAndDrop();
+        }
+    }, 100);
     
     // Mettre à jour les établis si ils sont ouverts
     if (typeof window.updateEtabliesInventory === 'function') {

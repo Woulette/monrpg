@@ -258,8 +258,8 @@ function createPapi3() {
                         }
 
                         // Retirer un certificat de l'inventaire
-                        if (typeof window.removeItemFromAllInventories === 'function') {
-                            window.removeItemFromAllInventories('certificat_corbeau');
+                        if (typeof window.removeItemFromInventory === 'function') {
+                            window.removeItemFromInventory('certificat_corbeau', 1);
                         }
 
                         // Sauvegarder le jeu après le déplacement de Papi 3

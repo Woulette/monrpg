@@ -51,13 +51,12 @@ function initMonsters() {
                 window.ensureSlimeBossExists();
             }
         } else if (currentMap && currentMap === "map4") {
-            // Map 4 normale - pas de boss slime
-            // if (typeof window.spawnSlimeBoss === "function") {
-            //     window.spawnSlimeBoss(); // Créer le SlimeBoss sur la map 4
-            // }
-            // Créer les Aluineeks pour map4
+            // Map 4 - aucun monstre pour le moment
+            // Les Aluineeks ont été déplacés vers mapzonealuineeks1
+        } else if (currentMap && currentMap === "mapzonealuineeks1") {
+            // Map zonealuineeks1 - 10 Aluineeks
             if (typeof window.spawnAluineeks === "function") {
-                window.spawnAluineeks(8); // 8 Aluineeks sur map4
+                window.spawnAluineeks(10); // 10 Aluineeks sur mapzonealuineeks1
             }
         } else if (currentMap && (currentMap === "mapdonjonslime" || currentMap === "mapdonjonslime2")) {
             // Créer les slimes pour les maps du donjon slime

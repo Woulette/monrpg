@@ -1,0 +1,451 @@
+// js/metier/ressource-alchimiste.js
+
+// Système de récolte des ressources d'alchimiste
+class RessourceAlchimiste {
+    constructor() {
+        this.ressourcesEnCours = new Map(); // Ressources en cours de récolte
+        this.ressourcesRecoltees = new Map(); // Ressources récoltées avec timestamp
+        this.ressourcesInteractives = new Set(); // Ressources avec lesquelles on a interagi
+        this.delaiRecolte = 2000; // 2 secondes
+        this.delaiRespawn = 120000; // 120 secondes
+        
+        // Système initialisé
+        this.init();
+    }
+
+    init() {
+        // Vérifier périodiquement les ressources à faire réapparaître
+        setInterval(() => {
+            this.verifierRespawn();
+        }, 1000); // Vérifier toutes les secondes
+        // Timer de respawn démarré
+    }
+
+    // Vérifier si le joueur peut interagir avec une ressource
+    peutInteragir(x, y) {
+        if (!window.player || !window.mapData) {
+            return false;
+        }
+        
+        // Calculer la distance en cases (pas en pixels)
+        const distanceX = Math.abs(x - window.player.x);
+        const distanceY = Math.abs(y - window.player.y);
+        
+        // Le joueur doit être adjacent (distance de 1 case maximum)
+        return distanceX <= 1 && distanceY <= 1;
+    }
+
+    // Démarrer la récolte d'une ressource
+    demarrerRecolte(x, y) {
+        const key = `${x},${y}`;
+        
+        // Vérifier si la ressource est déjà en cours de récolte
+        if (this.ressourcesEnCours.has(key)) {
+            return false;
+        }
+        
+        // Vérifier si la ressource est récoltable (ID 25 calque 4)
+        if (!this.estRessourceRecoltable(x, y)) {
+            return false;
+        }
+        
+        // Vérifier si le joueur est assez proche
+        if (!this.peutInteragir(x, y)) {
+            return false;
+        }
+        
+        // Marquer la ressource comme en cours de récolte
+        this.ressourcesEnCours.set(key, {
+            x: x,
+            y: y,
+            timestamp: Date.now()
+        });
+        
+        // Afficher un message de récolte
+        if (window.showFloatingMessage) {
+            window.showFloatingMessage("Récolte en cours...", x, y - 50);
+        }
+        
+        // Démarrer le timer de récolte
+        setTimeout(() => {
+            this.finirRecolte(x, y);
+        }, this.delaiRecolte);
+        
+        return true;
+    }
+
+    // Terminer la récolte
+    finirRecolte(x, y) {
+        const key = `${x},${y}`;
+        
+        if (!this.ressourcesEnCours.has(key)) {
+            return;
+        }
+        
+        // Retirer de la liste des récoltes en cours
+        this.ressourcesEnCours.delete(key);
+        
+        // Vérifier que la ressource existe toujours
+        if (!this.estRessourceRecoltable(x, y)) {
+            return;
+        }
+        
+        // Remplacer la ressource par l'ID 225 du calque 3
+        this.remplacerRessource(x, y);
+        
+        // Ajouter la ressource à l'inventaire
+        this.ajouterRessourceInventaire();
+        
+        // Marquer comme récoltée avec timestamp
+        this.ressourcesRecoltees.set(key, {
+            x: x,
+            y: y,
+            timestamp: Date.now()
+        });
+        
+        // Retirer de la liste des ressources interactives
+        this.ressourcesInteractives.delete(key);
+        
+        // Afficher un message de succès
+        if (window.showFloatingMessage) {
+            window.showFloatingMessage("Ressource récoltée !", x, y - 50);
+        }
+    }
+
+    // Vérifier si une ressource est récoltable (ID 25 calque 4)
+    estRessourceRecoltable(x, y) {
+        if (!window.mapData || !window.mapData.layers || window.mapData.layers.length < 4) {
+            return false;
+        }
+        
+        const layer4 = window.mapData.layers[3]; // Calque 4
+        const tileIndex = y * layer4.width + x;
+        const tileId = layer4.data[tileIndex];
+        
+        return tileId === 25;
+    }
+
+    // Remplacer la ressource par l'ID 225 du calque 3
+    remplacerRessource(x, y) {
+        if (!window.mapData || !window.mapData.layers || window.mapData.layers.length < 3) {
+            return;
+        }
+        
+        const layer3 = window.mapData.layers[2]; // Calque 3
+        const layer4 = window.mapData.layers[3]; // Calque 4
+        const tileIndex = y * layer3.width + x;
+        
+        // Remplacer par l'ID 225 sur le calque 3
+        layer3.data[tileIndex] = 225;
+        
+        // Supprimer l'ID 25 du calque 4 (rendre invisible)
+        layer4.data[tileIndex] = 0;
+        
+        // Ressource remplacée
+    }
+
+    // Restaurer la ressource (ID 25 calque 4)
+    restaurerRessource(x, y) {
+        if (!window.mapData || !window.mapData.layers || window.mapData.layers.length < 4) {
+            return;
+        }
+        
+        const layer3 = window.mapData.layers[2]; // Calque 3
+        const layer4 = window.mapData.layers[3]; // Calque 4
+        const tileIndex = y * layer4.width + x;
+        
+        // Restaurer l'ID 25 sur le calque 4
+        layer4.data[tileIndex] = 25;
+        
+        // Supprimer l'ID 225 du calque 3
+        layer3.data[tileIndex] = 0;
+        
+        // Ressource restaurée
+    }
+
+    // Ajouter la ressource à l'inventaire
+    ajouterRessourceInventaire() {
+        console.log('🌿 Tentative d\'ajout de pissenlit à l\'inventaire');
+        console.log('🔍 window.addItemToInventory existe?', typeof window.addItemToInventory);
+        console.log('🔍 window.resourceDatabase existe?', typeof window.resourceDatabase);
+        
+        // Vérifier si pissenlit existe dans la base de données
+        if (window.resourceDatabase && window.resourceDatabase.pissenlit) {
+            console.log('✅ Pissenlit trouvé dans resourceDatabase:', window.resourceDatabase.pissenlit);
+        } else {
+            console.error('❌ Pissenlit non trouvé dans resourceDatabase');
+        }
+        
+        // Utiliser le système d'inventaire existant pour les ressources d'alchimiste
+        if (window.addItemToInventory) {
+            const result = window.addItemToInventory('pissenlit', 'ressources_alchimiste');
+            console.log('📦 Résultat ajout pissenlit:', result);
+            
+            if (result !== false) {
+                console.log('✅ Pissenlit ajouté avec succès!');
+                
+                // Mettre à jour l'affichage
+                if (window.updateAllGrids) {
+                    window.updateAllGrids();
+                }
+                
+                // Afficher un message de succès spécifique
+                if (window.showFloatingMessage) {
+                    window.showFloatingMessage("Pissenlit récolté !", window.player.x, window.player.y - 70, '#4CAF50');
+                }
+            } else {
+                console.error('❌ Échec de l\'ajout du pissenlit');
+            }
+        } else {
+            console.error('❌ window.addItemToInventory non disponible');
+        }
+        
+        // Gagner de l'XP en alchimie
+        console.log('🔍 Debug XP - window.gainMetierXP disponible:', !!window.gainMetierXP);
+        console.log('🔍 Debug XP - window.metiers:', window.metiers);
+        
+        if (window.gainMetierXP) {
+            console.log('🔍 Debug XP - XP avant:', window.metiers?.alchimiste?.xp);
+            window.gainMetierXP('alchimiste', 10);
+            console.log('🔍 Debug XP - XP après:', window.metiers?.alchimiste?.xp);
+            
+            // Afficher un message de gain d'XP
+            if (window.showFloatingMessage) {
+                window.showFloatingMessage("+10 XP Alchimie !", window.player.x, window.player.y - 30);
+            }
+        } else {
+            console.error('❌ window.gainMetierXP non disponible');
+        }
+    }
+
+    // Vérifier les ressources à faire réapparaître
+    verifierRespawn() {
+        const maintenant = Date.now();
+        
+        for (const [key, data] of this.ressourcesRecoltees.entries()) {
+            if (maintenant - data.timestamp >= this.delaiRespawn) {
+                // Restaurer la ressource
+                this.restaurerRessource(data.x, data.y);
+                
+                        // Retirer de la liste des ressources récoltées
+        this.ressourcesRecoltees.delete(key);
+        
+        // Retirer aussi de la liste des ressources interactives pour reset
+        this.ressourcesInteractives.delete(key);
+            }
+        }
+    }
+
+    // Gérer le clic sur une ressource
+    gererClicRessource(x, y) {
+        // Vérifier si c'est une ressource récoltable
+        if (!this.estRessourceRecoltable(x, y)) {
+            return false;
+        }
+        
+        // Marquer la ressource comme interactive
+        const key = `${x},${y}`;
+        this.ressourcesInteractives.add(key);
+        
+        // Vérifier si le joueur est assez proche
+        if (!this.peutInteragir(x, y)) {
+            // Déplacer le joueur vers la ressource
+            this.deplacerJoueurVersRessource(x, y);
+            return true; // Retourner true pour indiquer que l'action a été traitée
+        }
+        
+        // Démarrer la récolte
+        return this.demarrerRecolte(x, y);
+    }
+
+    // Déplacer le joueur vers la ressource
+    deplacerJoueurVersRessource(x, y) {
+        if (!window.player || !window.mapData) {
+            return;
+        }
+
+        // Trouver une position adjacente libre
+        const positionsAdjacentes = [
+            {x: x + 1, y: y},
+            {x: x - 1, y: y},
+            {x: x, y: y + 1},
+            {x: x, y: y - 1}
+        ];
+
+        let positionChoisie = null;
+
+        // Vérifier chaque position adjacente
+        for (const pos of positionsAdjacentes) {
+            if (pos.x >= 0 && pos.x < window.mapData.width && 
+                pos.y >= 0 && pos.y < window.mapData.height) {
+                
+                // Vérifier si la position est libre (pas de collision)
+                if (typeof window.isBlocked === "function" && !window.isBlocked(pos.x, pos.y)) {
+                    // Vérifier qu'il n'y a pas de monstre à cette position
+                    let monstrePresent = false;
+                    if (window.monsters && window.monsters.length > 0) {
+                        monstrePresent = window.monsters.some(monster => 
+                            monster.x === pos.x && monster.y === pos.y && monster.hp > 0 && !monster.isDead
+                        );
+                    }
+                    
+                    if (!monstrePresent) {
+                        positionChoisie = pos;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (positionChoisie) {
+            // Déplacer le joueur vers la position choisie
+            if (typeof window.handleMovementClick === "function") {
+                window.handleMovementClick(positionChoisie.x, positionChoisie.y);
+            }
+            
+            // Attendre que le joueur arrive à destination avant de démarrer la récolte
+            this.attendreArriveeEtRecolter(x, y, positionChoisie);
+        } else {
+            if (window.showFloatingMessage) {
+                window.showFloatingMessage("Pas d'espace libre à côté !", x, y - 50);
+            }
+        }
+    }
+
+    // Attendre que le joueur arrive à destination et démarrer la récolte
+    attendreArriveeEtRecolter(x, y, destination) {
+        const verifierArrivee = () => {
+            if (!window.player) return;
+            
+            // Vérifier si le joueur est arrivé à destination
+            const distance = Math.sqrt(
+                Math.pow(destination.x - window.player.x, 2) + 
+                Math.pow(destination.y - window.player.y, 2)
+            );
+            
+            if (distance < 0.5) { // Le joueur est arrivé
+                // Démarrer la récolte après un petit délai
+                setTimeout(() => {
+                    this.demarrerRecolte(x, y);
+                }, 500);
+            } else {
+                // Continuer à vérifier
+                setTimeout(verifierArrivee, 100);
+            }
+        };
+        
+        verifierArrivee();
+    }
+
+    // Obtenir les informations d'une ressource
+    getRessourceInfo(x, y) {
+        const key = `${x},${y}`;
+        
+        if (this.ressourcesEnCours.has(key)) {
+            const data = this.ressourcesEnCours.get(key);
+            const tempsRestant = Math.max(0, this.delaiRecolte - (Date.now() - data.timestamp));
+            return {
+                type: 'recolte_en_cours',
+                tempsRestant: tempsRestant
+            };
+        }
+        
+        if (this.ressourcesRecoltees.has(key)) {
+            const data = this.ressourcesRecoltees.get(key);
+            const tempsRestant = Math.max(0, this.delaiRespawn - (Date.now() - data.timestamp));
+            return {
+                type: 'recoltee',
+                tempsRestant: tempsRestant
+            };
+        }
+        
+        if (this.estRessourceRecoltable(x, y)) {
+            return {
+                type: 'disponible'
+            };
+        }
+        
+        return null;
+    }
+
+    // Appliquer les effets visuels aux ressources
+    appliquerEffetsVisuels(ctx, x, y, gid) {
+        // Vérifier si c'est une ressource d'alchimiste (ID 25)
+        if (gid === 25 && window.currentMap === "map1") {
+            const key = `${x},${y}`;
+            const info = this.getRessourceInfo(x, y);
+            
+            if (info) {
+                switch (info.type) {
+                    case 'disponible':
+                        // Effet visuel seulement si on a déjà interagi avec cette ressource
+                        if (this.ressourcesInteractives.has(key)) {
+                            // Surbrillance pour les ressources avec lesquelles on a interagi
+                            ctx.globalAlpha = 1.4;
+                            ctx.filter = 'brightness(1.4) drop-shadow(0 0 15px rgba(255, 255, 0, 0.8)) hue-rotate(10deg)';
+                        }
+                        break;
+                    case 'recolte_en_cours':
+                        // Animation de récolte en cours très visible
+                        const pulse = Math.sin(Date.now() / 200) * 0.4 + 1.6;
+                        ctx.globalAlpha = pulse;
+                        ctx.filter = `brightness(${pulse}) drop-shadow(0 0 25px rgba(255, 165, 0, 1)) hue-rotate(25deg) saturate(1.8)`;
+                        break;
+                    case 'recoltee':
+                        // Ressource récoltée (disparue)
+                        ctx.globalAlpha = 0.1;
+                        ctx.filter = 'grayscale(1) brightness(0.3)';
+                        break;
+                }
+            }
+        }
+    }
+}
+
+// Initialiser le système de ressources d'alchimiste
+let ressourceAlchimiste = null;
+
+// Fonction d'initialisation
+function initRessourceAlchimiste() {
+    if (!ressourceAlchimiste) {
+        ressourceAlchimiste = new RessourceAlchimiste();
+        window.ressourceAlchimiste = ressourceAlchimiste;
+    }
+}
+
+// Fonction pour gérer les clics sur les ressources
+function gererClicRessourceAlchimiste(x, y) {
+    if (!ressourceAlchimiste) {
+        initRessourceAlchimiste();
+    }
+    
+    return ressourceAlchimiste.gererClicRessource(x, y);
+}
+
+// Fonction pour obtenir les informations d'une ressource
+function getRessourceAlchimisteInfo(x, y) {
+    if (!ressourceAlchimiste) {
+        initRessourceAlchimiste();
+    }
+    
+    return ressourceAlchimiste.getRessourceInfo(x, y);
+}
+
+// Fonction pour appliquer les effets visuels aux ressources
+function appliquerEffetsVisuelsRessources(ctx, x, y, gid) {
+    if (!ressourceAlchimiste) {
+        initRessourceAlchimiste();
+    }
+    
+    ressourceAlchimiste.appliquerEffetsVisuels(ctx, x, y, gid);
+}
+
+// Initialiser le système au chargement de la page
+document.addEventListener('DOMContentLoaded', () => {
+    initRessourceAlchimiste();
+});
+
+// Exporter les fonctions pour utilisation globale
+window.gererClicRessourceAlchimiste = gererClicRessourceAlchimiste;
+window.getRessourceAlchimisteInfo = getRessourceAlchimisteInfo;
+window.appliquerEffetsVisuelsRessources = appliquerEffetsVisuelsRessources; 

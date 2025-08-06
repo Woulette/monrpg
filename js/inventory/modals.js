@@ -18,6 +18,8 @@ function showEquipmentDetailModal(item, slotIndex) {
         let category = 'ÉQUIPEMENT';
         if (item.type === 'ressource' || item.category === 'ressource' || item.id === 'patte_corbeau' || item.id === 'plume_corbeau') {
             category = 'RESSOURCES';
+        } else if (item.type === 'consommable' || item.category === 'potion' || (item.id && item.id.includes('potion'))) {
+            category = 'POTIONS';
         }
         
         // Remplir les informations
@@ -31,10 +33,12 @@ function showEquipmentDetailModal(item, slotIndex) {
             displayType = 'PATTES';
         } else if (item.id === 'certificat_corbeau') {
             displayType = 'OBJET SPÉCIAL';
+        } else if (item.type === 'consommable' || item.category === 'potion') {
+            displayType = 'POTION';
         }
         
         document.getElementById('equipment-type').textContent = displayType;
-        document.getElementById('equipment-rarity').textContent = item.rarity.toUpperCase();
+        document.getElementById('equipment-rarity').textContent = item.rarity ? item.rarity.toUpperCase() : 'COMMUNE';
         
         // Afficher le niveau requis
         if (item.levelRequired) {
@@ -44,7 +48,26 @@ function showEquipmentDetailModal(item, slotIndex) {
             document.getElementById('equipment-level').parentElement.style.display = 'none';
         }
         
-        document.getElementById('equipment-description').textContent = item.description;
+        // Description simple pour les potions
+        let description = item.description || '';
+        
+        // Pour les potions, garder la description simple dans le descriptif
+        if (item.type === 'consommable' || item.category === 'potion' || item.type === 'potion') {
+            // Utiliser seulement la description de base
+            if (!description) {
+                description = item.shortDescription || 'Une potion magique aux propriétés curatives.';
+            }
+            
+            // Ajouter seulement les instructions d'utilisation
+            description += '\n\n🖱️ Double-clic pour utiliser la potion';
+            
+            // Ajouter des conseils d'utilisation
+            if (item.rarity === 'common') {
+                description += '\n💡 Conseil: Idéal pour les combats de faible intensité';
+            }
+        }
+        
+        document.getElementById('equipment-description').textContent = description;
         
         // Mettre le nom de l'équipement dans le titre
         document.getElementById('equipment-detail-title').textContent = item.name;
@@ -89,6 +112,22 @@ function showEquipmentDetailModal(item, slotIndex) {
         if (stats.vitesse) {
             document.getElementById('equipment-vitesse').parentElement.style.display = 'flex';
             document.getElementById('equipment-vitesse').textContent = `+${stats.vitesse}`;
+        }
+        
+        // Pour les potions, afficher les statistiques spécifiques
+        if (item.type === 'consommable' || item.category === 'potion' || item.type === 'potion') {
+            // Afficher les points de vie restaurés dans la stat "Vie"
+            if (item.healAmount || (item.stats && item.stats.soin)) {
+                const healAmount = item.healAmount || item.stats.soin;
+                document.getElementById('equipment-vie').parentElement.style.display = 'flex';
+                document.getElementById('equipment-vie').textContent = `💚 +${healAmount} PV`;
+            }
+            
+            // Afficher le cooldown dans la stat "Vitesse" (temps de recharge)
+            if (item.cooldown) {
+                document.getElementById('equipment-vitesse').parentElement.style.display = 'flex';
+                document.getElementById('equipment-vitesse').textContent = `${item.cooldown / 1000}s CD`;
+            }
         }
         
         // Gérer les boutons

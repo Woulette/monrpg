@@ -22,6 +22,14 @@ function addItemToInventory(itemId, category) {
         case 'ressources':
             targetInventory = window.inventoryRessources;
             break;
+        case 'ressources_alchimiste':
+            // S'assurer que l'inventaire des ressources alchimiste existe
+            if (!window.inventoryRessourcesAlchimiste) {
+                console.log('🔧 Initialisation de l\'inventaire ressources alchimiste');
+                window.inventoryRessourcesAlchimiste = Array.from({ length: 80 }, () => ({ item: null, category: 'ressources_alchimiste' }));
+            }
+            targetInventory = window.inventoryRessourcesAlchimiste;
+            break;
         default:
             targetInventory = window.inventoryAll;
             break;
@@ -30,7 +38,7 @@ function addItemToInventory(itemId, category) {
     // Pour les ressources empilables, chercher d'abord un slot existant
     if (item.stackable && item.maxStack) {
         const existingSlot = targetInventory.findIndex(slot => 
-            slot.item && slot.item.id === itemId && 
+            slot && slot.item && slot.item.id === itemId && 
             (slot.item.quantity === undefined || slot.item.quantity < item.maxStack)
         );
         
@@ -48,7 +56,7 @@ function addItemToInventory(itemId, category) {
             
             // Mettre à jour aussi l'inventaire principal - IMPORTANT: Synchroniser les objets
             const mainExistingSlot = window.inventoryAll.findIndex(slot => 
-                slot.item && slot.item.id === itemId && 
+                slot && slot.item && slot.item.id === itemId && 
                 (slot.item.quantity === undefined || slot.item.quantity < item.maxStack)
             );
             if (mainExistingSlot !== -1) {
@@ -99,7 +107,7 @@ function addItemToInventory(itemId, category) {
     }
     
     // Trouver un slot vide dans l'inventaire cible
-    const emptySlot = targetInventory.findIndex(slot => slot.item === null);
+    const emptySlot = targetInventory.findIndex(slot => slot && slot.item === null);
     if (emptySlot === -1) {
         console.error(`Inventaire ${category} plein !`);
         return false;
@@ -202,12 +210,90 @@ function removeItemFromAllInventories(itemId) {
     }
 }
 
+// Fonction pour retirer une quantité spécifique d'un item
+function removeItemFromInventory(itemId, quantity = 1) {
+    let remainingQuantity = quantity;
+    
+    // Retirer de l'inventaire principal
+    if (window.inventoryAll) {
+        for (let i = 0; i < window.inventoryAll.length && remainingQuantity > 0; i++) {
+            const slot = window.inventoryAll[i];
+            if (slot.item && slot.item.id === itemId) {
+                const slotQuantity = slot.item.quantity || 1;
+                const toRemove = Math.min(remainingQuantity, slotQuantity);
+                
+                if (slotQuantity <= toRemove) {
+                    // Retirer tout l'item du slot
+                    window.inventoryAll[i] = { item: null, category: null };
+                    remainingQuantity -= slotQuantity;
+                } else {
+                    // Réduire la quantité
+                    slot.item.quantity = slotQuantity - toRemove;
+                    remainingQuantity -= toRemove;
+                }
+            }
+        }
+        reorganizeInventory(window.inventoryAll);
+    }
+    
+    // Retirer de chaque catégorie
+    [window.inventoryEquipement, window.inventoryPotions, window.inventoryRessources].forEach((inv, index) => {
+        const invName = ['inventoryEquipement', 'inventoryPotions', 'inventoryRessources'][index];
+        for (let i = 0; i < inv.length && remainingQuantity > 0; i++) {
+            const slot = inv[i];
+            if (slot.item && slot.item.id === itemId) {
+                const slotQuantity = slot.item.quantity || 1;
+                const toRemove = Math.min(remainingQuantity, slotQuantity);
+                
+                if (slotQuantity <= toRemove) {
+                    // Retirer tout l'item du slot
+                    inv[i] = { item: null, category: slot.category };
+                    remainingQuantity -= slotQuantity;
+                } else {
+                    // Réduire la quantité
+                    slot.item.quantity = slotQuantity - toRemove;
+                    remainingQuantity -= toRemove;
+                }
+            }
+        }
+        reorganizeInventory(inv);
+    });
+    
+    updateAllGrids();
+    
+    // Mettre à jour les établis si ils sont ouverts
+    if (typeof window.updateEtabliesInventory === 'function') {
+        window.updateEtabliesInventory();
+    }
+    
+    // Sauvegarde automatique après modification de l'inventaire
+    if (typeof window.autoSaveOnEvent === 'function') {
+        window.autoSaveOnEvent();
+    }
+    
+    // Vérifier le progrès de la quête de craft après avoir retiré un item
+    if (typeof window.checkCraftQuestProgress === 'function') {
+        window.checkCraftQuestProgress();
+    }
+    
+    return quantity - remainingQuantity; // Retourne le nombre d'items effectivement retirés
+}
+
 // Modifie handleItemClick pour synchroniser les retraits
 function handleItemClick(item, slotIndex, category) {
     
     // Vérifier si l'item est équipable (utiliser type ou slot)
     const isEquippable = (item.type === 'coiffe' || item.type === 'cape' || item.type === 'amulette' || item.type === 'anneau' || item.type === 'ceinture' || item.type === 'bottes') ||
                         (item.slot === 'coiffe' || item.slot === 'cape' || item.slot === 'amulette' || item.slot === 'anneau' || item.slot === 'ceinture' || item.slot === 'bottes');
+    
+    // Vérifier si l'item est une potion consommable
+    const isPotion = item.type === 'consommable' || 
+                    item.type === 'potion' ||
+                    item.category === 'potion' ||
+                    (item.id && item.id.includes('potion'));
+    
+    console.log('🔍 handleItemClick - Type:', item.type, 'Category:', item.category, 'ID:', item.id);
+    console.log('🔍 handleItemClick - Est une potion:', isPotion);
     
     if (isEquippable) {
         // Équiper l'item
@@ -234,8 +320,22 @@ function handleItemClick(item, slotIndex, category) {
                 alert(`Niveau requis: ${item.levelRequired}, votre niveau: ${player.level}`);
             }
         }
+    } else if (isPotion) {
+        // Utiliser la potion
+        console.log('🧪 Tentative d\'utilisation de potion:', item.name, item.id);
+        
+        // Utiliser l'ancien système de potions
+        if (typeof window.useHealingPotion === 'function') {
+            if (window.useHealingPotion(item.id)) {
+                // Retirer manuellement la potion de l'inventaire
+                removeItemFromInventory(item.id, 1);
+                updateAllGrids();
+            }
+        } else {
+            console.error('❌ Système de potions non disponible');
+        }
     } else {
-        console.error('Item non équipable:', item.name);
+        console.log('Item non utilisable:', item.name, 'Type:', item.type);
     }
 }
 
@@ -284,5 +384,6 @@ function handleEquipmentSlotClick(slotType) {
 // Exporter les fonctions
 window.addItemToInventory = addItemToInventory;
 window.removeItemFromAllInventories = removeItemFromAllInventories;
+window.removeItemFromInventory = removeItemFromInventory;
 window.handleItemClick = handleItemClick;
 window.handleEquipmentSlotClick = handleEquipmentSlotClick; 

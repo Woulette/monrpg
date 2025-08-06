@@ -284,7 +284,8 @@ class PlayerSaveManager {
             if (data.death) {
                 player.isDead = data.death.isDead || false;
                 player.deathTime = data.death.deathTime || 0;
-                player.respawnTime = data.death.respawnTime || 30000;
+                // Forcer le respawnTime à 3 secondes pour corriger les anciennes sauvegardes
+        player.respawnTime = 3000; // 3 secondes
             }
             
             // Restaurer les données legacy

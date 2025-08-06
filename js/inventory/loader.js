@@ -21,6 +21,7 @@ async function loadInventoryModules() {
         await loadScript('js/inventory/stats-display.js');
         await loadScript('js/inventory/tooltips.js');
         await loadScript('js/inventory/modals.js');
+        await loadScript('js/inventory/trash-system.js');
         await loadScript('js/inventory/main.js');
         
         
@@ -32,6 +33,11 @@ async function loadInventoryModules() {
         // Initialiser les événements du module main
         if (typeof initInventoryMain === 'function') {
             initInventoryMain();
+        }
+        
+        // Initialiser le système de poubelle
+        if (typeof initTrashSystem === 'function') {
+            initTrashSystem();
         }
         
     } catch (error) {

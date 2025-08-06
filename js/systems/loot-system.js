@@ -137,6 +137,69 @@ const resourceDatabase = {
         rarity: 'common',
         stackable: true,
         maxStack: 99
+    },
+    'pissenlit': {
+        id: 'pissenlit',
+        name: 'Pissenlit',
+        type: 'ressource',
+        category: 'plante',
+        icon: 'assets/objets/ressources_alchimiste/pissenlit.png',
+        description: 'Une plante commune utilisée par les alchimistes pour leurs potions.',
+        rarity: 'common',
+        stackable: true,
+        maxStack: 99
+    },
+    'particule': {
+        id: 'particule',
+        name: 'Particule',
+        type: 'ressource',
+        category: 'rare',
+        icon: 'assets/objets/particulerare.png',
+        description: 'Une particule rare et mystérieuse, très recherchée par les alchimistes.',
+        rarity: 'rare',
+        stackable: true,
+        maxStack: 99
+    },
+    'particule_epique': {
+        id: 'particule_epique',
+        name: 'Particule Épique',
+        type: 'ressource',
+        category: 'epique',
+        icon: 'assets/objets/particuleepique.png',
+        description: 'Une particule épique d\'une rareté exceptionnelle, convoitée par les plus grands alchimistes.',
+        rarity: 'epic',
+        stackable: true,
+        maxStack: 99
+    },
+    'potion_soin': {
+        id: 'potion_soin',
+        name: 'Potion de Soin Basique',
+        type: 'consommable',
+        category: 'potion',
+        icon: 'assets/objets/potiondesoinbasique.png',
+        description: 'Restaure 50 points de vie.',
+        shortDescription: 'Restaure 50 points de vie',
+        rarity: 'common',
+        stackable: true,
+        maxStack: 99,
+        healAmount: 50,
+        cooldown: 3000,
+        useFunction: 'useHealingPotion'
+    },
+    'potion_soin_basique': {
+        id: 'potion_soin_basique',
+        name: 'Potion de Soin Basique',
+        type: 'consommable',
+        category: 'potion',
+        icon: 'assets/objets/potiondesoinbasique.png',
+        description: 'Restaure 50 points de vie.',
+        shortDescription: 'Restaure 50 points de vie',
+        rarity: 'common',
+        stackable: true,
+        maxStack: 99,
+        healAmount: 50,
+        cooldown: 3000,
+        useFunction: 'useHealingPotion'
     }
 };
 
@@ -216,6 +279,12 @@ const lootTables = {
             {
                 id: 'cranedeneeks',
                 chance: 20, // 20% de chance
+                minQuantity: 1,
+                maxQuantity: 1
+            },
+            {
+                id: 'particule',
+                chance: 5, // 5% de chance
                 minQuantity: 1,
                 maxQuantity: 1
             }
@@ -597,6 +666,15 @@ function addResourceToInventory(resourceId, quantity) {
 
 // Fonction pour déclencher le loot quand un monstre meurt
 function triggerLoot(monster) {
+    // Protection contre les appels multiples pour le même monstre
+    if (monster.lootTriggered) {
+        console.log('⚠️ Loot déjà déclenché pour ce monstre:', monster.type);
+        return;
+    }
+    
+    // Marquer le monstre comme ayant déjà déclenché son loot
+    monster.lootTriggered = true;
+    
     const loot = generateLoot(monster.type);
     
     // Afficher la fenêtre de loot seulement s'il y a quelque chose
@@ -612,6 +690,71 @@ function testCertificatLoot() {
     return testLoot;
 }
 
+// Fonction pour utiliser une potion de soin
+function useHealingPotion(itemId) {
+    console.log('🧪 useHealingPotion appelée avec:', itemId);
+    
+    // Utiliser le nouveau système de potions si disponible
+    if (window.potionSystem && typeof window.potionSystem.usePotion === 'function') {
+        console.log('🔄 Utilisation du nouveau système de potions');
+        return window.potionSystem.usePotion(itemId);
+    }
+    
+    // Fallback vers l'ancien système
+    console.log('⚠️ Utilisation de l\'ancien système de potions');
+    const item = resourceDatabase[itemId];
+    if (!item || item.type !== 'consommable') {
+        console.error('❌ Item non consommable:', itemId);
+        return false;
+    }
+    
+    if (!window.player) {
+        console.error('❌ Joueur non trouvé');
+        return false;
+    }
+    
+    // Utiliser life/maxLife (système du jeu)
+    const currentLife = window.player.life || 0;
+    const maxLife = window.player.maxLife || 100;
+    
+    console.log(`🩺 État avant soin (ancien système): ${currentLife}/${maxLife} HP`);
+    
+    // Vérifier si le joueur a besoin de soins
+    if (currentLife >= maxLife) {
+        console.log('💚 Joueur déjà au maximum de vie');
+        return false;
+    }
+    
+    // Calculer les points de vie à restaurer
+    const healAmount = item.healAmount || 50;
+    const oldLife = currentLife;
+    const newLife = Math.min(maxLife, currentLife + healAmount);
+    const actualHeal = newLife - oldLife;
+    
+    // Appliquer le soin
+    window.player.life = newLife;
+    
+    // Afficher l'effet de soin
+    if (actualHeal > 0) {
+        console.log(`💚 Potion utilisée: +${actualHeal} PV (${newLife}/${maxLife})`);
+        
+        // Mettre à jour l'affichage des PV si la fonction existe
+        if (typeof window.updateHealthDisplay === 'function') {
+            window.updateHealthDisplay();
+        }
+        if (typeof window.updateHUD === 'function') {
+            window.updateHUD();
+        }
+        if (typeof window.updateStatsDisplay === 'function') {
+            window.updateStatsDisplay();
+        }
+        
+        return true;
+    }
+    
+    return false;
+}
+
 // Rendre les fonctions accessibles globalement
 window.generateLoot = generateLoot;
 window.showLootWindow = showLootWindow;
@@ -619,4 +762,5 @@ window.addResourceToInventory = addResourceToInventory;
 window.triggerLoot = triggerLoot;
 window.resourceDatabase = resourceDatabase;
 window.lootTables = lootTables;
-window.testCertificatLoot = testCertificatLoot; 
+window.testCertificatLoot = testCertificatLoot;
+window.useHealingPotion = useHealingPotion; 

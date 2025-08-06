@@ -128,6 +128,11 @@ async function loadMap(mapName) {
             window.checkDungeonProgressionOnMapLoad();
         }
         
+        // Charger les ressources récoltables pour cette map
+        if (typeof window.loadMapResources === "function") {
+            window.loadMapResources(mapName);
+        }
+        
         // Nettoyage spécial pour mapdonjonslimeboss - supprimer tous les slimes existants
         if (mapName === "mapdonjonslimeboss" && typeof window.forceCleanSlimesOnBossMap === "function") {
             // Nettoyage immédiat
@@ -497,11 +502,20 @@ function drawMap() {
 
                 // Vérifier que l'image est bien chargée avant de l'utiliser
                 if (ts.image && ts.image.complete && ts.image.naturalWidth !== 0) {
+                    // Appliquer les effets visuels pour les ressources d'alchimiste
+                    if (window.appliquerEffetsVisuelsRessources) {
+                        window.appliquerEffetsVisuelsRessources(ctx, x, y, gid);
+                    }
+                    
                     ctx.drawImage(
                         ts.image,
                         sx, sy, ts.tilewidth, ts.tileheight,
                         x * TILE_SIZE + window.mapOffsetX, y * TILE_SIZE + window.mapOffsetY, TILE_SIZE, TILE_SIZE
                     );
+                    
+                    // Réinitialiser les effets visuels
+                    ctx.globalAlpha = 1.0;
+                    ctx.filter = 'none';
                 }
             }
         }
@@ -566,11 +580,20 @@ function drawMap() {
 
                 // Vérifier que l'image est bien chargée avant de l'utiliser
                 if (ts.image && ts.image.complete && ts.image.naturalWidth !== 0) {
+                    // Appliquer les effets visuels pour les ressources d'alchimiste
+                    if (window.appliquerEffetsVisuelsRessources) {
+                        window.appliquerEffetsVisuelsRessources(ctx, x, y, gid);
+                    }
+                    
                     ctx.drawImage(
                         ts.image,
                         sx, sy, ts.tilewidth, ts.tileheight,
                         x * TILE_SIZE + window.mapOffsetX, y * TILE_SIZE + window.mapOffsetY, TILE_SIZE, TILE_SIZE
                     );
+                    
+                    // Réinitialiser les effets visuels
+                    ctx.globalAlpha = 1.0;
+                    ctx.filter = 'none';
                 }
                 
                 // Restaurer l'opacité si elle a été modifiée

@@ -9,13 +9,15 @@ function nextStepToTarget() {
             const dx = Math.abs(player.x - table.x);
             const dy = Math.abs(player.y - table.y);
             if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
-                if (table.type === 'cordonnier' && typeof openCordonnierWorkshopModal === 'function') {
-                    openCordonnierWorkshopModal();
-                } else if (table.type === 'bijoutier' && typeof openBijoutierWorkshopModal === 'function') {
-                    openBijoutierWorkshopModal();
-                } else if (typeof openTailorWorkshopModal === 'function') {
-                    openTailorWorkshopModal();
-                }
+                    if (table.type === 'cordonnier' && typeof openCordonnierWorkshopModal === 'function') {
+      openCordonnierWorkshopModal();
+    } else if (table.type === 'bijoutier' && typeof openBijoutierWorkshopModal === 'function') {
+      openBijoutierWorkshopModal();
+    } else if (table.type === 'alchimiste' && typeof openAlchimisteWorkshopModal === 'function') {
+      openAlchimisteWorkshopModal();
+    } else if (typeof openTailorWorkshopModal === 'function') {
+      openTailorWorkshopModal();
+    }
                 window.pendingOpenCraftTable = null;
             }
         }

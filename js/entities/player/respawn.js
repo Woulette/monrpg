@@ -3,6 +3,9 @@ function respawnPlayer() {
     // S'assurer qu'on utilise le bon objet player
     const currentPlayer = window.player || player;
     
+    // Forcer le respawnTime à 3 secondes pour éviter les problèmes
+    currentPlayer.respawnTime = 3000;
+    
     // Pénalité d'XP de 5%
     const xpPenalty = Math.floor(currentPlayer.xp * 0.05);
     currentPlayer.xp = Math.max(0, currentPlayer.xp - xpPenalty);
@@ -66,12 +69,28 @@ function respawnPlayer() {
     // S'assurer que window.player pointe vers le bon objet
     window.player = currentPlayer;
     
-    // Nettoyer l'écran noir
+    // Nettoyer l'écran noir de manière forcée
     if (typeof clearBlackScreen === "function") {
         clearBlackScreen();
-    } else if (window.blackScreenStartTime) {
+    }
+    
+    // Forcer le nettoyage des variables d'écran noir
+    if (window.blackScreenStartTime) {
         window.blackScreenStartTime = null;
         window.blackScreenDuration = 250; // Restaurer la durée par défaut
+    }
+    
+    // Forcer le nettoyage du timeout de sécurité
+    if (window.blackScreenTimeout) {
+        clearTimeout(window.blackScreenTimeout);
+        window.blackScreenTimeout = null;
+    }
+    
+    // Forcer un redessinage immédiat
+    if (typeof drawGame === "function") {
+        setTimeout(() => {
+            drawGame();
+        }, 50);
     }
 }
 

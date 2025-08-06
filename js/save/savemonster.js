@@ -21,6 +21,11 @@ function saveMonstersForMap(mapName) {
         monstersToSave = window.monsters.filter(m => 
             (m.type === "crow" || m.type === "corbeauelite" || m.type === "maitrecorbeau") && !m.isDead
         );
+    } else if (mapName === "map4" || mapName === "mapzonealuineeks1") {
+        // Sur les maps 4 et mapzonealuineeks1, sauvegarder UNIQUEMENT les Aluineeks
+        monstersToSave = window.monsters.filter(m => 
+            m.type === "aluineeks" && !m.isDead
+        );
     } else {
         // Sur les autres maps (non reconnues), ne sauvegarder aucun monstre
         monstersToSave = [];
@@ -137,6 +142,10 @@ function loadMonstersForMap(mapName) {
             expectedCount = 3; // 3 slimes pour les maps slime
         } else if (mapName === "map1" || mapName === "map2" || mapName === "map3") {
             expectedCount = 5; // 5 corbeaux pour les maps normales
+        } else if (mapName === "mapzonealuineeks1") {
+            expectedCount = 10; // 10 Aluineeks pour mapzonealuineeks1
+        } else if (mapName === "map4") {
+            expectedCount = 0; // Aucun monstre sur map4 pour le moment
         } else {
             expectedCount = 0; // Aucun monstre pour les autres maps
         }

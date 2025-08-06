@@ -152,6 +152,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 handleCraftTableClick(nx, ny, 'cordonnier');
                 return;
             }
+            
+            // Chaudron d'alchimiste sur 22805 (déplacement + ouverture à l'arrivée)
+            if (tileId2 === 22805 && window.currentMap === "map4") {
+                handleCraftTableClick(nx, ny, 'alchimiste');
+                return;
+            }
+            
+            // Ressources d'alchimiste (ID 25 calque 4)
+            if (tileId4 === 25 && window.currentMap === "map1") {
+                if (window.gererClicRessourceAlchimiste) {
+                    const resultat = window.gererClicRessourceAlchimiste(nx, ny);
+                    if (resultat) {
+                        return; // Arrêter le traitement si la récolte a été démarrée
+                    }
+                }
+            }
         }
         
         // Sinon, déplacement classique vers la case cliquée
@@ -600,14 +616,21 @@ function handleSpaceAttack() {
                 
                 // Riposte du monstre s'il est encore vivant (sauf pour les slimes qui ont leur propre système d'attaque)
                 if (attackTarget.hp > 0 && attackTarget.type !== "slime") {
-                    const monsterBaseDamage = attackTarget.damage !== undefined ? attackTarget.damage : 3;
-                    const monsterTotalDamage = monsterBaseDamage + (attackTarget.force || 0);
-                    const randomFactor = 0.75 + Math.random() * 0.5; // Variation de +/- 25%
-                    const monsterDamage = Math.max(1, Math.floor(monsterTotalDamage * randomFactor) - player.defense);
-                    player.life -= monsterDamage;
-                    
-                    if (typeof displayDamage === 'function') {
-                        displayDamage(player.px, player.py, monsterDamage, 'damage', true);
+                    // Cooldown de riposte pour éviter les attaques doubles
+                    const riposteCooldown = 1000; // 1 seconde de cooldown
+                    if (!attackTarget.lastRiposte || (Date.now() - attackTarget.lastRiposte) >= riposteCooldown) {
+                        const monsterBaseDamage = attackTarget.damage !== undefined ? attackTarget.damage : 3;
+                        const monsterTotalDamage = monsterBaseDamage + (attackTarget.force || 0);
+                        const randomFactor = 0.75 + Math.random() * 0.5; // Variation de +/- 25%
+                        const monsterDamage = Math.max(1, Math.floor(monsterTotalDamage * randomFactor) - player.defense);
+                        player.life -= monsterDamage;
+                        
+                        if (typeof displayDamage === 'function') {
+                            displayDamage(player.px, player.py, monsterDamage, 'damage', true);
+                        }
+                        
+                        // Marquer le temps de la dernière riposte
+                        attackTarget.lastRiposte = Date.now();
                     }
                 }
                 
