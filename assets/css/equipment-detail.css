@@ -8,8 +8,7 @@
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: transparent;
-    pointer-events: none;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 #equipment-detail-content {
@@ -45,6 +44,8 @@
     font-weight: bold;
     cursor: pointer;
     transition: color 0.2s ease;
+    pointer-events: auto !important;
+    z-index: 99999 !important;
 }
 
 #close-equipment-detail:hover {

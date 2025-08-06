@@ -77,6 +77,10 @@ window.triplePunchCombo = {
 
 // Attendre que tous les scripts soient chargés
 document.addEventListener('DOMContentLoaded', () => {
+    // NETTOYAGE CRITIQUE : Supprimer toutes les classes bloquantes dès le chargement
+    document.body.classList.remove('character-menu-active', 'menu-active');
+    console.log('🧹 Classes bloquantes nettoyées au chargement de la page');
+    
     // Vérifier si le système de menu multi-personnages est actif
     if (typeof window.gameState !== 'undefined' && window.gameState === "menu") {
         // Ne rien initialiser, ne pas lancer la boucle de jeu
@@ -89,6 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Fonction pour démarrer le jeu directement (fallback)
 function startGameDirectly() {
+    // NETTOYAGE CRITIQUE : Supprimer les classes bloquantes au démarrage du jeu
+    document.body.classList.remove('character-menu-active', 'menu-active');
+    console.log('🧹 Classes bloquantes nettoyées dans startGameDirectly');
+    
     // Vérifier qu'on est bien en mode jeu
     if (window.gameState !== "playing") {
         return;
@@ -2633,18 +2641,567 @@ window.addEventListener('keydown', (e) => {
             break;
         case 'q':
             e.preventDefault();
-            if (typeof window.openQuestsModal === 'function') {
+            // Ouvrir/fermer les quêtes avec la touche Q
+            const questsModalQ = document.getElementById('quests-main-modal');
+            if (questsModalQ) {
+                const isOpenQ = questsModalQ.style.display === 'flex';
+                questsModalQ.style.display = isOpenQ ? 'none' : 'flex';
+                console.log('📋 Quêtes ' + (isOpenQ ? 'fermées' : 'ouvertes') + ' avec la touche Q');
+            } else if (typeof window.openQuestsModal === 'function') {
                 window.openQuestsModal();
+            }
+            break;
+        case 'm':
+            e.preventDefault();
+            // Ouvrir/fermer la carte
+            const mapModalM = document.getElementById('map-modal');
+            if (mapModalM) {
+                const isOpenM = mapModalM.style.display === 'flex';
+                mapModalM.style.display = isOpenM ? 'none' : 'flex';
+                console.log('🗺️ Carte ' + (isOpenM ? 'fermée' : 'ouverte') + ' avec la touche M');
+            }
+            break;
+        case 'f':
+            e.preventDefault();
+            // Ouvrir/fermer les quêtes
+            const questsModalF = document.getElementById('quests-main-modal');
+            if (questsModalF) {
+                const isOpenF = questsModalF.style.display === 'flex';
+                questsModalF.style.display = isOpenF ? 'none' : 'flex';
+                console.log('📋 Quêtes ' + (isOpenF ? 'fermées' : 'ouvertes') + ' avec la touche F');
+            } else if (typeof window.openQuestsModal === 'function') {
+                window.openQuestsModal();
+            }
+            break;
+        case 'p':
+            e.preventDefault();
+            // Ouvrir/fermer les sorts
+            const sortModal = document.getElementById('sort-modal');
+            if (sortModal) {
+                const isOpen = sortModal.style.display === 'flex' || sortModal.style.display === 'block';
+                sortModal.style.display = isOpen ? 'none' : 'flex';
+                console.log('⚡ Sorts ' + (isOpen ? 'fermés' : 'ouverts') + ' avec la touche P');
             }
             break;
         case 'escape':
             e.preventDefault();
-            if (typeof window.closeAllModals === 'function') {
+            // Fermer toutes les modales avec Échap
+            const modalsToClose = [
+                document.getElementById('map-modal'),
+                document.getElementById('quests-main-modal'),
+                document.getElementById('sort-modal'),
+                document.getElementById('inventory-modal'),
+                document.getElementById('stats-modal')
+            ];
+            
+            let modalClosed = false;
+            modalsToClose.forEach(modal => {
+                if (modal && (modal.style.display === 'flex' || modal.style.display === 'block')) {
+                    modal.style.display = 'none';
+                    modalClosed = true;
+                }
+            });
+            
+            if (modalClosed) {
+                console.log('🚪 Modales fermées avec Échap');
+            } else if (typeof window.closeAllModals === 'function') {
                 window.closeAllModals();
             }
             break;
     }
 });
+
+// Fonction utilitaire pour débloquer l'inventaire et statistiques
+window.debloquerInventaireEtStats = function() {
+    console.log('🔧 === DÉBLOQUAGE INVENTAIRE ET STATISTIQUES ===');
+    
+    // Nettoyer les classes bloquantes
+    document.body.classList.remove('character-menu-active', 'menu-active');
+    console.log('✅ Classes bloquantes supprimées');
+    
+    // Vérifier les éléments d'inventaire
+    const inventoryIcon = document.getElementById('inventory-icon');
+    const statsIcon = document.getElementById('stats-icon');
+    const inventoryModal = document.getElementById('inventory-modal');
+    const statsModal = document.getElementById('stats-modal');
+    
+    console.log('📊 État des éléments:');
+    console.log('- Icône inventaire:', inventoryIcon ? '✅' : '❌');
+    console.log('- Icône stats:', statsIcon ? '✅' : '❌');
+    console.log('- Modal inventaire:', inventoryModal ? '✅' : '❌');
+    console.log('- Modal stats:', statsModal ? '✅' : '❌');
+    
+    // Forcer la réinitialisation des événements d'inventaire
+    if (typeof window.initInventoryEvents === 'function') {
+        window.initInventoryEvents();
+        console.log('✅ Événements d\'inventaire réinitialisés');
+    }
+    
+    console.log('🎯 Teste maintenant avec les touches I (inventaire) et S (stats)');
+    console.log('🎯 Ou utilise directement les icônes en bas à droite');
+};
+
+// RÉPARATION ÉQUIPEMENT D'URGENCE - Accessible depuis main.js
+window.urgenceEquipement = function() {
+    console.log('🚑 === RÉPARATION D\'URGENCE ÉQUIPEMENT ===');
+    
+    // DIAGNOSTIC PRÉALABLE : Vérifier l'état des équipements existants
+    console.log('🔍 === DIAGNOSTIC ÉQUIPEMENTS EXISTANTS ===');
+    if (window.equippedItems) {
+        Object.entries(window.equippedItems).forEach(([slot, item]) => {
+            if (item) {
+                console.log(`📋 ${slot}: ${item.name || 'SANS NOM'} (ID: ${item.id || 'SANS ID'})`);
+                console.log(`   Structure:`, typeof item, Object.keys(item));
+            } else {
+                console.log(`📋 ${slot}: Vide`);
+            }
+        });
+    } else {
+        console.log('❌ window.equippedItems n\'existe pas !');
+    }
+    
+    // 1. Corriger les fonctions manquantes
+    if (typeof window.unequipItem !== 'function') {
+        console.log('🔧 Création: unequipItem manquant');
+        window.unequipItem = function(slot) {
+            if (!window.equippedItems) return false;
+            const item = window.equippedItems[slot];
+            if (!item) return false;
+            window.equippedItems[slot] = null;
+            if (typeof window.applyEquipmentStats === 'function') {
+                window.applyEquipmentStats();
+            }
+            console.log(`✅ Déséquipé: ${item.name}`);
+            return true;
+        };
+    }
+    
+    if (typeof window.getItemInSlot !== 'function') {
+        console.log('🔧 Création: getItemInSlot manquant');
+        window.getItemInSlot = function(slot) {
+            if (!window.equippedItems) return null;
+            return window.equippedItems[slot];
+        };
+    }
+    
+    if (typeof window.closeEquipmentDetailModal !== 'function') {
+        console.log('🔧 Création: closeEquipmentDetailModal manquant');
+        window.closeEquipmentDetailModal = function() {
+            const modal = document.getElementById('equipment-detail-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                console.log('✅ Modal fermée');
+            }
+        };
+    }
+    
+    // 2. FORCER les événements de déséquipement sur les slots équipés
+    const equipSlots = document.querySelectorAll('.equip-slot');
+    console.log(`🔧 Réparation sur ${equipSlots.length} slots d'équipement`);
+    
+    equipSlots.forEach(slot => {
+        const slotType = slot.dataset.slot;
+        
+        // Supprimer tous les anciens événements
+        const newSlot = slot.cloneNode(true);
+        slot.parentNode.replaceChild(newSlot, slot);
+        
+        // Ajouter le nouvel événement de double-clic
+        newSlot.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log(`🔧 Double-clic d'urgence sur ${slotType}`);
+            
+            const equippedItem = window.getItemInSlot(slotType);
+            console.log(`🔍 Item trouvé dans slot ${slotType}:`, equippedItem);
+            
+            if (equippedItem) {
+                console.log(`🔍 Tentative de déséquipement de: ${equippedItem.name}`);
+                const success = window.unequipItem(slotType);
+                console.log(`🔍 Résultat déséquipement: ${success}`);
+                
+                if (success) {
+                // Remettre dans les inventaires
+                if (window.inventoryEquipement) {
+                    const emptySlot = window.inventoryEquipement.findIndex(s => s.item === null);
+                    if (emptySlot !== -1) {
+                        window.inventoryEquipement[emptySlot] = {
+                            item: equippedItem,
+                            category: 'equipement'
+                        };
+                    }
+                }
+                
+                if (window.inventoryAll) {
+                    const emptyMainSlot = window.inventoryAll.findIndex(s => s.item === null);
+                    if (emptyMainSlot !== -1) {
+                        window.inventoryAll[emptyMainSlot] = {
+                            item: equippedItem,
+                            category: 'equipement'
+                        };
+                    }
+                }
+                
+                // Mettre à jour l'affichage
+                if (typeof window.updateAllGrids === 'function') {
+                    window.updateAllGrids();
+                }
+                if (typeof window.updateEquipmentDisplay === 'function') {
+                    window.updateEquipmentDisplay();
+                }
+                
+                console.log(`✅ ${equippedItem.name} déséquipé et remis en inventaire`);
+                }
+            } else {
+                console.log('❌ Aucun item trouvé dans le slot ou échec du déséquipement');
+            }
+        });
+    });
+    
+    // 3. FORCER les événements de fermeture des fiches (AGGRESSIF)
+    setTimeout(() => {
+        console.log('🔧 Forçage AGRESSIF événements fermeture');
+        
+        // MÉTHODE 1: Forcer sur l'ID spécifique avec logs
+        const closeBtn = document.getElementById('close-equipment-detail');
+        if (closeBtn) {
+            console.log('✅ Bouton X trouvé:', closeBtn);
+            const newCloseBtn = closeBtn.cloneNode(true);
+            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+            
+            ['click', 'mousedown', 'touchstart'].forEach(eventType => {
+                newCloseBtn.addEventListener(eventType, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    console.log(`🔧 Fermeture via ${eventType} sur X`);
+                    const modal = document.getElementById('equipment-detail-modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                        console.log('✅ Fiche fermée via X');
+                    }
+                });
+            });
+        } else {
+            console.log('❌ Bouton X non trouvé !');
+        }
+        
+        // MÉTHODE 2: Forcer sur TOUS les éléments × avec logs
+        const allCloseElements = document.querySelectorAll('span, button, div');
+        let foundCloseElements = 0;
+        allCloseElements.forEach(element => {
+            if (element.innerHTML === '&times;' || element.textContent === '×' || element.id === 'close-equipment-detail') {
+                foundCloseElements++;
+                console.log(`🔧 Élément de fermeture ${foundCloseElements} trouvé:`, element);
+                
+                ['click', 'mousedown', 'touchstart'].forEach(eventType => {
+                    element.addEventListener(eventType, function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        console.log(`🔧 Fermeture via ${eventType} sur élément ×`);
+                        
+                        // Chercher le modal parent
+                        let currentElement = e.target;
+                        while (currentElement && currentElement !== document) {
+                            if (currentElement.id === 'equipment-detail-modal' || 
+                                currentElement.className.includes('equipment-detail') ||
+                                currentElement.className.includes('modal')) {
+                                currentElement.style.display = 'none';
+                                console.log('✅ Fiche fermée via élément parent');
+                                return;
+                            }
+                            currentElement = currentElement.parentElement;
+                        }
+                        
+                        // Si pas trouvé, fermer le modal par ID
+                        const modal = document.getElementById('equipment-detail-modal');
+                        if (modal) {
+                            modal.style.display = 'none';
+                            console.log('✅ Fiche fermée via ID direct');
+                        }
+                    });
+                });
+            }
+        });
+        console.log(`📊 ${foundCloseElements} éléments de fermeture traités`);
+        
+        // MÉTHODE 3: Clic extérieur
+        const modal = document.getElementById('equipment-detail-modal');
+        if (modal) {
+            console.log('🔧 Forçage clic extérieur sur modal');
+            const newModal = modal.cloneNode(true);
+            modal.parentNode.replaceChild(newModal, modal);
+            
+            newModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    console.log('🔧 Fermeture via clic extérieur');
+                    this.style.display = 'none';
+                    console.log('✅ Fiche fermée via extérieur');
+                }
+            });
+        }
+    }, 200);
+    
+    console.log('✅ Réparation d\'urgence terminée !');
+    console.log('🧪 Teste maintenant :');
+    console.log('  - Double-clic sur équipement équipé → déséquiper');
+    console.log('  - Clic simple sur item → ouvrir fiche');
+    console.log('  - Clic sur X → fermer fiche');
+};
+
+// Version silencieuse pour application automatique
+window.urgenceEquipementSilencieux = function() {
+    // 1. Corriger les fonctions manquantes (sans logs)
+    if (typeof window.unequipItem !== 'function') {
+        window.unequipItem = function(slot) {
+            if (!window.equippedItems) return false;
+            const item = window.equippedItems[slot];
+            if (!item) return false;
+            window.equippedItems[slot] = null;
+            if (typeof window.applyEquipmentStats === 'function') {
+                window.applyEquipmentStats();
+            }
+            return true;
+        };
+    }
+    
+    if (typeof window.getItemInSlot !== 'function') {
+        window.getItemInSlot = function(slot) {
+            if (!window.equippedItems) return null;
+            return window.equippedItems[slot];
+        };
+    }
+    
+    if (typeof window.closeEquipmentDetailModal !== 'function') {
+        window.closeEquipmentDetailModal = function() {
+            const modal = document.getElementById('equipment-detail-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        };
+    }
+    
+    // 2. FORCER les événements de déséquipement sur les slots équipés (silencieux)
+    const equipSlots = document.querySelectorAll('.equip-slot');
+    
+    equipSlots.forEach(slot => {
+        const slotType = slot.dataset.slot;
+        
+        // Supprimer tous les anciens événements
+        const newSlot = slot.cloneNode(true);
+        slot.parentNode.replaceChild(newSlot, slot);
+        
+        // Ajouter le nouvel événement de double-clic
+        newSlot.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const equippedItem = window.getItemInSlot(slotType);
+            if (equippedItem && window.unequipItem(slotType)) {
+                // Remettre dans les inventaires
+                if (window.inventoryEquipement) {
+                    const emptySlot = window.inventoryEquipement.findIndex(s => s.item === null);
+                    if (emptySlot !== -1) {
+                        window.inventoryEquipement[emptySlot] = {
+                            item: equippedItem,
+                            category: 'equipement'
+                        };
+                    }
+                }
+                
+                if (window.inventoryAll) {
+                    const emptyMainSlot = window.inventoryAll.findIndex(s => s.item === null);
+                    if (emptyMainSlot !== -1) {
+                        window.inventoryAll[emptyMainSlot] = {
+                            item: equippedItem,
+                            category: 'equipement'
+                        };
+                    }
+                }
+                
+                // Mettre à jour l'affichage
+                if (typeof window.updateAllGrids === 'function') {
+                    window.updateAllGrids();
+                }
+                if (typeof window.updateEquipmentDisplay === 'function') {
+                    window.updateEquipmentDisplay();
+                }
+            }
+        });
+    });
+    
+    // 3. FORCER les événements de fermeture des fiches (silencieux + aggressif)
+    setTimeout(() => {
+        // MÉTHODE 1: Forcer sur l'ID spécifique
+        const closeBtn = document.getElementById('close-equipment-detail');
+        if (closeBtn) {
+            // Supprimer TOUS les événements existants
+            const newCloseBtn = closeBtn.cloneNode(true);
+            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+            
+            // Ajouter plusieurs types d'événements pour être sûr
+            ['click', 'mousedown', 'touchstart'].forEach(eventType => {
+                newCloseBtn.addEventListener(eventType, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    const modal = document.getElementById('equipment-detail-modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+        }
+        
+        // MÉTHODE 2: Forcer sur TOUS les éléments avec &times;
+        const allCloseElements = document.querySelectorAll('span, button, div');
+        allCloseElements.forEach(element => {
+            if (element.innerHTML === '&times;' || element.textContent === '×' || element.id === 'close-equipment-detail') {
+                ['click', 'mousedown', 'touchstart'].forEach(eventType => {
+                    element.addEventListener(eventType, function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        
+                        // Chercher le modal parent
+                        let currentElement = e.target;
+                        while (currentElement && currentElement !== document) {
+                            if (currentElement.id === 'equipment-detail-modal' || 
+                                currentElement.className.includes('equipment-detail') ||
+                                currentElement.className.includes('modal')) {
+                                currentElement.style.display = 'none';
+                                return;
+                            }
+                            currentElement = currentElement.parentElement;
+                        }
+                        
+                        // Si pas trouvé, fermer le modal par ID
+                        const modal = document.getElementById('equipment-detail-modal');
+                        if (modal) {
+                            modal.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+        
+        // MÉTHODE 3: Clic extérieur sur le modal
+        const modal = document.getElementById('equipment-detail-modal');
+        if (modal) {
+            const newModal = modal.cloneNode(true);
+            modal.parentNode.replaceChild(newModal, modal);
+            
+            newModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+        }
+    }, 100);
+};
+
+// Fonction pour tester la théorie des équipements corrompus
+window.testTheorieEquipement = function() {
+    console.log('🧪 === TEST THÉORIE ÉQUIPEMENTS CORROMPUS ===');
+    
+    if (!window.equippedItems) {
+        console.log('❌ Aucun équipement trouvé');
+        return;
+    }
+    
+    // Trouver un équipement à tester
+    let testSlot = null;
+    let testItem = null;
+    
+    Object.entries(window.equippedItems).forEach(([slot, item]) => {
+        if (item && !testSlot) {
+            testSlot = slot;
+            testItem = item;
+        }
+    });
+    
+    if (!testItem) {
+        console.log('❌ Aucun équipement équipé à tester');
+        return;
+    }
+    
+    console.log(`🔍 Test sur: ${testItem.name} (slot: ${testSlot})`);
+    console.log('🔍 Structure actuelle:', testItem);
+    
+    // Test 1: Vérifier si l'item existe dans la base de données
+    if (window.equipmentDatabase && window.equipmentDatabase[testItem.id]) {
+        const dbItem = window.equipmentDatabase[testItem.id];
+        console.log('✅ Item trouvé dans equipmentDatabase');
+        console.log('🔍 Version base de données:', dbItem);
+        
+        // Comparer les structures
+        const currentKeys = Object.keys(testItem).sort();
+        const dbKeys = Object.keys(dbItem).sort();
+        
+        console.log('🔍 Clés équipement actuel:', currentKeys);
+        console.log('🔍 Clés base de données:', dbKeys);
+        
+        if (JSON.stringify(currentKeys) !== JSON.stringify(dbKeys)) {
+            console.log('⚠️ STRUCTURE DIFFÉRENTE DÉTECTÉE !');
+            console.log('💡 Solution: Remplacer par la version propre de la base');
+            
+            // Proposition de correction
+            window.corrigerEquipementCorrompu = function() {
+                console.log('🔧 Correction de l\'équipement corrompu...');
+                window.equippedItems[testSlot] = { ...dbItem };
+                console.log('✅ Équipement corrigé avec la version de la base');
+                
+                if (typeof window.updateEquipmentDisplay === 'function') {
+                    window.updateEquipmentDisplay();
+                }
+                
+                console.log('🧪 Teste maintenant le double-clic pour déséquiper');
+            };
+            
+            console.log('📋 Pour corriger, tape: corrigerEquipementCorrompu()');
+        } else {
+            console.log('✅ Structure identique - pas de corruption détectée');
+        }
+    } else {
+        console.log('❌ Item NON TROUVÉ dans equipmentDatabase !');
+        console.log('💡 C\'est probablement ça le problème !');
+        console.log('🔍 ID recherché:', testItem.id);
+        console.log('🔍 IDs disponibles:', window.equipmentDatabase ? Object.keys(window.equipmentDatabase) : 'equipmentDatabase manquant');
+    }
+};
+
+// Nettoyage automatique périodique pour éviter les blocages persistants
+let autoCleanupInterval = null;
+
+function startAutoCleanup() {
+    // Nettoyer d'abord
+    if (autoCleanupInterval) {
+        clearInterval(autoCleanupInterval);
+    }
+    
+    // Vérifier et nettoyer toutes les 5 secondes
+    autoCleanupInterval = setInterval(() => {
+        if (window.gameState === "playing" && 
+            (document.body.classList.contains('character-menu-active') || 
+             document.body.classList.contains('menu-active'))) {
+            console.log('🧹 Nettoyage automatique : classes bloquantes détectées et supprimées');
+            document.body.classList.remove('character-menu-active', 'menu-active');
+        }
+    }, 5000);
+}
+
+// Démarrer le nettoyage automatique dès que possible
+setTimeout(startAutoCleanup, 2000);
+
+// APPLICATION AUTOMATIQUE DES CORRECTIONS D'ÉQUIPEMENT À CHAQUE CHARGEMENT
+setTimeout(() => {
+    console.log('🔧 Application automatique des corrections d\'équipement...');
+    if (typeof window.urgenceEquipementSilencieux === 'function') {
+        window.urgenceEquipementSilencieux();
+        console.log('✅ Corrections d\'équipement appliquées automatiquement (silencieux)');
+    }
+}, 3000); // 3 secondes après le chargement pour être sûr que tout est initialisé
 
 // Exporter les fonctions
 window.disableGameInputs = disableGameInputs;

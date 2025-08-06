@@ -109,6 +109,12 @@ function attachGridEvents(grid, category) {
             
             if (slotData && slotData.item) {
                 console.log('🖱️ Objet trouvé:', slotData.item.name);
+                
+                // Nettoyer les timeouts existants avant d'en créer un nouveau
+                if (clickTimeout) {
+                    clearTimeout(clickTimeout);
+                }
+                
                 clickTimeout = setTimeout(() => {
                     if (!isDoubleClick) {
                         console.log('🖱️ Ouverture fenêtre détaillée pour:', slotData.item.name);

@@ -126,7 +126,7 @@ function openWorkshopModal({
   const craftTitle = document.createElement('h3');
   // Déterminer le métier selon le cssPrefix
   let metierKey = '';
-  if (cssPrefix.includes('tailleur')) metierKey = 'tailleur';
+  if (cssPrefix.includes('tailor')) metierKey = 'tailleur';
   else if (cssPrefix.includes('cordonnier')) metierKey = 'cordonnier';
   else if (cssPrefix.includes('bijoutier')) metierKey = 'bijoutier';
   
@@ -542,9 +542,9 @@ function openWorkshopModal({
     row.appendChild(name);
     
     // XP gagné (à droite dans la même ligne)
-    if (recipe.xpGagne) {
+    if (recipe.xpGained) {
       const xpText = document.createElement('span');
-      xpText.textContent = `+${recipe.xpGagne} XP`;
+      xpText.textContent = `+${recipe.xpGained} XP`;
       xpText.className = `${cssPrefix}xp-text`;
       xpText.style.marginLeft = 'auto';
       xpText.style.color = '#bfa14a';
@@ -673,12 +673,14 @@ function openWorkshopModal({
             }
           }
           // Trouver la recette correspondante
+          console.log('🔍 Debug - Recettes disponibles:', recipes);
           let recipe = recipes.find(r => {
             if (r.ingredients.length !== usedIngredients.length) return false;
             return r.ingredients.every((ing, idx) => {
               return usedIngredients[idx] && (usedIngredients[idx].icon.endsWith(ing.icon) || ing.icon.endsWith(usedIngredients[idx].icon)) && ing.quantity === usedIngredients[idx].quantity;
             });
           });
+          console.log('🔍 Debug - Recette trouvée:', recipe);
           if (!recipe) {
             alert('Aucune recette ne correspond à la combinaison dans les slots de craft.');
             return;
@@ -734,7 +736,7 @@ function openWorkshopModal({
             case 'Corbacoiffe': equipId = 'coiffe_corbeau'; break;
             case 'Corbobotte': equipId = 'bottes_corbeau'; break;
             case 'Corbature': equipId = 'ceinture_corbeau'; break;
-            case 'Corbolier': equipId = 'amulette_corbeau'; break;
+            case 'Corbollier': equipId = 'amulette_corbeau'; break;
             case 'Corbaneau': equipId = 'anneau_corbeau'; break;
             case 'Cape de Slime': equipId = 'cape_slime'; break;
             case 'Coiffe de Slime': equipId = 'coiffe_slime'; break;
@@ -752,6 +754,29 @@ function openWorkshopModal({
                 return;
               }
             }
+          }
+
+          // Ajouter l'XP du métier
+          console.log('🔍 Debug XP - recipe:', recipe);
+          console.log('🔍 Debug XP - recipe.xpGained:', recipe.xpGained);
+          console.log('🔍 Debug XP - metierKey:', metierKey);
+          console.log('🔍 Debug XP - window.gainMetierXP exists:', !!window.gainMetierXP);
+          if (recipe.xpGained && window.gainMetierXP) {
+            console.log('🎯 Tentative gain XP:', metierKey, recipe.xpGained);
+            window.gainMetierXP(metierKey, recipe.xpGained);
+            if (window.showFloatingMessage) {
+              window.showFloatingMessage(
+                `+${recipe.xpGained} XP ${metierKey.charAt(0).toUpperCase() + metierKey.slice(1)} !`, 
+                window.player.x, 
+                window.player.y - 30, 
+                '#4CAF50', 
+                '16px'
+              );
+            }
+          } else {
+            console.log('❌ Conditions XP non remplies');
+            if (!recipe.xpGained) console.log('❌ recipe.xpGained manquant');
+            if (!window.gainMetierXP) console.log('❌ window.gainMetierXP manquant');
           }
           // Vider les slots de craft
           for (let i = 0; i < craftGrid.children.length; i++) {
@@ -792,47 +817,51 @@ window.openTailorWorkshopModal = function() {
   openWorkshopModal({
     idPrefix: 'tailor',
     titleText: 'Etablie du tailleur',
-    recipes: [
-      {
-        name: 'Corbacape',
-        icon: 'assets/equipements/capes/capecorbeau.png',
-        type: 'cape',
-        levelRequired: 3,
-        ingredients: [
-          { name: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantity: 5 },
-          { name: 'Patte de Corbeau', icon: 'assets/objets/pattedecorbeau.png', quantity: 2 }
-        ]
-      },
-      {
-        name: 'Corbacoiffe',
-        icon: 'assets/equipements/coiffes/coiffecorbeau.png',
-        type: 'coiffe',
-        levelRequired: 3,
-        ingredients: [
-          { name: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantity: 3 }
-        ]
-      },
-      {
-        name: 'Cape de Slime',
-        icon: 'assets/equipements/capes/capeslime.png',
-        type: 'cape',
-        levelRequired: 10,
-        ingredients: [
-          { name: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantity: 3 },
-          { name: 'Mucus de Slime', icon: 'assets/objets/mucusslime.png', quantity: 2 }
-        ]
-      },
-      {
-        name: 'Coiffe de Slime',
-        icon: 'assets/equipements/coiffes/coiffeslime.png',
-        type: 'coiffe',
-        levelRequired: 10,
-        ingredients: [
-          { name: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantity: 2 },
-          { name: 'Noyau de Slime', icon: 'assets/objets/noyauslime.png', quantity: 1 }
-        ]
-      }
-    ],
+            recipes: [
+        {
+          name: 'Corbacape',
+          icon: 'assets/equipements/capes/capecorbeau.png',
+          type: 'cape',
+          levelRequired: 3,
+          xpGained: 10,
+          ingredients: [
+            { name: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantity: 5 },
+            { name: 'Patte de Corbeau', icon: 'assets/objets/pattedecorbeau.png', quantity: 2 }
+          ]
+        },
+        {
+          name: 'Corbacoiffe',
+          icon: 'assets/equipements/coiffes/coiffecorbeau.png',
+          type: 'coiffe',
+          levelRequired: 3,
+          xpGained: 10,
+          ingredients: [
+            { name: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantity: 3 }
+          ]
+        },
+        {
+          name: 'Cape de Slime',
+          icon: 'assets/equipements/capes/capeslime.png',
+          type: 'cape',
+          levelRequired: 10,
+          xpGained: 10,
+          ingredients: [
+            { name: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantity: 3 },
+            { name: 'Mucus de Slime', icon: 'assets/objets/mucusslime.png', quantity: 2 }
+          ]
+        },
+        {
+          name: 'Coiffe de Slime',
+          icon: 'assets/equipements/coiffes/coiffeslime.png',
+          type: 'coiffe',
+          levelRequired: 10,
+          xpGained: 10,
+          ingredients: [
+            { name: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantity: 2 },
+            { name: 'Noyau de Slime', icon: 'assets/objets/noyauslime.png', quantity: 1 }
+          ]
+        }
+      ],
     cssPrefix: 'tailor-'
   });
 };
@@ -848,6 +877,7 @@ window.openCordonnierWorkshopModal = function() {
         icon: 'assets/equipements/bottes/bottecorbeau.png',
         type: 'bottes',
         levelRequired: 3,
+        xpGained: 10,
         ingredients: [
           { name: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantity: 2 },
           { name: 'Patte de Corbeau', icon: 'assets/objets/pattedecorbeau.png', quantity: 2 }
@@ -858,6 +888,7 @@ window.openCordonnierWorkshopModal = function() {
         icon: 'assets/equipements/ceintures/ceinturecorbeau.png',
         type: 'ceinture',
         levelRequired: 3,
+        xpGained: 10,
         ingredients: [
           { name: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantity: 1 },
           { name: 'Patte de Corbeau', icon: 'assets/objets/pattedecorbeau.png', quantity: 3 }
@@ -868,6 +899,7 @@ window.openCordonnierWorkshopModal = function() {
         icon: 'assets/equipements/bottes/botteslime.png',
         type: 'bottes',
         levelRequired: 10,
+        xpGained: 10,
         ingredients: [
           { name: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantity: 4 },
           { name: 'Mucus de Slime', icon: 'assets/objets/mucusslime.png', quantity: 2 }
@@ -878,6 +910,7 @@ window.openCordonnierWorkshopModal = function() {
         icon: 'assets/equipements/ceintures/ceintureslime.png',
         type: 'ceinture',
         levelRequired: 10,
+        xpGained: 10,
         ingredients: [
           { name: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantity: 2 },
           { name: 'Noyau de Slime', icon: 'assets/objets/noyauslime.png', quantity: 1 }
@@ -895,10 +928,11 @@ window.openBijoutierWorkshopModal = function() {
     titleText: "Établie du bijoutier",
     recipes: [
       {
-        name: 'Corbolier',
+        name: 'Corbollier',
         icon: 'assets/equipements/colliers/colliercorbeau.png',
         type: 'amulette',
         levelRequired: 3,
+        xpGained: 10,
         ingredients: [
           { name: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantity: 2 },
           { name: 'Patte de Corbeau', icon: 'assets/objets/pattedecorbeau.png', quantity: 1 }
@@ -909,6 +943,7 @@ window.openBijoutierWorkshopModal = function() {
         icon: 'assets/equipements/anneaux/anneaucorbeau.png',
         type: 'anneau',
         levelRequired: 3,
+        xpGained: 10,
         ingredients: [
           { name: 'Plume de Corbeau', icon: 'assets/objets/plumedecorbeau.png', quantity: 1 },
           { name: 'Patte de Corbeau', icon: 'assets/objets/pattedecorbeau.png', quantity: 2 }
@@ -919,6 +954,7 @@ window.openBijoutierWorkshopModal = function() {
         icon: 'assets/equipements/colliers/collierslime.png',
         type: 'amulette',
         levelRequired: 10,
+        xpGained: 10,
         ingredients: [
           { name: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantity: 3 },
           { name: 'Mucus de Slime', icon: 'assets/objets/mucusslime.png', quantity: 1 }
@@ -929,6 +965,7 @@ window.openBijoutierWorkshopModal = function() {
         icon: 'assets/equipements/anneaux/anneauslime.png',
         type: 'anneau',
         levelRequired: 10,
+        xpGained: 10,
         ingredients: [
           { name: 'Gelée de Slime', icon: 'assets/objets/geleeslime.png', quantity: 2 },
           { name: 'Noyau de Slime', icon: 'assets/objets/noyauslime.png', quantity: 1 }

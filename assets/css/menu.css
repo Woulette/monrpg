@@ -345,8 +345,7 @@ body.menu-active {
   backdrop-filter: blur(5px);
 }
 
-/* PROTECTION MAXIMALE : Quand le menu de personnage est actif, masquer TOUT ce qui concerne l'inventaire */
-body.character-menu-active #inventory-modal,
+/* PROTECTION LIMITÉE : Masquer seulement la zone de poubelle dans le menu de personnages */
 body.character-menu-active #inventory-trash-zone,
 body.character-menu-active #trash-container {
   display: none !important;

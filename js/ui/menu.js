@@ -623,6 +623,10 @@ function formatPlayTime(timestamp) {
 // Démarrer le jeu
 function startGame(slotIndex) {
     
+    // NETTOYAGE CRITIQUE : Supprimer toutes les classes de menu pour débloquer l'inventaire
+    document.body.classList.remove('character-menu-active', 'menu-active');
+    console.log('🧹 Classes de menu nettoyées pour débloquer l\'inventaire');
+    
     const character = window.characterSlots[slotIndex];
     if (!character) {
         console.error('❌ Aucun personnage trouvé dans ce slot');
@@ -852,6 +856,10 @@ function initializeGame(character) {
     
     // LANCER VRAIMENT LE JEU maintenant
     
+    // NETTOYAGE CRITIQUE FINAL : S'assurer que les classes sont supprimées avant le lancement
+    document.body.classList.remove('character-menu-active', 'menu-active');
+    console.log('🧹 Nettoyage final avant lancement du jeu après création de personnage');
+    
     // Initialiser tous les systèmes de jeu
     if (typeof window.startGameDirectly === 'function') {
         window.startGameDirectly();
@@ -862,6 +870,13 @@ function initializeGame(character) {
             window.loadGame();
         }
     }
+    
+    // Débloquer l'inventaire après un court délai pour s'assurer que tout est initialisé
+    setTimeout(() => {
+        if (typeof window.debloquerInventaireEtStats === 'function') {
+            window.debloquerInventaireEtStats();
+        }
+    }, 1000);
 }
 
 // ===== FONCTIONS EXPORTÉES =====

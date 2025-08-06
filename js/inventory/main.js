@@ -174,7 +174,6 @@ function initInventoryEvents() {
 
 // Attacher les événements aux slots d'équipement
 function initEquipmentEvents() {
-    
     // Attacher les événements de clic aux slots d'équipement
     document.querySelectorAll('.equip-slot').forEach(slot => {
         const slotType = slot.dataset.slot;
@@ -230,7 +229,6 @@ function initEquipmentEvents() {
 
 // Initialiser les événements de la fenêtre détaillée
 function initModalEvents() {
-    
     // Fermeture de la fenêtre
     const closeBtn = document.getElementById('close-equipment-detail');
     if (closeBtn) {
@@ -380,7 +378,15 @@ function initInventoryMain() {
                 initInventoryEvents();
                 initEquipmentEvents();
                 initModalEvents();
-            }, 100); // Petit délai pour s'assurer que tout est chargé
+                
+                // CORRECTION AUTOMATIQUE : Appliquer les réparations d'équipement à chaque chargement
+                setTimeout(() => {
+                    if (typeof window.fixEquipmentIssues === 'function') {
+                        console.log('🔧 Application automatique des corrections d\'équipement...');
+                        window.fixEquipmentIssues();
+                    }
+                }, 500);
+            }, 100);
         });
     } else {
         // DOM déjà prêt
@@ -388,6 +394,14 @@ function initInventoryMain() {
             initInventoryEvents();
             initEquipmentEvents();
             initModalEvents();
+            
+            // CORRECTION AUTOMATIQUE : Appliquer les réparations d'équipement
+            setTimeout(() => {
+                if (typeof window.fixEquipmentIssues === 'function') {
+                    console.log('🔧 Application automatique des corrections d\'équipement...');
+                    window.fixEquipmentIssues();
+                }
+            }, 500);
         }, 100);
     }
 }

@@ -37,6 +37,8 @@
     font-size: 40px;
     color: #ff8c6b;
     cursor: pointer;
+    pointer-events: auto !important;
+    z-index: 99999 !important;
 }
 /* --------- INVENTAIRE (GRILLE + BARRE ONGLET) ----------- */
 #inventory-grid-container {
@@ -288,6 +290,8 @@
     top: 15px;
     right: 20px;
     transition: color 0.3s ease;
+    pointer-events: auto !important;
+    z-index: 99999 !important;
 }
 #close-stats:hover {
     color: #fff;

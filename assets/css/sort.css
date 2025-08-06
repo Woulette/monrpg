@@ -132,6 +132,7 @@
   border: none;
   z-index: 1101;
   transition: color 0.2s;
+  pointer-events: auto !important;
 }
 #close-sort-modal:hover {
   color: #4e9cff;

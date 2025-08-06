@@ -72,8 +72,8 @@ function gainMetierXP(metier, amount) {
 
 // Pour accès global
 window.metiers = metiers;
-window.getMetierSlots = getMetierSlots;
 window.gainMetierXP = gainMetierXP;
+window.getMetierSlots = getMetierSlots;
 
 // Fonction pour réinitialiser tous les métiers au niveau 1
 window.resetMetiersToLevel1 = function() {
@@ -409,7 +409,7 @@ const metierItemStats = {
     stats: { 'force': 2, 'defense': 2 },
     description: 'Une ceinture qui renforce le porteur.'
   },
-  Corbolier: {
+  Corbollier: {
     stats: { 'chance': 3 },
     description: 'Un collier qui attire la chance.'
   },
