@@ -256,6 +256,21 @@ function showCharacterSelectionMenu() {
     deleteConfirmMenu.style.display = 'none';
     loadingScreen.style.display = 'none';
     
+    // PROTECTION : Masquer complètement l'inventaire et sa poubelle
+    const inventoryModal = document.getElementById('inventory-modal');
+    if (inventoryModal) {
+        inventoryModal.style.display = 'none';
+    }
+    
+    // PROTECTION : Supprimer la classe inventory-open du body
+    document.body.classList.remove('inventory-open');
+    
+    // PROTECTION : Masquer la zone de poubelle directement
+    const trashZone = document.getElementById('inventory-trash-zone');
+    if (trashZone) {
+        trashZone.style.display = 'none';
+    }
+    
     // Désactiver les systèmes de jeu
     if (typeof window.disableGameSystems === 'function') {
         window.disableGameSystems();
@@ -418,7 +433,36 @@ function initializeEvents() {
     if (confirmDeleteBtn) {
         confirmDeleteBtn.addEventListener('click', function() {
             const slotIndex = parseInt(this.dataset.slot);
+            
+            console.log('🗑️ Confirmation de la suppression du personnage');
+            
+            // NETTOYAGE COMPLET lors de la confirmation
+            document.body.classList.remove('character-menu-active');
+            
+            // Remettre les éléments de l'inventaire dans leur état normal
+            const inventoryModal = document.getElementById('inventory-modal');
+            const trashZone = document.getElementById('inventory-trash-zone');
+            const trashContainer = document.getElementById('trash-container');
+            
+            if (inventoryModal) {
+                inventoryModal.style.display = '';
+                inventoryModal.style.visibility = '';
+                inventoryModal.style.zIndex = '';
+            }
+            if (trashZone) {
+                trashZone.style.display = '';
+                trashZone.style.visibility = '';
+                trashZone.style.zIndex = '';
+            }
+            if (trashContainer) {
+                trashContainer.style.display = '';
+                trashContainer.style.visibility = '';
+                trashContainer.style.zIndex = '';
+            }
+            
+            // Procéder à la suppression
             if (deleteCharacter(slotIndex)) {
+                console.log('✅ Personnage supprimé - retour au menu de sélection');
                 showCharacterSelectionMenu();
             }
         });
@@ -426,6 +470,33 @@ function initializeEvents() {
     
     if (cancelDeleteBtn) {
         cancelDeleteBtn.addEventListener('click', function() {
+            console.log('🚫 Annulation de la suppression');
+            
+            // NETTOYAGE COMPLET lors de l'annulation
+            document.body.classList.remove('character-menu-active');
+            
+            // Remettre les éléments de l'inventaire dans leur état normal
+            const inventoryModal = document.getElementById('inventory-modal');
+            const trashZone = document.getElementById('inventory-trash-zone');
+            const trashContainer = document.getElementById('trash-container');
+            
+            if (inventoryModal) {
+                inventoryModal.style.display = '';
+                inventoryModal.style.visibility = '';
+                inventoryModal.style.zIndex = '';
+            }
+            if (trashZone) {
+                trashZone.style.display = '';
+                trashZone.style.visibility = '';
+                trashZone.style.zIndex = '';
+            }
+            if (trashContainer) {
+                trashContainer.style.display = '';
+                trashContainer.style.visibility = '';
+                trashContainer.style.zIndex = '';
+            }
+            
+            console.log('✅ Nettoyage terminé - retour au menu de sélection');
             showCharacterSelectionMenu();
         });
     }
@@ -480,10 +551,45 @@ function showDeleteConfirmation(slotIndex) {
     const character = window.characterSlots[slotIndex];
     if (!character) return;
     
+    // PROTECTION MAXIMALE : Masquer complètement tout ce qui concerne l'inventaire
+    const inventoryModal = document.getElementById('inventory-modal');
+    if (inventoryModal) {
+        inventoryModal.style.display = 'none';
+    }
+    
+    const trashZone = document.getElementById('inventory-trash-zone');
+    if (trashZone) {
+        trashZone.style.display = 'none';
+        trashZone.style.visibility = 'hidden';
+    }
+    
+    const trashContainer = document.getElementById('trash-container');
+    if (trashContainer) {
+        trashContainer.style.display = 'none';
+        trashContainer.style.visibility = 'hidden';
+    }
+    
+    // PROTECTION : Supprimer la classe inventory-open du body
+    document.body.classList.remove('inventory-open');
+    document.body.classList.add('character-menu-active');
+    
     // Remplir les informations du personnage
     document.getElementById('confirm-avatar').src = character.avatar;
     document.getElementById('confirm-name').textContent = character.name;
     document.getElementById('confirm-level').textContent = `Niveau ${character.level}`;
+    
+    // ÉTAPE CRUCIALE : FORCER l'icône d'avertissement ⚠️ (pas la poubelle 🗑️)
+    const confirmIcon = document.querySelector('.confirm-icon');
+    if (confirmIcon) {
+        // Forcer le contenu avec l'icône d'avertissement
+        confirmIcon.textContent = '⚠️';
+        confirmIcon.innerHTML = '⚠️';
+        // Protection supplémentaire via CSS
+        confirmIcon.style.setProperty('content', '"⚠️"', 'important');
+        console.log('✅ Icône d\'avertissement ⚠️ forcée (PAS la poubelle 🗑️)');
+    } else {
+        console.warn('❌ Élément .confirm-icon non trouvé !');
+    }
     
     // Stocker le slot dans le bouton de confirmation
     const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
@@ -491,7 +597,11 @@ function showDeleteConfirmation(slotIndex) {
         confirmDeleteBtn.dataset.slot = slotIndex;
     }
     
+    // Afficher le menu avec priorité maximale
     deleteConfirmMenu.style.display = 'flex';
+    deleteConfirmMenu.style.zIndex = '9999';
+    
+    console.log("🎯 Menu de confirmation de suppression affiché pour:", character.name);
 }
 
 // Formater le temps de jeu
@@ -824,4 +934,195 @@ window.returnToMenu = function() {
 // Fonction pour réinitialiser le dialogue de création
 window.resetCharacterCreationDialog = function() {
     window.characterCreationDialogShown = false;
+};
+
+// FONCTION DE DIAGNOSTIC : Vérifier l'état des systèmes
+window.debugCharacterMenu = function() {
+    console.log("🔍 === DIAGNOSTIC MENU PERSONNAGES ===");
+    
+    // Vérifier les éléments du menu de confirmation
+    const confirmMenu = document.getElementById('delete-confirm-menu');
+    const confirmAvatar = document.getElementById('confirm-avatar');
+    const confirmName = document.getElementById('confirm-name');
+    const deleteBtn = document.getElementById('confirm-delete-btn');
+    
+    console.log("Éléments du menu de confirmation:");
+    console.log("- Menu:", confirmMenu ? "✅ Trouvé" : "❌ Manquant");
+    console.log("- Avatar:", confirmAvatar ? "✅ Trouvé" : "❌ Manquant");
+    console.log("- Nom:", confirmName ? "✅ Trouvé" : "❌ Manquant");
+    console.log("- Bouton:", deleteBtn ? "✅ Trouvé" : "❌ Manquant");
+    
+    // Vérifier les éléments de l'inventaire
+    const inventoryModal = document.getElementById('inventory-modal');
+    const trashZone = document.getElementById('inventory-trash-zone');
+    const trashContainer = document.getElementById('trash-container');
+    const trashIcon = document.getElementById('trash-icon');
+    
+    console.log("Éléments de l'inventaire:");
+    console.log("- Inventaire:", inventoryModal ? "✅ Trouvé" : "❌ Manquant");
+    console.log("- Zone poubelle:", trashZone ? "✅ Trouvé" : "❌ Manquant");
+    console.log("- Container poubelle:", trashContainer ? "✅ Trouvé" : "❌ Manquant");
+    console.log("- Icône poubelle:", trashIcon ? "✅ Trouvé" : "❌ Manquant");
+    
+    // Vérifier la visibilité des éléments
+    if (trashZone) {
+        console.log("État de la poubelle:");
+        console.log("- Display:", window.getComputedStyle(trashZone).display);
+        console.log("- Visibility:", window.getComputedStyle(trashZone).visibility);
+        console.log("- Z-index:", window.getComputedStyle(trashZone).zIndex);
+    }
+    
+    // Vérifier les classes du body
+    console.log("Classes du body:", document.body.className);
+    
+    console.log("=======================================");
+    
+    return {
+        confirmMenuExists: !!confirmMenu,
+        trashSystemExists: !!trashZone,
+        bodyClasses: document.body.className
+    };
+};
+
+// FONCTION DE TEST : Tester le menu de suppression de personnage
+window.testCharacterDeletionMenu = function() {
+    console.log("🧪 === TEST MENU SUPPRESSION PERSONNAGE ===");
+    
+    // Vérifier les éléments nécessaires
+    const confirmMenu = document.getElementById('delete-confirm-menu');
+    const confirmIcon = document.querySelector('.confirm-icon');
+    const trashContainer = document.getElementById('trash-container');
+    
+    console.log("Éléments vérifiés:");
+    console.log("- Menu confirmation:", confirmMenu ? "✅" : "❌");
+    console.log("- Icône confirmation:", confirmIcon ? "✅" : "❌");
+    console.log("- Container poubelle:", trashContainer ? "✅" : "❌");
+    
+    if (confirmIcon) {
+        console.log("Contenu icône actuel:", confirmIcon.textContent || confirmIcon.innerHTML);
+    }
+    
+    // Test : Simuler l'ouverture du menu
+    if (window.characterSlots && window.characterSlots[0]) {
+        console.log("🎯 Test : Simulation ouverture menu de suppression");
+        
+        // Ajouter la classe de protection
+        document.body.classList.add('character-menu-active');
+        
+        // Forcer l'icône
+        if (confirmIcon) {
+            confirmIcon.textContent = '⚠️';
+            confirmIcon.innerHTML = '⚠️';
+        }
+        
+        // Masquer la poubelle
+        if (trashContainer) {
+            trashContainer.style.display = 'none';
+        }
+        
+        console.log("✅ Test terminé - vérifiez l'icône d'avertissement");
+        console.log("Pour nettoyer : window.cleanupCharacterMenuTest()");
+        
+        return true;
+    } else {
+        console.log("❌ Aucun personnage trouvé pour le test");
+        return false;
+    }
+};
+
+// Fonction de nettoyage du test
+window.cleanupCharacterMenuTest = function() {
+    console.log("🧹 Nettoyage du test");
+    
+    document.body.classList.remove('character-menu-active');
+    
+    const trashContainer = document.getElementById('trash-container');
+    if (trashContainer) {
+        trashContainer.style.display = '';
+    }
+    
+    console.log("✅ Test nettoyé");
+};
+
+// FONCTION D'URGENCE : Restaurer complètement le menu de suppression original
+window.restoreOriginalCharacterMenu = function() {
+    console.log("🔄 === RESTAURATION COMPLÈTE DU MENU ORIGINAL ===");
+    
+    // Étape 1 : Nettoyer toutes les interférences
+    document.body.classList.remove('character-menu-active', 'menu-active');
+    
+    // Étape 2 : Restaurer l'HTML original de l'icône de confirmation
+    const confirmIcon = document.querySelector('.confirm-icon');
+    if (confirmIcon) {
+        // Remettre l'icône d'avertissement original
+        confirmIcon.innerHTML = '⚠️';
+        confirmIcon.textContent = '⚠️';
+        
+        // Supprimer toutes les modifications de style
+        confirmIcon.removeAttribute('style');
+        confirmIcon.removeAttribute('data-protected');
+        
+        console.log('✅ Icône de confirmation restaurée');
+    }
+    
+    // Étape 3 : Masquer complètement tout ce qui concerne la poubelle
+    const trashElements = [
+        '#trash-container',
+        '#trash-icon', 
+        '#inventory-trash-zone'
+    ];
+    
+    trashElements.forEach(selector => {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.style.display = 'none';
+            element.style.visibility = 'hidden';
+            element.style.zIndex = '-9999';
+        }
+    });
+    
+    // Étape 4 : Forcer la priorité CSS du menu de confirmation
+    const confirmMenu = document.getElementById('delete-confirm-menu');
+    if (confirmMenu) {
+        confirmMenu.style.zIndex = '10000';
+        confirmMenu.style.position = 'fixed';
+    }
+    
+    console.log('✅ Menu de suppression restauré à son état original');
+    console.log('🎯 Teste maintenant la suppression de personnage !');
+};
+
+// FONCTION D'URGENCE : Forcer l'affichage correct du menu de suppression
+window.forceFixCharacterMenu = function() {
+    console.log("🚨 CORRECTION FORCÉE du menu de suppression");
+    
+    // Masquer complètement tout ce qui concerne l'inventaire
+    const elementsToHide = [
+        'inventory-modal',
+        'inventory-trash-zone',
+        'trash-container'
+    ];
+    
+    elementsToHide.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.style.display = 'none';
+            element.style.visibility = 'hidden';
+            element.style.opacity = '0';
+            element.style.zIndex = '-1';
+        }
+    });
+    
+    // Nettoyer les classes du body
+    document.body.classList.remove('inventory-open');
+    document.body.classList.add('character-menu-active');
+    
+    // Vérifier le menu de confirmation
+    const confirmMenu = document.getElementById('delete-confirm-menu');
+    if (confirmMenu) {
+        confirmMenu.style.zIndex = '5000';
+        console.log("✅ Menu de confirmation priorité maximale");
+    }
+    
+    console.log("✅ Correction forcée terminée");
 };

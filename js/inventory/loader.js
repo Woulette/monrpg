@@ -25,19 +25,38 @@ async function loadInventoryModules() {
         await loadScript('js/inventory/main.js');
         
         
+        // PROTECTION : S'assurer qu'on n'est PAS dans le menu de personnages avant d'initialiser
+        const isInCharacterMenu = document.body.classList.contains('character-menu-active') || 
+                                 document.body.classList.contains('menu-active') ||
+                                 window.gameState === 'menu' ||
+                                 window.gameState === 'creation';
+        
+        if (isInCharacterMenu) {
+            console.warn('⚠️ Inventaire NON initialisé - Menu de personnages actif');
+            return;
+        }
+        
         // Initialiser l'inventaire après le chargement de tous les modules
         if (typeof initInventory === 'function') {
             initInventory();
         }
         
+        // PROTECTION : Initialiser le système de trash SEULEMENT si on n'est pas dans le menu
+        if (typeof initTrashSystem === 'function') {
+            // Double vérification avant d'initialiser le trash
+            const stillInMenu = document.body.classList.contains('character-menu-active') || 
+                               document.body.classList.contains('menu-active');
+            if (!stillInMenu) {
+                initTrashSystem();
+                console.log('✅ Système de trash initialisé (protection menu active)');
+            } else {
+                console.warn('⚠️ Système de trash NON initialisé - Protection menu');
+            }
+        }
+        
         // Initialiser les événements du module main
         if (typeof initInventoryMain === 'function') {
             initInventoryMain();
-        }
-        
-        // Initialiser le système de poubelle
-        if (typeof initTrashSystem === 'function') {
-            initTrashSystem();
         }
         
     } catch (error) {

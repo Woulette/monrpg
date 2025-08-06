@@ -48,6 +48,14 @@ function calculateMapCentering() {
 // Fonction pour charger une map
 async function loadMap(mapName) {
     try {
+        // ÉTAPE 1: Nettoyage complet des collisions de l'ancienne map
+        console.log("Nettoyage des collisions avant changement de map");
+        if (typeof window.forceCleanCollisions === "function") {
+            window.forceCleanCollisions();
+        } else {
+            window.BLOCKED_GIDS = []; // Fallback si la fonction n'existe pas encore
+        }
+        
         const response = await fetch(`assets/maps/${mapName}.json`);
         if (!response.ok) {
             throw new Error(`Fichier ${mapName}.json introuvable !`);
@@ -58,8 +66,15 @@ async function loadMap(mapName) {
             throw new Error(`Le JSON de ${mapName} est mal formé !`);
         }
         
+        // ÉTAPE 2: Mettre à jour les données de map
         window.mapData = json;
         window.currentMap = mapName;
+        console.log(`Chargement de la map: ${mapName}`);
+        
+        // ÉTAPE 4: Gérer les respawns de ressources en attente pour cette map
+        if (typeof window.gererRespawnLorsRetourMap === "function") {
+            window.gererRespawnLorsRetourMap();
+        }
         
         // Déclencher le fondu au noir pour la transition de map
         startBlackScreenTransition();
@@ -72,9 +87,19 @@ async function loadMap(mapName) {
         // Charger les tilesets de la nouvelle map
         await loadTilesets(json.tilesets);
         
-        // Mettre à jour les collisions basées sur le calque 2
+        // ÉTAPE 3: Mettre à jour les collisions basées sur le calque 2
+        console.log("Mise à jour des collisions pour la nouvelle map");
         if (typeof window.updateBlockedGids === "function") {
             window.updateBlockedGids();
+            
+            // Vérification d'intégrité après mise à jour
+            setTimeout(() => {
+                if (typeof window.checkCollisionIntegrity === "function") {
+                    window.checkCollisionIntegrity();
+                }
+            }, 100);
+        } else {
+            console.warn("Fonction updateBlockedGids non disponible");
         }
         
         // Réinitialiser les monstres après le chargement de la map
@@ -160,6 +185,12 @@ async function loadMap(mapName) {
 
 // Fonction pour téléporter le joueur vers une nouvelle map
 function teleportPlayer(mapName, spawnX, spawnY) {
+    // ÉTAPE 1: Nettoyage préventif des collisions
+    console.log(`Téléportation de ${window.currentMap} vers ${mapName}`);
+    if (typeof window.forceCleanCollisions === "function") {
+        window.forceCleanCollisions();
+    }
+    
     // Sauvegarder les monstres de la map actuelle avant de partir
     if (typeof window.saveMonstersForMap === "function" && window.currentMap) {
         window.saveMonstersForMap(window.currentMap);

@@ -306,19 +306,39 @@ function updatePlayer(ts) {
     
     // Vérification de téléportation automatique
     if (window.mapData && window.mapData.layers && window.mapData.layers.length > 0) {
-        // Chercher tous les portails (ID 1, 2, 3, 4, 12008, 12208) dans tous les calques
+        // Chercher tous les portails dans tous les calques avec PRIORITÉ au calque 4 (calque des portails)
         let portalFound = false;
         let portalGid = null;
+        let portalLayerId = null;
         
-        for (let layerIndex = 0; layerIndex < window.mapData.layers.length; layerIndex++) {
-            const layer = window.mapData.layers[layerIndex];
-            const tileIndex = player.y * layer.width + player.x;
-            const tileId = layer.data[tileIndex];
+        // PRIORITÉ 1 : Chercher d'abord dans le calque 4 (calque des portails)
+        if (window.mapData.layers.length > 3) {
+            const layer4 = window.mapData.layers[3]; // Calque 4 (index 3)
+            const tileIndex = player.y * layer4.width + player.x;
+            const tileId = layer4.data[tileIndex];
             
             if (tileId === 1 || tileId === 2 || tileId === 3 || tileId === 4 || tileId === 12008 || tileId === 12208 || tileId === 15408 || tileId === 15608 || tileId === 6 || tileId === 7 || tileId === 7203 || tileId === 7403) {
                 portalFound = true;
                 portalGid = tileId;
-                break;
+                portalLayerId = 4;
+                console.log(`🌀 Portail détecté sur calque 4: ID ${portalGid} à (${player.x}, ${player.y}) sur ${window.currentMap}`);
+            }
+        }
+        
+        // PRIORITÉ 2 : Si pas trouvé sur calque 4, chercher dans les autres calques
+        if (!portalFound) {
+            for (let layerIndex = 0; layerIndex < window.mapData.layers.length; layerIndex++) {
+                const layer = window.mapData.layers[layerIndex];
+                const tileIndex = player.y * layer.width + player.x;
+                const tileId = layer.data[tileIndex];
+                
+                if (tileId === 1 || tileId === 2 || tileId === 3 || tileId === 4 || tileId === 12008 || tileId === 12208 || tileId === 15408 || tileId === 15608 || tileId === 6 || tileId === 7 || tileId === 7203 || tileId === 7403) {
+                    portalFound = true;
+                    portalGid = tileId;
+                    portalLayerId = layer.id || layerIndex;
+                    console.log(`🌀 Portail détecté sur calque ${portalLayerId}: ID ${portalGid} à (${player.x}, ${player.y}) sur ${window.currentMap}`);
+                    break;
+                }
             }
         }
 
@@ -331,28 +351,43 @@ function updatePlayer(ts) {
             // Extraire le numéro de la map actuelle
             const currentMapNumber = parseInt(window.currentMap.replace('map', ''));
             
-            // Gestion spéciale pour la map 3
+            // Gestion spéciale pour la map 3 - LOGIQUE RENFORCÉE
             if (window.currentMap === "map3") {
+                console.log(`🗺️ MAP3 - Traitement du portail ID ${portalGid} sur calque ${portalLayerId}`);
+                
                 if (portalGid === 1) {
                     // Portail ID 1 → Map Slime
                     destinationMap = "mapdonjonslime";
                     targetPortalId = 2;
+                    console.log(`✅ MAP3 - Portail ID 1: Direction mapdonjonslime`);
                 } else if (portalGid === 2) {
-                    // Portail ID 2 → Map 2
+                    // Portail ID 2 → Map 2 (FORCER la destination)
                     destinationMap = "map2";
                     targetPortalId = 1;
+                    console.log(`✅ MAP3 - Portail ID 2: Direction MAP2 (FORCÉE)`);
+                    
+                    // VÉRIFICATION SUPPLÉMENTAIRE : S'assurer qu'on ne va pas ailleurs
+                    if (destinationMap !== "map2") {
+                        console.error(`🚨 ERREUR MAP3 - Portail ID 2 devrait aller en map2 mais va en ${destinationMap}!`);
+                        destinationMap = "map2"; // FORCER la correction
+                    }
                 } else if (portalGid === 3) {
                     // Portail ID 3 → Map 4 (si elle existe)
                     destinationMap = `map${currentMapNumber + 1}`;
                     targetPortalId = 4;
+                    console.log(`✅ MAP3 - Portail ID 3: Direction map${currentMapNumber + 1}`);
                 } else if (portalGid === 4) {
                     // Portail ID 4 → Map 2
                     destinationMap = `map${currentMapNumber - 1}`;
                     targetPortalId = 3;
+                    console.log(`✅ MAP3 - Portail ID 4: Direction map${currentMapNumber - 1}`);
                 } else if (portalGid === 6) {
                     // Portail ID 6 → Maison
                     destinationMap = "maison";
                     targetPortalId = 7;
+                    console.log(`✅ MAP3 - Portail ID 6: Direction maison`);
+                } else {
+                    console.warn(`⚠️ MAP3 - Portail ID ${portalGid} non reconnu!`);
                 }
             } else if (window.currentMap === "mapdonjonslime") {
                 // Gestion spéciale pour la map slime
@@ -451,6 +486,16 @@ function updatePlayer(ts) {
                 }
             }
             if (destinationMap) {
+                // VÉRIFICATION FINALE : S'assurer que la destination est cohérente
+                console.log(`🎯 TÉLÉPORTATION FINALE: ${window.currentMap} (portail ${portalGid}) → ${destinationMap}`);
+                
+                // PROTECTION SPÉCIALE pour MAP3 portail 2
+                if (window.currentMap === "map3" && portalGid === 2 && destinationMap !== "map2") {
+                    console.error(`🚨 PROTECTION ACTIVÉE - MAP3 portail 2 redirigé vers ${destinationMap} au lieu de map2!`);
+                    destinationMap = "map2"; // FORCER la correction
+                    targetPortalId = 1;
+                }
+                
                 // Détecter la direction d'entrée dans le portail
                 let dx = 0, dy = 0;
                 if (player.path && player.path.length > 0) {
@@ -703,20 +748,9 @@ function updatePlayer(ts) {
                 return;
             }
         }
-        // --- PORTAIL MAP2 → MAP3 ---
-        if (window.currentMap === "map2" && window.mapData) {
-            const layer4 = window.mapData.layers.find(layer => layer.id === 4);
-            if (layer4) {
-                const idx = player.y * window.mapData.width + player.x;
-                const gid = layer4.data[idx];
-                if (gid === 1) {
-                    teleportPlayer('map3', Math.floor(window.mapData.width/2), Math.floor(window.mapData.height/2));
-                    return;
-                }
-            }
-        }
-        // --- PORTAIL MAP3 → MAP2 --- (SUPPRIMÉ - CAUSE CONFLIT)
-        // Le système principal gère déjà correctement les portails map3 → map2
+        // --- ANCIENNE LOGIQUE SUPPRIMÉE ---
+        // Cette logique causait des conflits avec le système principal de portails
+        // Le système principal (lignes 325-704) gère maintenant TOUS les portails de manière cohérente
     }
 }
 
@@ -726,6 +760,81 @@ function updatePlayerRespawn(ts) {
     // La logique de respawn est déjà dans updatePlayer()
     // Cette fonction sert juste de pont pour la boucle de jeu
 }
+
+// FONCTION D'URGENCE : Diagnostiquer les problèmes de portails
+window.debugPortals = function() {
+    console.log("🔍 === DIAGNOSTIC PORTAILS ===");
+    console.log("Map actuelle:", window.currentMap);
+    console.log("Position joueur:", `(${player.x}, ${player.y})`);
+    
+    if (!window.mapData || !window.mapData.layers) {
+        console.log("❌ Pas de mapData ou calques");
+        return;
+    }
+    
+    console.log("Nombre de calques:", window.mapData.layers.length);
+    
+    // Vérifier chaque calque à la position du joueur
+    for (let layerIndex = 0; layerIndex < window.mapData.layers.length; layerIndex++) {
+        const layer = window.mapData.layers[layerIndex];
+        const tileIndex = player.y * layer.width + player.x;
+        const tileId = layer.data[tileIndex];
+        
+        if (tileId !== 0) {
+            console.log(`Calque ${layerIndex + 1} (ID: ${layer.id || 'non défini'}): TileID ${tileId}`);
+            
+            // Vérifier si c'est un portail
+            if (tileId === 1 || tileId === 2 || tileId === 3 || tileId === 4 || tileId === 12008 || tileId === 12208 || tileId === 15408 || tileId === 15608 || tileId === 6 || tileId === 7 || tileId === 7203 || tileId === 7403) {
+                console.log(`🌀 PORTAIL DÉTECTÉ: ID ${tileId} sur calque ${layerIndex + 1}`);
+            }
+        }
+    }
+    
+    console.log("=============================");
+};
+
+// FONCTION D'URGENCE : Forcer la téléportation correcte depuis MAP3
+window.fixMap3Portal2 = function() {
+    console.log("🚨 CORRECTION D'URGENCE - MAP3 PORTAIL 2 → MAP2");
+    
+    if (window.currentMap !== "map3") {
+        console.log("❌ Vous n'êtes pas sur map3");
+        return;
+    }
+    
+    console.log("🎯 Téléportation forcée: map3 → map2");
+    if (typeof teleportPlayer === "function") {
+        teleportPlayer("map2", 24, 1); // Position fixe pour map2
+        console.log("✅ Téléportation effectuée");
+    } else {
+        console.log("❌ Fonction teleportPlayer non disponible");
+    }
+};
+
+// FONCTION D'URGENCE : Tester la logique de portail
+window.testPortalLogic = function(portalId) {
+    console.log(`🧪 TEST LOGIQUE PORTAIL ID ${portalId} sur ${window.currentMap}`);
+    
+    let destinationMap = null;
+    const currentMapNumber = parseInt(window.currentMap.replace('map', ''));
+    
+    if (window.currentMap === "map3") {
+        if (portalId === 1) {
+            destinationMap = "mapdonjonslime";
+        } else if (portalId === 2) {
+            destinationMap = "map2";
+        } else if (portalId === 3) {
+            destinationMap = `map${currentMapNumber + 1}`;
+        } else if (portalId === 4) {
+            destinationMap = `map${currentMapNumber - 1}`;
+        } else if (portalId === 6) {
+            destinationMap = "maison";
+        }
+    }
+    
+    console.log(`🎯 Résultat: Portail ${portalId} → ${destinationMap}`);
+    return destinationMap;
+};
 
 // Export de la fonction update
 window.updatePlayer = updatePlayer;

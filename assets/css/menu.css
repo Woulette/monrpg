@@ -345,6 +345,21 @@ body.menu-active {
   backdrop-filter: blur(5px);
 }
 
+/* PROTECTION MAXIMALE : Quand le menu de personnage est actif, masquer TOUT ce qui concerne l'inventaire */
+body.character-menu-active #inventory-modal,
+body.character-menu-active #inventory-trash-zone,
+body.character-menu-active #trash-container {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  z-index: -1 !important;
+}
+
+/* PROTECTION : S'assurer que le menu de confirmation est au-dessus de tout */
+body.character-menu-active #delete-confirm-menu {
+  z-index: 5000 !important;
+}
+
 .delete-confirm-box {
   background: rgba(45, 55, 72, 0.95);
   border-radius: 20px;
@@ -367,6 +382,28 @@ body.menu-active {
 .confirm-icon {
   font-size: 3rem;
   margin-bottom: 10px;
+}
+
+/* PROTECTION MAXIMALE : Forcer l'icône d'avertissement dans le menu de confirmation */
+body.character-menu-active .confirm-icon {
+  font-size: 0 !important; /* Masquer le contenu texte original */
+  position: relative;
+}
+
+body.character-menu-active .confirm-icon:before {
+  content: "⚠️" !important;
+  font-size: 3rem !important;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: block;
+}
+
+/* PROTECTION SUPPLÉMENTAIRE : Empêcher toute icône de poubelle */
+body.character-menu-active .confirm-icon:after {
+  content: "" !important;
+  display: none !important;
 }
 
 .confirm-text {

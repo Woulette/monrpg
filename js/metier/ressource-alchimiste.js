@@ -96,11 +96,12 @@ class RessourceAlchimiste {
         // Ajouter la ressource à l'inventaire
         this.ajouterRessourceInventaire();
         
-        // Marquer comme récoltée avec timestamp
+        // Marquer comme récoltée avec timestamp ET map d'origine
         this.ressourcesRecoltees.set(key, {
             x: x,
             y: y,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            mapOrigine: window.currentMap // AJOUT : stocker la map d'origine
         });
         
         // Retirer de la liste des ressources interactives
@@ -128,6 +129,13 @@ class RessourceAlchimiste {
     // Remplacer la ressource par l'ID 225 du calque 3
     remplacerRessource(x, y) {
         if (!window.mapData || !window.mapData.layers || window.mapData.layers.length < 3) {
+            console.warn('⚠️ Impossible de remplacer ressource - mapData invalide');
+            return;
+        }
+        
+        // PROTECTION : Vérifier qu'on est sur map1
+        if (window.currentMap !== "map1") {
+            console.warn(`🚫 Tentative de remplacement de ressource sur ${window.currentMap} - BLOQUÉE`);
             return;
         }
         
@@ -135,18 +143,31 @@ class RessourceAlchimiste {
         const layer4 = window.mapData.layers[3]; // Calque 4
         const tileIndex = y * layer3.width + x;
         
+        // Vérifier que les indices sont valides
+        if (tileIndex < 0 || tileIndex >= layer3.data.length) {
+            console.warn(`⚠️ Index de tuile invalide : ${tileIndex} pour position (${x}, ${y})`);
+            return;
+        }
+        
         // Remplacer par l'ID 225 sur le calque 3
         layer3.data[tileIndex] = 225;
         
         // Supprimer l'ID 25 du calque 4 (rendre invisible)
         layer4.data[tileIndex] = 0;
         
-        // Ressource remplacée
+        console.log(`✅ Ressource remplacée sur map1 à position (${x}, ${y})`);
     }
 
     // Restaurer la ressource (ID 25 calque 4)
     restaurerRessource(x, y) {
         if (!window.mapData || !window.mapData.layers || window.mapData.layers.length < 4) {
+            console.warn('⚠️ Impossible de restaurer ressource - mapData invalide');
+            return;
+        }
+        
+        // PROTECTION SUPPLÉMENTAIRE : Vérifier qu'on est sur map1 (seule map avec des pissenlits)
+        if (window.currentMap !== "map1") {
+            console.warn(`🚫 Tentative de restauration de ressource sur ${window.currentMap} - BLOQUÉE`);
             return;
         }
         
@@ -154,13 +175,19 @@ class RessourceAlchimiste {
         const layer4 = window.mapData.layers[3]; // Calque 4
         const tileIndex = y * layer4.width + x;
         
+        // Vérifier que les indices sont valides
+        if (tileIndex < 0 || tileIndex >= layer4.data.length) {
+            console.warn(`⚠️ Index de tuile invalide : ${tileIndex} pour position (${x}, ${y})`);
+            return;
+        }
+        
         // Restaurer l'ID 25 sur le calque 4
         layer4.data[tileIndex] = 25;
         
         // Supprimer l'ID 225 du calque 3
         layer3.data[tileIndex] = 0;
         
-        // Ressource restaurée
+        console.log(`✅ Ressource restaurée sur map1 à position (${x}, ${y})`);
     }
 
     // Ajouter la ressource à l'inventaire
@@ -224,15 +251,52 @@ class RessourceAlchimiste {
         
         for (const [key, data] of this.ressourcesRecoltees.entries()) {
             if (maintenant - data.timestamp >= this.delaiRespawn) {
+                // CORRECTION CRITIQUE : Vérifier qu'on est sur la bonne map avant le respawn
+                if (window.currentMap === data.mapOrigine) {
+                    console.log(`🌿 Respawn pissenlit sur ${data.mapOrigine} à position (${data.x}, ${data.y})`);
+                    
+                    // Restaurer la ressource SEULEMENT si on est sur la bonne map
+                    this.restaurerRessource(data.x, data.y);
+                    
+                    // Retirer de la liste des ressources récoltées
+                    this.ressourcesRecoltees.delete(key);
+                    
+                    // Retirer aussi de la liste des ressources interactives pour reset
+                    this.ressourcesInteractives.delete(key);
+                } else {
+                    // On n'est pas sur la bonne map, garder la ressource en attente
+                    console.log(`⏳ Ressource prête à respawn sur ${data.mapOrigine}, mais on est sur ${window.currentMap}`);
+                }
+            }
+        }
+    }
+
+    // Fonction à appeler lors du changement de map pour gérer les respawns en attente
+    gererRespawnLorsRetourMap() {
+        console.log(`🔍 Vérification des respawns en attente pour ${window.currentMap}`);
+        const maintenant = Date.now();
+        let respawnEffectues = 0;
+        
+        for (const [key, data] of this.ressourcesRecoltees.entries()) {
+            // Si la ressource est prête à respawn et qu'on est sur la bonne map
+            if (maintenant - data.timestamp >= this.delaiRespawn && window.currentMap === data.mapOrigine) {
+                console.log(`🌿 Respawn immédiat lors du retour sur ${data.mapOrigine} - position (${data.x}, ${data.y})`);
+                
                 // Restaurer la ressource
                 this.restaurerRessource(data.x, data.y);
                 
-                        // Retirer de la liste des ressources récoltées
-        this.ressourcesRecoltees.delete(key);
-        
-        // Retirer aussi de la liste des ressources interactives pour reset
-        this.ressourcesInteractives.delete(key);
+                // Retirer de la liste des ressources récoltées
+                this.ressourcesRecoltees.delete(key);
+                
+                // Retirer aussi de la liste des ressources interactives pour reset
+                this.ressourcesInteractives.delete(key);
+                
+                respawnEffectues++;
             }
+        }
+        
+        if (respawnEffectues > 0) {
+            console.log(`✅ ${respawnEffectues} ressource(s) respawnée(s) lors du retour sur ${window.currentMap}`);
         }
     }
 
@@ -445,7 +509,44 @@ document.addEventListener('DOMContentLoaded', () => {
     initRessourceAlchimiste();
 });
 
+// Fonction pour gérer les respawns lors du retour sur une map
+function gererRespawnLorsRetourMap() {
+    if (!ressourceAlchimiste) {
+        initRessourceAlchimiste();
+    }
+    
+    ressourceAlchimiste.gererRespawnLorsRetourMap();
+}
+
+// Fonction de diagnostic pour vérifier l'état des ressources
+function diagnosticRessources() {
+    if (!ressourceAlchimiste) {
+        console.log("❌ Système de ressources non initialisé");
+        return;
+    }
+    
+    console.log("🔍 === DIAGNOSTIC RESSOURCES D'ALCHIMISTE ===");
+    console.log("Map actuelle:", window.currentMap);
+    console.log("Ressources en cours de récolte:", ressourceAlchimiste.ressourcesEnCours.size);
+    console.log("Ressources récoltées (en attente de respawn):", ressourceAlchimiste.ressourcesRecoltees.size);
+    
+    console.log("\n📋 Détail des ressources récoltées:");
+    for (const [key, data] of ressourceAlchimiste.ressourcesRecoltees.entries()) {
+        const tempsEcoule = (Date.now() - data.timestamp) / 1000;
+        const tempsRestant = Math.max(0, (ressourceAlchimiste.delaiRespawn - (Date.now() - data.timestamp)) / 1000);
+        console.log(`- Position (${data.x}, ${data.y}) sur ${data.mapOrigine}:`);
+        console.log(`  • Temps écoulé: ${tempsEcoule.toFixed(1)}s`);
+        console.log(`  • Temps restant: ${tempsRestant.toFixed(1)}s`);
+        console.log(`  • Prêt à respawn: ${tempsRestant <= 0 ? '✅ OUI' : '⏳ NON'}`);
+        console.log(`  • Sur la bonne map: ${window.currentMap === data.mapOrigine ? '✅ OUI' : '❌ NON'}`);
+    }
+    
+    console.log("=====================================");
+}
+
 // Exporter les fonctions pour utilisation globale
 window.gererClicRessourceAlchimiste = gererClicRessourceAlchimiste;
 window.getRessourceAlchimisteInfo = getRessourceAlchimisteInfo;
-window.appliquerEffetsVisuelsRessources = appliquerEffetsVisuelsRessources; 
+window.appliquerEffetsVisuelsRessources = appliquerEffetsVisuelsRessources;
+window.gererRespawnLorsRetourMap = gererRespawnLorsRetourMap;
+window.diagnosticRessources = diagnosticRessources; 
