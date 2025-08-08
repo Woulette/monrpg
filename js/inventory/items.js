@@ -209,6 +209,10 @@ function addItemToInventory(itemId, category) {
                 }
             }
             
+            // Re-synchroniser l'onglet Ressources depuis TOUT (pissenlits, etc.)
+            if (typeof window.reconcileResourcesFromAll === 'function') {
+                window.reconcileResourcesFromAll();
+            }
             // Mettre à jour toutes les grilles
             updateAllGrids();
             
@@ -254,16 +258,34 @@ function addItemToInventory(itemId, category) {
         category: category
     };
     
-    // Ajouter aussi dans l'inventaire principal pour compatibilité
-    const mainEmptySlot = window.inventoryAll.findIndex(slot => slot.item === null);
-    if (mainEmptySlot !== -1) {
-        const mainItemToAdd = { ...itemToAdd };
-        window.inventoryAll[mainEmptySlot] = {
-            item: mainItemToAdd,
-            category: category
-        };
+    // Synchronisation miroir ALL <-> Catégorie (empilable ou non)
+    // 1) S'assurer que ALL reflète la présence de la ressource
+    if (Array.isArray(window.inventoryAll)) {
+        // Tenter de stacker si stackable
+        if (itemToAdd.stackable) {
+            const idx = window.inventoryAll.findIndex(s => s && s.item && s.item.id === itemId);
+            if (idx !== -1) {
+                const max = itemToAdd.maxStack || 99;
+                if (!window.inventoryAll[idx].item.quantity) window.inventoryAll[idx].item.quantity = 1;
+                window.inventoryAll[idx].item.quantity = Math.min(max, window.inventoryAll[idx].item.quantity + 1);
+            } else {
+                const empty = window.inventoryAll.findIndex(s => s.item === null);
+                if (empty !== -1) {
+                    window.inventoryAll[empty] = { item: { ...itemToAdd }, category };
+                }
+            }
+        } else {
+            const empty = window.inventoryAll.findIndex(s => s.item === null);
+            if (empty !== -1) {
+                window.inventoryAll[empty] = { item: { ...itemToAdd }, category };
+            }
+        }
     }
     
+    // Reconciliation ressources depuis l'onglet TOUT → onglet RESSOURCES
+    if (typeof window.reconcileResourcesFromAll === 'function') {
+        window.reconcileResourcesFromAll();
+    }
     updateAllGrids();
     
     // Mettre à jour les établis si ils sont ouverts
@@ -289,47 +311,47 @@ function addItemToInventory(itemId, category) {
     return true;
 }
 
-// Fonction pour retirer un item spécifique d'un slot particulier (pour éviter l'équipement en masse)
-function removeSpecificItemFromInventory(item, slotIndex) {
-    console.log(`🗑️ Suppression spécifique de ${item.name} du slot ${slotIndex}`);
-    
-    // Identifier l'inventaire source basé sur la catégorie de l'item
-    let targetInventory = null;
-    if (item.category === 'equipement' || item.type === 'coiffe' || item.type === 'cape' || 
-        item.type === 'ceinture' || item.type === 'bottes' || item.type === 'anneau' || 
-        item.type === 'amulette' || item.type === 'arme') {
-        targetInventory = window.inventoryEquipement;
-    } else if (item.category === 'potion' || item.type === 'consommable' || item.type === 'potion') {
-        targetInventory = window.inventoryPotions;
-    } else if (item.category === 'ressource' || item.type === 'ressource') {
-        targetInventory = window.inventoryRessources;
+// Fonction pour retirer un item spécifique à l'index cliqué, en synchronisant "tout" et sa catégorie
+function removeSpecificItemFromInventory(item, slotIndex, category) {
+    console.log(`🗑️ Suppression spécifique de ${item.name} du slot ${slotIndex} (cat=${category})`);
+
+    // 1) Retirer dans l'inventaire correspondant à la grille d'où provient le clic
+    const clickedInventory = typeof window.getInventoryByCategory === 'function' 
+        ? window.getInventoryByCategory(category)
+        : window.inventoryAll;
+
+    if (clickedInventory && slotIndex >= 0 && slotIndex < clickedInventory.length) {
+        const slot = clickedInventory[slotIndex];
+        if (slot && slot.item && slot.item.id === item.id) {
+            clickedInventory[slotIndex] = { item: null, category: slot.category };
+            console.log(`✅ Retiré de la grille ${category} au slot ${slotIndex}`);
+        }
+    }
+
+    // 2) Synchroniser: retirer UNE occurrence dans inventoryAll et inventoryEquipement pour éviter les doublons résiduels
+    const removeOneById = (inv) => {
+        if (!inv) return;
+        const idx = inv.findIndex(s => s && s.item && s.item.id === item.id);
+        if (idx !== -1) {
+            inv[idx] = { item: null, category: inv[idx].category };
+        }
+    };
+
+    // Si on vient de "all", nettoyer aussi "equipement"; sinon, nettoyer aussi "all"
+    if (category === 'all') {
+        removeOneById(window.inventoryEquipement);
+    } else if (category === 'equipement') {
+        removeOneById(window.inventoryAll);
     } else {
-        // Par défaut, utiliser l'inventaire principal
-        targetInventory = window.inventoryAll;
+        // Pour autres catégories, s'assurer que "all" ne garde pas une copie inutile
+        removeOneById(window.inventoryAll);
     }
-    
-    // Supprimer seulement l'item du slot spécifique
-    if (targetInventory && slotIndex >= 0 && slotIndex < targetInventory.length) {
-        if (targetInventory[slotIndex].item && targetInventory[slotIndex].item.id === item.id) {
-            targetInventory[slotIndex] = { item: null, category: targetInventory[slotIndex].category };
-            console.log(`✅ Item ${item.name} supprimé du slot ${slotIndex}`);
-        }
-    }
-    
-    // Supprimer aussi de l'inventaire principal si c'est différent
-    if (targetInventory !== window.inventoryAll) {
-        const mainIndex = window.inventoryAll.findIndex(slot => 
-            slot.item && slot.item.id === item.id && slot.item.name === item.name
-        );
-        if (mainIndex !== -1) {
-            window.inventoryAll[mainIndex] = { item: null, category: null };
-        }
-    }
-    
-    // Réorganiser les inventaires
-    reorganizeInventory(targetInventory);
-    if (targetInventory !== window.inventoryAll) {
-        reorganizeInventory(window.inventoryAll);
+
+    // 3) Réorganiser les inventaires impactés
+    if (typeof window.reorganizeInventory === 'function') {
+        if (clickedInventory) window.reorganizeInventory(clickedInventory);
+        if (category !== 'all' && window.inventoryAll) window.reorganizeInventory(window.inventoryAll);
+        if (category !== 'equipement' && window.inventoryEquipement) window.reorganizeInventory(window.inventoryEquipement);
     }
 }
 
@@ -386,72 +408,114 @@ function removeItemFromAllInventories(itemId) {
 
 // Fonction pour retirer une quantité spécifique d'un item
 function removeItemFromInventory(itemId, quantity = 1) {
-    let remainingQuantity = quantity;
-    
-    // Retirer de l'inventaire principal
-    if (window.inventoryAll) {
-        for (let i = 0; i < window.inventoryAll.length && remainingQuantity > 0; i++) {
+    // Synchronisation MIRROR: retirer dans "all" ET dans la catégorie où il se trouve
+    let toRemoveAll = quantity;
+    let toRemoveCategory = quantity;
+
+    // 1) Retirer dans l'inventaire principal (ALL)
+    if (Array.isArray(window.inventoryAll)) {
+        for (let i = 0; i < window.inventoryAll.length && toRemoveAll > 0; i++) {
             const slot = window.inventoryAll[i];
-            if (slot.item && slot.item.id === itemId) {
+            if (slot && slot.item && slot.item.id === itemId) {
                 const slotQuantity = slot.item.quantity || 1;
-                const toRemove = Math.min(remainingQuantity, slotQuantity);
-                
-                if (slotQuantity <= toRemove) {
-                    // Retirer tout l'item du slot
+                const take = Math.min(toRemoveAll, slotQuantity);
+                if (slotQuantity <= take) {
                     window.inventoryAll[i] = { item: null, category: null };
-                    remainingQuantity -= slotQuantity;
                 } else {
-                    // Réduire la quantité
-                    slot.item.quantity = slotQuantity - toRemove;
-                    remainingQuantity -= toRemove;
+                    slot.item.quantity = slotQuantity - take;
                 }
+                toRemoveAll -= take;
             }
         }
-        reorganizeInventory(window.inventoryAll);
+        if (typeof window.reorganizeInventory === 'function') window.reorganizeInventory(window.inventoryAll);
     }
-    
-    // Retirer de chaque catégorie
-    [window.inventoryEquipement, window.inventoryPotions, window.inventoryRessources].forEach((inv, index) => {
-        const invName = ['inventoryEquipement', 'inventoryPotions', 'inventoryRessources'][index];
-        for (let i = 0; i < inv.length && remainingQuantity > 0; i++) {
+
+    // 2) Retirer dans la première catégorie correspondante (Équipement → equipement, Potions → potions, Ressources → ressources)
+    const categories = [window.inventoryEquipement, window.inventoryPotions, window.inventoryRessources, window.inventoryRessourcesAlchimiste];
+    for (const inv of categories) {
+        if (!Array.isArray(inv) || toRemoveCategory <= 0) continue;
+        for (let i = 0; i < inv.length && toRemoveCategory > 0; i++) {
             const slot = inv[i];
-            if (slot.item && slot.item.id === itemId) {
+            if (slot && slot.item && slot.item.id === itemId) {
                 const slotQuantity = slot.item.quantity || 1;
-                const toRemove = Math.min(remainingQuantity, slotQuantity);
-                
-                if (slotQuantity <= toRemove) {
-                    // Retirer tout l'item du slot
+                const take = Math.min(toRemoveCategory, slotQuantity);
+                if (slotQuantity <= take) {
                     inv[i] = { item: null, category: slot.category };
-                    remainingQuantity -= slotQuantity;
                 } else {
-                    // Réduire la quantité
-                    slot.item.quantity = slotQuantity - toRemove;
-                    remainingQuantity -= toRemove;
+                    slot.item.quantity = slotQuantity - take;
                 }
+                toRemoveCategory -= take;
             }
         }
-        reorganizeInventory(inv);
-    });
-    
-    updateAllGrids();
-    
-    // Mettre à jour les établis si ils sont ouverts
-    if (typeof window.updateEtabliesInventory === 'function') {
-        window.updateEtabliesInventory();
+        if (typeof window.reorganizeInventory === 'function') window.reorganizeInventory(inv);
+        // Une seule catégorie miroir doit être synchronisée
+        if (toRemoveCategory <= 0) break;
     }
-    
-    // Sauvegarde automatique après modification de l'inventaire
-    if (typeof window.autoSaveOnEvent === 'function') {
-        window.autoSaveOnEvent();
+
+    // Reconciliation ressources depuis l'onglet TOUT → onglet RESSOURCES
+    if (typeof window.reconcileResourcesFromAll === 'function') {
+        window.reconcileResourcesFromAll();
     }
-    
-    // Vérifier le progrès de la quête de craft après avoir retiré un item
-    if (typeof window.checkCraftQuestProgress === 'function') {
-        window.checkCraftQuestProgress();
-    }
-    
-    return quantity - remainingQuantity; // Retourne le nombre d'items effectivement retirés
+    if (typeof window.updateAllGrids === 'function') window.updateAllGrids();
+    if (typeof window.updateEtabliesInventory === 'function') window.updateEtabliesInventory();
+    if (typeof window.autoSaveOnEvent === 'function') window.autoSaveOnEvent();
+    if (typeof window.checkCraftQuestProgress === 'function') window.checkCraftQuestProgress();
+
+    // Retourne le nombre d'items retirés au total (côté ALL)
+    return quantity - toRemoveAll;
 }
+
+// Reconstruire l'onglet RESSOURCES à partir de l'onglet TOUT (anti-désync pissenlit, etc.)
+function reconcileResourcesFromAll() {
+    try {
+        if (!Array.isArray(window.inventoryAll)) return;
+        // Agréger les ressources par id
+        const aggregate = new Map();
+        const isResourceItem = (it) => {
+            if (!it) return false;
+            if (it.type === 'ressource') return true;
+            // Vérifier la base de données globale si dispo
+            if (window.resourceDatabase && window.resourceDatabase[it.id]) {
+                return window.resourceDatabase[it.id].type === 'ressource';
+            }
+            return false;
+        };
+        window.inventoryAll.forEach(slot => {
+            const it = slot && slot.item;
+            if (it && isResourceItem(it)) {
+                const q = it.quantity || 1;
+                const prev = aggregate.get(it.id) || 0;
+                aggregate.set(it.id, prev + q);
+            }
+        });
+        // Reconstruire inventoryRessources avec empilement maxStack
+        const newR = Array.from({ length: 80 }, () => ({ item: null, category: 'ressources' }));
+        let writeIndex = 0;
+        aggregate.forEach((qty, id) => {
+            const db = (window.resourceDatabase && window.resourceDatabase[id]) ? window.resourceDatabase[id] : null;
+            const maxStack = db && db.maxStack ? db.maxStack : 99;
+            while (qty > 0 && writeIndex < newR.length) {
+                const take = Math.min(maxStack, qty);
+                // Construire l'item à partir de la DB si dispo, sinon cloner depuis ALL (première occurrence)
+                let base = db ? { ...db } : null;
+                if (!base) {
+                    // Chercher une occurrence dans ALL
+                    const occ = window.inventoryAll.find(s => s && s.item && s.item.id === id);
+                    base = occ ? { ...occ.item } : { id, name: id, type: 'ressource', stackable: true, maxStack: maxStack };
+                }
+                base.quantity = take;
+                newR[writeIndex] = { item: base, category: 'ressources' };
+                writeIndex++;
+                qty -= take;
+            }
+        });
+        window.inventoryRessources = newR;
+    } catch (e) {
+        console.error('❌ reconcileResourcesFromAll erreur:', e);
+    }
+}
+
+window.reconcileResourcesFromAll = reconcileResourcesFromAll;
 
 // Modifie handleItemClick pour synchroniser les retraits
 function handleItemClick(item, slotIndex, category) {
@@ -472,8 +536,8 @@ function handleItemClick(item, slotIndex, category) {
     if (isEquippable) {
         // Équiper l'item
         if (equipItem(item.id)) {
-            // Retirer SEULEMENT cet item spécifique (évite l'équipement en masse)
-            removeSpecificItemFromInventory(item, slotIndex);
+            // Retirer SEULEMENT cet item spécifique (évite l'équipement en masse) + synchronisation
+            removeSpecificItemFromInventory(item, slotIndex, category);
             updateAllGrids();
             updateEquipmentDisplay();
             updateStatsDisplay();
@@ -522,6 +586,10 @@ function handleEquipmentSlotClick(slotType) {
         // Déséquiper l'item
         if (unequipItem(slotType)) {
             // Remettre l'item dans l'inventaire d'équipement
+            // Avant tout: supprimer d'éventuelles occurrences existantes pour éviter les doublons
+            if (typeof window.removeItemFromAllInventories === 'function') {
+                window.removeItemFromAllInventories(equippedItem.id);
+            }
             const emptySlot = window.inventoryEquipement.findIndex(slot => slot.item === null);
             if (emptySlot !== -1) {
                 window.inventoryEquipement[emptySlot] = {
@@ -806,4 +874,5 @@ function repairEquipment() {
     return { issuesFound: !issues.unequipAvailable || !issues.closeModalAvailable, issuesFixed: fixed };
 }
 
+window.repairEquipment = repairEquipment; 
 window.repairEquipment = repairEquipment; 

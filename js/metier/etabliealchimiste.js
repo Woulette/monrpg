@@ -418,7 +418,7 @@ function openAlchimisteWorkshopModal() {
             // Clic simple : afficher les détails (avec délai pour détecter double-clic)
             clickTimeout = setTimeout(() => {
               if (window.showEquipmentDetailModal) {
-                window.showEquipmentDetailModal(slotData.item, i);
+                window.showEquipmentDetailModal(slotData.item, i, 'ressources_alchimiste');
               }
               clickTimeout = null;
             }, 200);
@@ -758,6 +758,8 @@ function openAlchimisteWorkshopModal() {
       const btn = document.getElementById('alchimiste-craft-btn-debug');
       if (btn) {
         btn.onclick = () => {
+          // Normaliser un identifiant de potion craftée pour l'aperçu
+          let potionId = '';
           // Trouver la recette sélectionnée
           let selectedRecipe = null;
           for (let recipeBox of recipesBox.querySelectorAll('.alchimiste-recipe-box')) {
@@ -770,6 +772,8 @@ function openAlchimisteWorkshopModal() {
           if (selectedRecipe && window.craftAlchimiste) {
             // Utiliser le système de craft alchimiste
             if (window.craftAlchimiste.executerCraft(selectedRecipe)) {
+              // Si la recette a un ID (ex: potion_soin_basique), l'utiliser pour la prévisualisation
+              potionId = selectedRecipe;
               // Mettre à jour l'affichage de l'inventaire
               if (window.updateAlchimisteInventory) {
                 window.updateAlchimisteInventory();
@@ -861,7 +865,6 @@ function openAlchimisteWorkshopModal() {
             });
             
             // Ajouter la potion à l'inventaire
-            let potionId = '';
             switch (recipe.name) {
               case 'Potion de Soin Basique': potionId = 'potion_soin_basique'; break;
               case 'Potion de Force': potionId = 'potion_force'; break;
@@ -892,9 +895,9 @@ function openAlchimisteWorkshopModal() {
           if (typeof updateCraftInventoryGrid === 'function') updateCraftInventoryGrid();
           if (typeof window.enableAlchimisteDragAndDrop === 'function') window.enableAlchimisteDragAndDrop();
           
-          // Afficher la fiche de la potion créée
-          if (potionId && window.equipmentDatabase && window.equipmentDatabase[potionId]) {
-            const item = window.equipmentDatabase[potionId];
+          // Afficher la fiche de la potion créée (si identifiable)
+          if (potionId && ((window.equipmentDatabase && window.equipmentDatabase[potionId]) || (window.resourceDatabase && window.resourceDatabase[potionId]))) {
+            const item = (window.equipmentDatabase && window.equipmentDatabase[potionId]) ? window.equipmentDatabase[potionId] : window.resourceDatabase[potionId];
             craftPreviewDiv.innerHTML = `
               <div class='item-preview'>
                 <div class='item-preview-card'>

@@ -87,6 +87,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const tileIndex4 = ny * layer4.width + nx;
             const tileId2 = layer2.data[tileIndex2];
             const tileId4 = layer4.data[tileIndex4];
+            // Mannequins d'entraînement (calque 2 IDs 29806, 29606)
+            if ([29806, 29606].includes(tileId2)) {
+                // Aller se placer adjacent, puis ouvrir la modale d'entraînement
+                handleCraftTableClick(nx, ny, 'mannequin_force');
+                return;
+            }
             
             // Établie du tailleur (IDs 412, 413, 612, 613)
             if ([412, 413, 612, 613].includes(tileId2) || [412, 413, 612, 613].includes(tileId4)) {
@@ -158,6 +164,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 handleCraftTableClick(nx, ny, 'alchimiste');
                 return;
             }
+
+            // Four du paysan (IDs 24402 ou 24202 sur calques 2 ou 4) → ouverture atelier paysan
+            if ([24402, 24202].includes(tileId2) || [24402, 24202].includes(tileId4)) {
+                handleCraftTableClick(nx, ny, 'paysan');
+                return;
+            }
             
             // Ressources d'alchimiste (ID 25 calque 4)
             if (tileId4 === 25 && window.currentMap === "map1") {
@@ -165,6 +177,58 @@ document.addEventListener('DOMContentLoaded', () => {
                     const resultat = window.gererClicRessourceAlchimiste(nx, ny);
                     if (resultat) {
                         return; // Arrêter le traitement si la récolte a été démarrée
+                    }
+                }
+            }
+
+            // Blé du paysan sur map5: interaction comme pissenlit avec délai 2s
+            if (window.currentMap === 'map5') {
+                // On déclenche la coupe si le blé est en état poussé (layer 6 visible à cette case)
+                if (typeof window.cutWheat === 'function') {
+                    const layerGrown = window.mapData.layers.find(l => l.id === 6);
+                    if (layerGrown) {
+                        const idx = ny * layerGrown.width + nx;
+                        // Vérifier GID exact 425 pour ne couper qu'une seule tuile ciblée
+                        const isWheatHere = layerGrown.visible && layerGrown.data[idx] === 425;
+                        if (isWheatHere) {
+                            // Marquer la tuile comme "interagie" pour activer l'effet visuel seulement après clic
+                            if (typeof window.markWheatInteracted === 'function') {
+                                window.markWheatInteracted(nx, ny);
+                            }
+                            // Se déplacer adjacent si nécessaire puis couper
+                            const distanceX = Math.abs(nx - player.x);
+                            const distanceY = Math.abs(ny - player.y);
+                            if (distanceX <= 1 && distanceY <= 1) {
+                                window.cutWheat(nx, ny);
+                                return;
+                            } else {
+                                // Déplacement adjacent puis coupe quand arrivé
+                                if (typeof window.handleMovementClick === 'function') {
+                                    const adjacents = [
+                                        {x: nx+1, y: ny}, {x: nx-1, y: ny}, {x: nx, y: ny+1}, {x: nx, y: ny-1}
+                                    ].filter(p => p.x>=0 && p.x<window.mapData.width && p.y>=0 && p.y<window.mapData.height && !window.isBlocked(p.x,p.y));
+                                    if (adjacents.length) {
+                                        // Prendre la plus proche
+                                        let closest = adjacents[0];
+                                        let best = Math.abs(player.x - closest.x) + Math.abs(player.y - closest.y);
+                                        for (let i=1;i<adjacents.length;i++){
+                                            const d = Math.abs(player.x - adjacents[i].x) + Math.abs(player.y - adjacents[i].y);
+                                            if (d < best) { best = d; closest = adjacents[i]; }
+                                        }
+                                        window.handleMovementClick(closest.x, closest.y);
+                                        // Vérifier l’arrivée puis couper
+                                        setTimeout(function waitArrive(){
+                                            if (Math.abs(player.x - closest.x)+Math.abs(player.y - closest.y) === 0){
+                                                window.cutWheat(nx, ny);
+                                            } else {
+                                                setTimeout(waitArrive, 120);
+                                            }
+                                        }, 150);
+                                        return;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -425,6 +489,39 @@ function handleHouseChestClick(nx, ny) {
 
 // Fonction pour gérer les clics sur les tables de craft
 function handleCraftTableClick(nx, ny, type) {
+    // Cas spécifique mannequin: viser la case "devant" (une case sous le mannequin)
+    if (type === 'mannequin_force') {
+        const target = { x: nx, y: ny + 1 };
+        if (
+            target.x >= 0 && target.y >= 0 &&
+            window.mapData && target.x < window.mapData.width && target.y < window.mapData.height &&
+            !window.isBlocked(target.x, target.y)
+        ) {
+            window.pendingOpenCraftTable = { x: nx, y: ny, type };
+            if (typeof findPath === "function" && window.mapData) {
+                const isBlockedWithPortals = (x, y) => {
+                    if (window.isBlocked(x, y)) return true;
+                    if (monsters.some(monster => monster.x === x && monster.y === y && monster.hp > 0 && !monster.isDead)) return true;
+                    if (window.mapData && window.mapData.layers && window.mapData.layers.length > 3) {
+                        const layer4 = window.mapData.layers[3];
+                        const tileIndex = y * layer4.width + x;
+                        const tileId = layer4.data[tileIndex];
+                        if ([1, 2, 3, 4, 5, 6].includes(tileId)) return true;
+                    }
+                    return false;
+                };
+                player.path = findPath(
+                    { x: player.x, y: player.y },
+                    target,
+                    isBlockedWithPortals,
+                    mapData.width, mapData.height
+                ) || [];
+                nextStepToTarget();
+                return;
+            }
+        }
+        // Si la case devant est invalide, on retombera sur le comportement générique ci-dessous
+    }
     // Chercher une case adjacente libre à la table
     const adjacents = [
         {x: nx+1, y: ny},
@@ -542,10 +639,6 @@ function handleMovementClick(nx, ny) {
             // Vérifier s'il y a un monstre vivant à cette position
             const monsterAtPosition = monsters.find(monster => monster.x === x && monster.y === y && monster.hp > 0 && !monster.isDead);
             if (monsterAtPosition) {
-                // Empêcher la superposition avec le SlimeBoss
-                if (monsterAtPosition.type === "slimeboss") {
-                    return true;
-                }
                 return true;
             }
             // Vérifier si c'est un portail du calque 4 (éviter les portails)

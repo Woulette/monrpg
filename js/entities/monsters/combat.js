@@ -78,6 +78,10 @@ function killMonster(monster) {
                 release(monster.x, monster.y + 1);
                 release(monster.x + 1, monster.y + 1);
             }
+            // Sécurité anti-collisions fantômes: réconcilier l'occupation
+            if (typeof window.reconcileOccupiedPositions === 'function') {
+                window.reconcileOccupiedPositions();
+            }
             
             // Gérer la mort du SlimeBoss et les récompenses
             if (typeof window.handleSlimeBossDeath === "function") {

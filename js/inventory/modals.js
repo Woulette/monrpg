@@ -1,6 +1,8 @@
 // Variables globales pour la fenêtre détaillée
 let currentEquipmentDetailItem = null;
 let currentEquipmentDetailIndex = null;
+let currentEquipmentDetailCategory = 'all';
+window.currentEquipmentDetailCategory = currentEquipmentDetailCategory;
 let clickTimeout = null;
 
 // Variables pour le déplacement de la fenêtre
@@ -9,9 +11,11 @@ let dragOffsetX = 0;
 let dragOffsetY = 0;
 
 // Fonction pour afficher la fenêtre détaillée de l'équipement
-function showEquipmentDetailModal(item, slotIndex) {
+function showEquipmentDetailModal(item, slotIndex, category = 'all') {
     currentEquipmentDetailItem = item;
     currentEquipmentDetailIndex = slotIndex;
+    currentEquipmentDetailCategory = category;
+    window.currentEquipmentDetailCategory = category;
     
     try {
         // Déterminer la catégorie de l'item

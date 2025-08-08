@@ -69,13 +69,14 @@ function moveMonsters(ts) {
             return;
         }
 
-        if (Math.abs(dx) <= monster.moveSpeed && Math.abs(dy) <= monster.moveSpeed) {
+    if (Math.abs(dx) <= monster.moveSpeed && Math.abs(dy) <= monster.moveSpeed) {
             release(monster.x, monster.y);
             monster.px = tx;
             monster.py = ty;
             monster.x = monster.moveTarget.x;
             monster.y = monster.moveTarget.y;
-            occupy(monster.x, monster.y);
+        // Revenir au comportement initial: occupation 1x1
+        occupy(monster.x, monster.y);
             monster.moving = false;
             monster.frame = 0;
             monster.stuckSince = 0;

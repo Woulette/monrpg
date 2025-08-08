@@ -402,9 +402,34 @@ function equipItem(itemId) {
         };
     }
     
-    // Déséquiper l'item actuel dans ce slot
+    // Déséquiper l'item actuel dans ce slot et le remettre en inventaire (sync all/équipement)
     if (window.equippedItems[item.slot]) {
+        const previousItem = window.equippedItems[item.slot];
         unequipItem(item.slot);
+        // Anti-duplication: retirer toute occurrence résiduelle de l'ancien item
+        if (typeof window.removeItemFromAllInventories === 'function') {
+            window.removeItemFromAllInventories(previousItem.id);
+        }
+        // Remettre l'ancien item dans l'inventaire d'équipement
+        if (Array.isArray(window.inventoryEquipement)) {
+            const emptyEquip = window.inventoryEquipement.findIndex(s => s.item === null);
+            if (emptyEquip !== -1) {
+                window.inventoryEquipement[emptyEquip] = { item: previousItem, category: 'equipement' };
+            }
+        }
+        // Remettre aussi dans l'inventaire principal (onglet TOUT)
+        if (Array.isArray(window.inventoryAll)) {
+            const emptyAll = window.inventoryAll.findIndex(s => s.item === null);
+            if (emptyAll !== -1) {
+                window.inventoryAll[emptyAll] = { item: previousItem, category: 'equipement' };
+            }
+        }
+        // Réorganiser et mettre à jour l'affichage
+        if (typeof window.reorganizeInventory === 'function') {
+            if (Array.isArray(window.inventoryEquipement)) window.reorganizeInventory(window.inventoryEquipement);
+            if (Array.isArray(window.inventoryAll)) window.reorganizeInventory(window.inventoryAll);
+        }
+        if (typeof window.updateAllGrids === 'function') window.updateAllGrids();
     }
     
     // Équiper le nouvel item

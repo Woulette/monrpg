@@ -229,6 +229,8 @@ class WorldMapSystem {
             'map2': { x: 0, y: 400 },                  // map2 au milieu (Y = 400)
             'map3': { x: 0, y: 0 },                  // map3 en haut (Y = 0)
             'map4': { x: 770, y: 0 },                 // map4 au-dessus de map3 (Y = -400)
+            // Nouvelle map 5: au-dessus de map3 (axe Y négatif)
+            'map5': { x: 0, y: -400 },
             'mapzonealuineeks1': { x: 770, y: -400 },     // mapzonealuineeks1 à droite de map4
             'mazonehaut1aluineeks1': { x: 770, y: -800 }, // mazonehaut1aluineeks1 à droite de mapzonealuineeks1
             // Pour les futures maps : map5 = Y = -800, map6 = Y = -1200, etc.

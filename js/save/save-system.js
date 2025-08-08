@@ -339,15 +339,20 @@ class SaveSystem {
             }
 
             // Restaurer les données des métiers
-            if (data.metiers) {
+                if (data.metiers) {
                 window.metiers = data.metiers;
+                // Ajouter paysan si absent dans d'anciennes sauvegardes
+                if (!window.metiers.paysan) {
+                    window.metiers.paysan = { niveau: 1, xp: 0, xpToNext: 100 };
+                }
             } else {
                 // Valeurs par défaut si aucune donnée sauvegardée
                 window.metiers = {
                     tailleur: { niveau: 1, xp: 0, xpToNext: 100 },
                     cordonnier: { niveau: 1, xp: 0, xpToNext: 100 },
                     bijoutier: { niveau: 1, xp: 0, xpToNext: 100 },
-                    alchimiste: { niveau: 1, xp: 0, xpToNext: 100 }
+                    alchimiste: { niveau: 1, xp: 0, xpToNext: 100 },
+                    paysan: { niveau: 1, xp: 0, xpToNext: 100 }
                 };
             }
 

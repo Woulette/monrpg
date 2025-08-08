@@ -304,8 +304,14 @@ function updatePlayer(ts) {
         }
     }
     
+    // (retour comportement précédent) pas de pushback auto ici
+    
     // Vérification de téléportation automatique
     if (window.mapData && window.mapData.layers && window.mapData.layers.length > 0) {
+        // Garde-fou: ignorer la détection de portail pendant un court cooldown après téléportation
+        if (window.portalCooldownUntil && Date.now() < window.portalCooldownUntil) {
+            return;
+        }
         // Chercher tous les portails dans tous les calques avec PRIORITÉ au calque 4 (calque des portails)
         let portalFound = false;
         let portalGid = null;
@@ -436,8 +442,8 @@ function updatePlayer(ts) {
                     destinationMap = "map3";
                     targetPortalId = 3;
                 } else if (portalGid === 3) {
-                    // Portail ID 3 → Map 3
-                    destinationMap = "map3";
+                    // Portail ID 3 → Map 5 (nouvelle zone)
+                    destinationMap = "map5";
                     targetPortalId = 4;
                 }
             } else if (window.currentMap === "mapzonealuineeks1") {
@@ -464,6 +470,21 @@ function updatePlayer(ts) {
                     // Portail ID 7 → Map 3
                     destinationMap = "map3";
                     targetPortalId = 6;
+                }
+            } else if (window.currentMap === "map5") {
+                // Map5 générique: même logique générique (1→suivante, 2→précédente, 3→suivante, 4→précédente)
+                if (portalGid === 1) {
+                    destinationMap = `map${currentMapNumber + 1}`;
+                    targetPortalId = 2;
+                } else if (portalGid === 2) {
+                    destinationMap = `map${currentMapNumber - 1}`;
+                    targetPortalId = 1;
+                } else if (portalGid === 3) {
+                    destinationMap = `map${currentMapNumber + 1}`;
+                    targetPortalId = 4;
+                } else if (portalGid === 4) {
+                    destinationMap = `map${currentMapNumber - 1}`;
+                    targetPortalId = 3;
                 }
             } else {
                 // Logique générale pour les autres maps
@@ -515,6 +536,8 @@ function updatePlayer(ts) {
                 }
                 const originX = player.x;
                 const originY = player.y;
+                // Armer un cooldown pour éviter la double détection pendant le chargement
+                window.portalCooldownUntil = Date.now() + 800;
                 fetch(`assets/maps/${destinationMap}.json`)
                     .then(response => {
                         return response.json();
@@ -628,14 +651,22 @@ function updatePlayer(ts) {
                             // Map mazonehaut1aluineeks1 → Map zonealuineeks1 : position fixe
                             destX = 23;
                             destY = 1;
-                        } else if (destinationMap === "map4") {
+                        } else if (destinationMap === "map4" && window.currentMap === "map3") {
                                 // Map 3 → Map 4 : position fixe (croix rouge)
                                 destX = 1;
+                                destY = 11;
+                            } else if (destinationMap === "map4" && window.currentMap === "map5") {
+                                // Map 5 (portail 4) → Map 4 (portail 3) : position demandée
+                                destX = 46;
                                 destY = 11;
                             } else if (destinationMap === "map3" && window.currentMap === "map4") {
                                 // Map 4 → Map 3 : position fixe (portail ID 3)
                                 destX = 46;
                                 destY = 13;
+                            } else if (destinationMap === "map5" && window.currentMap === "map4") {
+                                // Map 4 (portail 3) → Map 5 (portail 4) : position demandée
+                                destX = 1;
+                                destY = 10;
                             } else if (destinationMap === "map3" && window.currentMap === "map2") {
                                 // Map 2 → Map 3 : position fixe (portail ID 2)
                                 destX = 24;

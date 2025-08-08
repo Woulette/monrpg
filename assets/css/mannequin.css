@@ -1,0 +1,15 @@
+/* Modale mannequins */
+.mannequin-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center}
+.mannequin-content{width:720px;max-width:95vw;background:#0f172a;color:#e2e8f0;border:2px solid #94a3b8;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.45);padding:20px 22px;position:relative;font-family:Arial, sans-serif}
+.mannequin-title{font-size:22px;margin:0 0 8px 0;color:#fbbf24;letter-spacing:1px}
+.mannequin-close{position:absolute;right:14px;top:10px;background:none;border:none;color:#fbbf24;font-size:28px;cursor:pointer}
+.mannequin-body{display:flex;gap:16px}
+.mannequin-left{flex:1;display:flex;align-items:center;justify-content:center;min-height:220px;background:#0b1220;border:1px solid #1e293b;border-radius:10px}
+.mannequin-right{flex:1.2;display:flex;flex-direction:column;gap:12px}
+.mannequin-session{display:flex;align-items:center;gap:10px;background:#111827;border:1px solid #1f2937;border-radius:10px;padding:10px}
+.mannequin-session .label{color:#9ca3af;font-size:13px}
+.mannequin-session .value{color:#fbbf24;font-weight:bold}
+.mannequin-btn{background:#f59e0b;color:#0b1220;border:none;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(245,158,11,.35)}
+.mannequin-btn:disabled{background:#9ca3af;cursor:not-allowed;color:#111827}
+
+

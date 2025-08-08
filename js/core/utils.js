@@ -22,6 +22,49 @@ function occupy(x, y) {
   }
 }
 
+// Purge complète des positions occupées (utile au changement de map)
+function clearOccupiedPositions() {
+  window.occupiedPositions.clear();
+  if (window.mapData && window.mapData.occupied) {
+    window.mapData.occupied = {};
+  }
+}
+
+// Réconcilier les positions occupées avec les entités réelles (joueur/monstres vivants)
+function reconcileOccupiedPositions() {
+  try {
+    const actual = new Set();
+    if (typeof player !== 'undefined' && player && typeof player.x === 'number' && typeof player.y === 'number') {
+      actual.add(posKey(player.x, player.y));
+    }
+    if (Array.isArray(window.monsters)) {
+      for (const m of window.monsters) {
+        if (!m) continue;
+        if (m.hp <= 0 || m.isDead) continue;
+        // Taille 2x2 pour le boss
+        if (m.type === 'slimeboss' || m.width === 64 || m.height === 64) {
+          actual.add(posKey(m.x, m.y));
+          actual.add(posKey(m.x + 1, m.y));
+          actual.add(posKey(m.x, m.y + 1));
+          actual.add(posKey(m.x + 1, m.y + 1));
+        } else {
+          actual.add(posKey(m.x, m.y));
+        }
+      }
+    }
+    // Supprimer toute occupation « fantôme » qui n'a pas d'entité réelle
+    const toRemove = [];
+    window.occupiedPositions.forEach(key => { if (!actual.has(key)) toRemove.push(key); });
+    for (const key of toRemove) {
+      window.occupiedPositions.delete(key);
+      if (window.mapData && window.mapData.occupied) delete window.mapData.occupied[key];
+    }
+    return toRemove.length;
+  } catch (_) {
+    return 0;
+  }
+}
+
 // Libère une case occupée
 function release(x, y) {
   window.occupiedPositions.delete(posKey(x, y));
@@ -45,3 +88,5 @@ function isOccupied(x, y, ignoreMonster = null) {
 window.occupy = occupy;
 window.release = release;
 window.isOccupied = isOccupied;
+window.clearOccupiedPositions = clearOccupiedPositions;
+window.reconcileOccupiedPositions = reconcileOccupiedPositions;

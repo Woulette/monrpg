@@ -209,6 +209,12 @@ function teleportPlayer(mapName, spawnX, spawnY) {
     // Charger la nouvelle map
     loadMap(mapName).then(success => {
         if (success) {
+            // Cooldown portail pour éviter une re-détection immédiate
+            window.portalCooldownUntil = Date.now() + 800; // 0.8s
+            // Nettoyer toutes les occupations dynamiques avant de reposer le joueur/monstres
+            if (typeof window.clearOccupiedPositions === 'function') {
+                window.clearOccupiedPositions();
+            }
             // Téléporter le joueur
             player.x = spawnX;
             player.y = spawnY;
@@ -537,6 +543,10 @@ function drawMap() {
                     if (window.appliquerEffetsVisuelsRessources) {
                         window.appliquerEffetsVisuelsRessources(ctx, x, y, gid);
                     }
+                    // Appliquer les effets visuels pour le blé (paysan)
+                    if (window.appliquerEffetsVisuelsRessourcesPaysan) {
+                        window.appliquerEffetsVisuelsRessourcesPaysan(ctx, x, y, gid);
+                    }
                     
                     ctx.drawImage(
                         ts.image,
@@ -614,6 +624,10 @@ function drawMap() {
                     // Appliquer les effets visuels pour les ressources d'alchimiste
                     if (window.appliquerEffetsVisuelsRessources) {
                         window.appliquerEffetsVisuelsRessources(ctx, x, y, gid);
+                    }
+                    // Appliquer les effets visuels pour le blé (paysan)
+                    if (window.appliquerEffetsVisuelsRessourcesPaysan) {
+                        window.appliquerEffetsVisuelsRessourcesPaysan(ctx, x, y, gid);
                     }
                     
                     ctx.drawImage(

@@ -119,6 +119,10 @@ window.checkCollisionIntegrity = function() {
         return;
     }
     
+    // Réconcilier les occupations dynamiques avec les entités en vie (anti-fantômes)
+    if (typeof window.reconcileOccupiedPositions === 'function') {
+        window.reconcileOccupiedPositions();
+    }
     console.log("Intégrité des collisions vérifiée pour", window.currentMap);
 };
 

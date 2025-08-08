@@ -16,13 +16,14 @@
     <link rel="stylesheet" href="assets/css/etablie-bijoutier.css">
     <link rel="stylesheet" href="assets/css/etablie-alchimiste.css">
     <link rel="stylesheet" href="assets/css/metier.css">
+    <link rel="stylesheet" href="assets/css/mannequin.css">
     <link rel="stylesheet" href="assets/css/sort.css">
     <link rel="stylesheet" href="assets/css/utility-bar.css">
     <link rel="stylesheet" href="assets/css/menu.css">
     <link rel="stylesheet" href="assets/css/pnj.css">
     <link rel="stylesheet" href="assets/css/quetes.css">
     <link rel="stylesheet" href="assets/css/map.css">
-    <link rel="stylesheet" href="css/rassemblement-preview.css">
+    <link rel="stylesheet" href="assets/css/rassemblement-preview.css">
     <link rel="stylesheet" href="assets/css/harvesting.css">
     
 
@@ -792,6 +793,9 @@
 
     <!-- JS à charger en dernier (sauf utils.js et monsters/ déjà chargés dans le head) -->
 <script src="js/systems/hud.js"></script>
+<script src="js/systems/display.js"></script>
+<script src="js/systems/input.js"></script>
+<script src="js/systems/dev-utils.js"></script>
 <script src="js/core/pathfinding.js"></script>
 <script src="js/entities/player/constants.js"></script>
 <script src="js/entities/player/stats.js"></script>
@@ -807,6 +811,17 @@
 
 <script src="js/core/map.js"></script>
     <!-- MODULES RESTRUCTURÉS MAIN.JS -->
+    <script src="js/systems/spell-utils.js"></script>
+    <script src="js/systems/boss-rewards.js"></script>
+    <script src="js/systems/house-chest.js"></script>
+    <!-- Charger le noyau des sorts et les modules AVANT main.js pour compatibilité -->
+    <script src="js/sort/core.js"></script>
+    <script src="js/sort/punch.js"></script>
+    <script src="js/sort/explosivePunch.js"></script>
+    <script src="js/sort/triplePunch.js"></script>
+    <script src="js/sort/poingheal.js"></script>
+    <script src="js/sort/rassemblement.js"></script>
+    <script src="js/sort/ui.js"></script>
     <script src="js/core/main.js"></script>
 <script src="js/inventory/loader.js"></script>
 <script src="js/inventory/grid.js"></script>
@@ -815,6 +830,7 @@
 <script src="js/inventory/equipment-display.js"></script>
 <script src="js/inventory/stats-display.js"></script>
 <script src="js/inventory/main.js"></script>
+<script src="js/inventory/events.js"></script>
 <script src="js/systems/chat.js"></script>
 <script src="js/systems/floating-chat.js"></script>
 <script src="js/systems/damage-display.js"></script>
@@ -830,14 +846,15 @@
     <script src="js/metier/craftalchimiste.js"></script>
     <script src="js/metier/fusionalchimiste.js"></script>
         <script src="js/metier/niveaudemetier.js"></script>
-        <script src="js/metier/recolte.js"></script>
+        <script src="js/metier/ressource-paysan.js"></script>
+        <script src="js/metier/etabliepaysan.js"></script>
+        <script src="js/metier/manequin.js"></script>
         <script src="js/metier/ressource-alchimiste.js"></script>
         <script src="js/metier/corbac-items-fix.js"></script>
         <script src="multiplayer/client/player-name-manager.js"></script>
         <script src="multiplayer/client/multiplayer-manager.js"></script>
         <script src="multiplayer/monster-sync.js"></script>
-        <script src="js/sort/poingheal.js"></script>
-        <script src="js/sort/rassemblement.js"></script>
+        <!-- (suppression des doublons de chargement des sorts) -->
         
         <!-- FICHIER DE TEST POUR CORRECTION ORBES ATYPIQUES -->
         <script src="test-correction-orbes.js"></script>

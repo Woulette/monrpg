@@ -15,6 +15,18 @@ function nextStepToTarget() {
       openBijoutierWorkshopModal();
     } else if (table.type === 'alchimiste' && typeof openAlchimisteWorkshopModal === 'function') {
       openAlchimisteWorkshopModal();
+    } else if (table.type === 'paysan' && typeof openEtabliePaysan === 'function') {
+      openEtabliePaysan();
+    } else if (table.type === 'mannequin_force' && typeof window.openMannequinTraining === 'function') {
+      // Placer l'orientation du joueur face au mannequin (priorité au dessous = face)
+      const dxm = table.x - player.x;
+      const dym = table.y - player.y;
+      if (dxm === 0 && dym === -1) player.direction = 0; // joueur sous le mannequin → regarde vers le haut
+      else if (dxm === 1 && dym === 0) player.direction = 3; // joueur à droite → regarde gauche
+      else if (dxm === -1 && dym === 0) player.direction = 1; // joueur à gauche → regarde droite
+      else if (dxm === 0 && dym === 1) player.direction = 2; // joueur au dessus → regarde bas
+      window.currentMannequinTarget = { x: table.x, y: table.y };
+      window.openMannequinTraining(table.x, table.y);
     } else if (typeof openTailorWorkshopModal === 'function') {
       openTailorWorkshopModal();
     }
@@ -29,7 +41,7 @@ function nextStepToTarget() {
         return;
     }
     
-    // Vérifier si la case suivante est une tile de téléportation
+    // Vérifier si la case suivante est une tile de téléportation OU occupée par un monstre
     if (window.mapData && window.mapData.layers && window.mapData.layers.length > 0) {
         const layer1 = window.mapData.layers[0];
         const tileIndex = next.y * layer1.width + next.x;
@@ -41,7 +53,7 @@ function nextStepToTarget() {
         } else {
             // Si la case suivante est occupée par un monstre ET que ce n'est PAS la destination finale, on bloque
             const isLastStep = player.path.length === 0;
-            if (isMonsterAt(next.x, next.y) && !isLastStep) {
+            if (typeof isMonsterAt === 'function' && isMonsterAt(next.x, next.y) && !isLastStep) {
                 player.moving = false;
                 player.path = [];
                 return;

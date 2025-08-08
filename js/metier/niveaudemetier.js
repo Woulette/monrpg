@@ -21,6 +21,11 @@ const metiers = {
     niveau: 1,
     xp: 0,
     xpToNext: 100,
+  },
+  paysan: {
+    niveau: 1,
+    xp: 0,
+    xpToNext: 100,
   }
 };
 
@@ -97,6 +102,11 @@ window.resetMetiersToLevel1 = function() {
       niveau: 1,
       xp: 0,
       xpToNext: 100,
+    },
+    paysan: {
+      niveau: 1,
+      xp: 0,
+      xpToNext: 100,
     }
   };
   console.log("✅ Tous les métiers ont été remis au niveau 1");
@@ -131,7 +141,8 @@ window.forceResetMetiers = function() {
     tailleur: { niveau: 1, xp: 0, xpToNext: 100 },
     cordonnier: { niveau: 1, xp: 0, xpToNext: 100 },
     bijoutier: { niveau: 1, xp: 0, xpToNext: 100 },
-    alchimiste: { niveau: 1, xp: 0, xpToNext: 100 }
+    alchimiste: { niveau: 1, xp: 0, xpToNext: 100 },
+    paysan: { niveau: 1, xp: 0, xpToNext: 100 }
   };
   
   console.log("✅ Métiers réinitialisés:", window.metiers);
@@ -343,6 +354,45 @@ const metierRecettes = {
       type: 'fusion'
     }
   ]
+  ,
+  paysan: [
+    {
+      nom: 'Farine de blé',
+      icon: 'assets/objets/ressources_paysan/farine.png',
+      niveauRequis: 1,
+      description: 'Moudre le blé pour obtenir de la farine.',
+      ingredients: [
+        { nom: 'Blé', icon: 'assets/objets/ressources_paysan/ble.png', quantite: 3 }
+      ]
+    },
+    {
+      nom: 'Farine complète',
+      icon: 'assets/objets/ressources_paysan/farine_complete.png',
+      niveauRequis: 5,
+      description: 'Farine plus nourrissante, moulue plus finement.',
+      ingredients: [
+        { nom: 'Blé', icon: 'assets/objets/ressources_paysan/ble.png', quantite: 5 }
+      ]
+    },
+    {
+      nom: 'Pain',
+      icon: 'assets/objets/ressources_paysan/pain.png',
+      niveauRequis: 3,
+      description: 'Cuire la farine pour obtenir du pain.',
+      ingredients: [
+        { nom: 'Farine de blé', icon: 'assets/objets/ressources_paysan/farine.png', quantite: 2 }
+      ]
+    },
+    {
+      nom: 'Pain complet',
+      icon: 'assets/objets/ressources_paysan/pain_complet.png',
+      niveauRequis: 7,
+      description: 'Pain plus nourrissant à base de farine complète.',
+      ingredients: [
+        { nom: 'Farine complète', icon: 'assets/objets/ressources_paysan/farine_complete.png', quantite: 2 }
+      ]
+    }
+  ]
 };
 
 // Base de données des ressources récoltables par métier
@@ -387,6 +437,16 @@ const metierResources = {
       description: 'Une fleur mystérieuse aux pouvoirs exceptionnels.',
       localisation: 'Map 5 - Zones sombres',
       respawn: '600 secondes'
+    }
+  ],
+  paysan: [
+    {
+      nom: 'Blé',
+      icon: 'assets/objets/ressources_paysan/ble.png',
+      niveauRequis: 1,
+      description: 'Céréale de base utilisée pour fabriquer farine et pain.',
+      localisation: 'Map 5 - Champs',
+      respawn: '120 secondes'
     }
   ]
 };
@@ -486,6 +546,16 @@ function openMetierModal() {
       key: 'alchimiste',
       nom: 'Alchimiste',
       svg: `<svg class='metier-icon-svg' width='32' height='32' viewBox='0 0 32 32'><circle cx='16' cy='12' r='6' fill='#4CAF50' stroke='#2E7D32' stroke-width='2'/><rect x='12' y='18' width='8' height='10' rx='2' fill='#8BC34A' stroke='#2E7D32' stroke-width='2'/><circle cx='14' cy='20' r='1.5' fill='#2E7D32'/><circle cx='18' cy='20' r='1.5' fill='#2E7D32'/></svg>`
+    }
+    ,
+    {
+      key: 'paysan',
+      nom: 'Paysan',
+      svg: `<svg class='metier-icon-svg' width='32' height='32' viewBox='0 0 32 32'>
+        <rect x='14' y='3' width='4' height='20' rx='2' fill='#8d6e63' stroke='#5d4037' stroke-width='1.5'/>
+        <rect x='10' y='6' width='12' height='4' rx='2' fill='#c0ca33' stroke='#827717' stroke-width='1.5'/>
+        <rect x='11' y='11' width='10' height='3' rx='1.5' fill='#c0ca33' stroke='#827717' stroke-width='1.5'/>
+      </svg>`
     }
   ];
 

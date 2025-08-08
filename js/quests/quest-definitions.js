@@ -233,6 +233,24 @@ function getItemQuantity(itemId) {
             }
         });
     }
+
+    // Vérifier dans l'inventaire ressources
+    if (window.inventoryRessources) {
+        window.inventoryRessources.forEach(slot => {
+            if (slot.item && slot.item.id === itemId) {
+                totalQuantity += slot.item.quantity || 1;
+            }
+        });
+    }
+
+    // Vérifier dans l'inventaire ressources alchimiste
+    if (window.inventoryRessourcesAlchimiste) {
+        window.inventoryRessourcesAlchimiste.forEach(slot => {
+            if (slot.item && slot.item.id === itemId) {
+                totalQuantity += slot.item.quantity || 1;
+            }
+        });
+    }
     
     // Vérifier dans l'équipement équipé
     if (window.equippedItems) {

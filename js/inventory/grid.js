@@ -86,8 +86,22 @@ function updateGridContent(category) {
         }
     });
     
-    // Attacher les événements aux slots de cette grille
+    // Dédupliquer les événements au cas où ils auraient été attachés plusieurs fois
+    dedupeGridSlots(grid);
+    // Attacher les événements aux slots de cette grille (une seule fois)
     attachGridEvents(grid, category);
+}
+// Supprimer proprement les anciens écouteurs en clonant les slots
+function dedupeGridSlots(grid) {
+    const slots = grid.querySelectorAll('.inventory-slot');
+    slots.forEach(slot => {
+        if (slot) {
+            const clone = slot.cloneNode(true);
+            // Retirer le flag pour permettre un ré-attachement propre
+            delete clone.dataset.listenersAttached;
+            slot.parentNode.replaceChild(clone, slot);
+        }
+    });
 }
 
 // Fonction pour attacher les événements à une grille
@@ -95,6 +109,12 @@ function attachGridEvents(grid, category) {
     const slots = grid.querySelectorAll('.inventory-slot');
     
     slots.forEach(slot => {
+        // Empêcher l'attachement multiple des mêmes événements (cause d'équipement en masse)
+        if (slot.dataset.listenersAttached === 'true') {
+            return;
+        }
+        slot.dataset.listenersAttached = 'true';
+
         let clickTimeout = null;
         let isDoubleClick = false;
         
@@ -118,7 +138,7 @@ function attachGridEvents(grid, category) {
                 clickTimeout = setTimeout(() => {
                     if (!isDoubleClick) {
                         console.log('🖱️ Ouverture fenêtre détaillée pour:', slotData.item.name);
-                        showEquipmentDetailModal(slotData.item, index);
+                        showEquipmentDetailModal(slotData.item, index, category);
                     }
                 }, 200);
             } else {
