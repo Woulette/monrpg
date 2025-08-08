@@ -12,4 +12,12 @@
 .mannequin-btn{background:#f59e0b;color:#0b1220;border:none;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(245,158,11,.35)}
 .mannequin-btn:disabled{background:#9ca3af;cursor:not-allowed;color:#111827}
 
+/* Bouton rond +1 (autoclick) */
+.mannequin-boost-wrap{display:flex;align-items:center;gap:12px;margin-top:6px}
+.mannequin-boost-label{color:#9ca3af;font-size:13px}
+.mannequin-boost{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0b1220;border:2px solid #bfa14a;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;cursor:pointer;box-shadow:0 6px 16px rgba(245,158,11,.35);transition:transform .08s ease, box-shadow .2s ease}
+.mannequin-boost:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(245,158,11,.45)}
+.mannequin-boost:active{transform:translateY(0)}
+.mannequin-boost:disabled{background:#9ca3af;color:#111827;border-color:#6b7280;cursor:not-allowed;box-shadow:none}
+
 

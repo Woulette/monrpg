@@ -64,6 +64,19 @@
     startBtn.textContent = 'Démarrer l’entraînement';
     right.appendChild(startBtn);
 
+    // Bouton rond +1 (autoclick)
+    const boostWrap = document.createElement('div');
+    boostWrap.className = 'mannequin-boost-wrap';
+    const boostLabel = document.createElement('div');
+    boostLabel.className = 'mannequin-boost-label';
+    boostLabel.textContent = 'Clique manuel (+1 seconde / +1 XP)';
+    const boostBtn = document.createElement('button');
+    boostBtn.className = 'mannequin-boost';
+    boostBtn.textContent = '+1';
+    right.appendChild(boostWrap);
+    boostWrap.appendChild(boostLabel);
+    boostWrap.appendChild(boostBtn);
+
     content.appendChild(title);
     content.appendChild(close);
     content.appendChild(body);
@@ -95,6 +108,7 @@
       const ss = String(remain%60).padStart(2,'0');
       val.textContent = `${mm}:${ss}`;
       startBtn.disabled = remain <= 0;
+      boostBtn.disabled = remain <= 0;
       // Mise à jour de la position du mannequin si fournie globalement
       if (!mannequinPos && window.currentMannequinTarget) mannequinPos = window.currentMannequinTarget;
     }
@@ -158,6 +172,30 @@
         setTodayUsedSeconds(used + 1);
         updateRemaining();
       }, ATTACK_INTERVAL_MS);
+    };
+
+    // Clique manuel +1
+    boostBtn.onclick = () => {
+      // Conditions: quota restant, adjacent+face
+      const used = getTodayUsedSeconds();
+      const remain = Math.max(0, DAILY_LIMIT_SECONDS - used);
+      if (remain <= 0) return;
+      if (!isAdjacentAndFacing()) {
+        if (typeof window.showFloatingMessage === 'function') {
+          window.showFloatingMessage('Placez-vous face au mannequin', player.px, player.py, '#fbbf24');
+        }
+        return;
+      }
+      // Gain XP force + effet visuel sur le mannequin
+      if (typeof window.gainStatXP === 'function') window.gainStatXP('force', 1);
+      if (typeof window.displayDamage === 'function' && mannequinPos) {
+        const hitPx = mannequinPos.x * TILE_SIZE;
+        const hitPy = mannequinPos.y * TILE_SIZE;
+        window.displayDamage(hitPx, hitPy, '+1 Force XP', 'xp', true);
+      }
+      // Consommer 1 seconde du quota
+      setTodayUsedSeconds(used + 1);
+      updateRemaining();
     };
 
     overlay.addEventListener('click', (e) => { if (e.target === overlay) stop(); });
