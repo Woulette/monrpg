@@ -9,6 +9,7 @@ const equipmentDatabase = {
         type: 'coiffe',
         slot: 'coiffe',
         icon: 'assets/equipements/coiffes/coiffecorbeau.png',
+        setId: 'panoplie_corbeau',
         description: 'Une coiffe mystérieuse qui vous donne l\'apparence d\'un corbeau.',
         rarity: 'rare',
         levelRequired: 3,
@@ -24,6 +25,7 @@ const equipmentDatabase = {
         type: 'coiffe',
         slot: 'coiffe',
         icon: 'assets/equipements/coiffes/coiffeslime.png',
+        setId: 'panoplie_slime',
         description: 'Une coiffe visqueuse qui vous donne l\'apparence d\'un slime.',
         rarity: 'common',
         levelRequired: 10,
@@ -42,6 +44,7 @@ const equipmentDatabase = {
         type: 'cape',
         slot: 'cape',
         icon: 'assets/equipements/capes/capecorbeau.png',
+        setId: 'panoplie_corbeau',
         description: 'Une cape sombre qui vous permet de vous fondre dans l\'ombre.',
         rarity: 'rare',
         levelRequired: 3,
@@ -57,6 +60,7 @@ const equipmentDatabase = {
         type: 'cape',
         slot: 'cape',
         icon: 'assets/equipements/capes/capeslime.png',
+        setId: 'panoplie_slime',
         description: 'Une cape visqueuse qui vous permet de glisser facilement.',
         rarity: 'common',
         levelRequired: 10,
@@ -75,6 +79,7 @@ const equipmentDatabase = {
         type: 'amulette',
         slot: 'amulette',
         icon: 'assets/equipements/colliers/colliercorbeau.png',
+        setId: 'panoplie_corbeau',
         description: 'Une amulette mystique qui renforce votre connexion avec les corbeaux.',
         rarity: 'rare',
         levelRequired: 3,
@@ -90,6 +95,7 @@ const equipmentDatabase = {
         type: 'amulette',
         slot: 'amulette',
         icon: 'assets/equipements/colliers/collierslime.png',
+        setId: 'panoplie_slime',
         description: 'Un collier visqueux qui vous donne la résistance d\'un slime.',
         rarity: 'common',
         levelRequired: 10,
@@ -108,6 +114,7 @@ const equipmentDatabase = {
         type: 'anneau',
         slot: 'anneau',
         icon: 'assets/equipements/anneaux/anneaucorbeau.png',
+        setId: 'panoplie_corbeau',
         description: 'Un anneau enchanté qui vous donne la vision perçante d\'un corbeau.',
         rarity: 'rare',
         levelRequired: 3,
@@ -123,6 +130,7 @@ const equipmentDatabase = {
         type: 'anneau',
         slot: 'anneau',
         icon: 'assets/equipements/anneaux/anneauslime.png',
+        setId: 'panoplie_slime',
         description: 'Un anneau visqueux qui vous donne la flexibilité d\'un slime.',
         rarity: 'common',
         levelRequired: 10,
@@ -140,6 +148,7 @@ const equipmentDatabase = {
         type: 'ceinture',
         slot: 'ceinture',
         icon: 'assets/equipements/ceintures/ceinturecorbeau.png',
+        setId: 'panoplie_corbeau',
         description: 'Une ceinture robuste qui renforce votre endurance.',
         rarity: 'rare',
         levelRequired: 3,
@@ -155,6 +164,7 @@ const equipmentDatabase = {
         type: 'ceinture',
         slot: 'ceinture',
         icon: 'assets/equipements/ceintures/ceintureslime.png',
+        setId: 'panoplie_slime',
         description: 'Une ceinture visqueuse qui vous donne la souplesse d\'un slime.',
         rarity: 'common',
         levelRequired: 10,
@@ -172,6 +182,7 @@ const equipmentDatabase = {
         type: 'bottes',
         slot: 'bottes',
         icon: 'assets/equipements/bottes/bottecorbeau.png',
+        setId: 'panoplie_corbeau',
         description: 'Des bottes légères qui vous permettent de marcher silencieusement.',
         rarity: 'rare',
         levelRequired: 3,
@@ -187,6 +198,7 @@ const equipmentDatabase = {
         type: 'bottes',
         slot: 'bottes',
         icon: 'assets/equipements/bottes/botteslime.png',
+        setId: 'panoplie_slime',
         description: 'Des bottes visqueuses qui vous permettent de glisser rapidement.',
         rarity: 'common',
         levelRequired: 10,
@@ -459,6 +471,9 @@ function unequipItem(slot) {
     // Retirer l'équipement
     window.equippedItems[slot] = null;
     
+    // Recalculer toutes les stats (items restants + bonus de panoplies)
+    applyEquipmentStats();
+
     // Sauvegarde automatique lors du déséquipement
     if (typeof autoSaveOnEvent === 'function') {
         autoSaveOnEvent();
@@ -510,6 +525,19 @@ function applyEquipmentStats() {
         player.life = player.maxLife;
     }
     
+    // Appliquer les bonus de panoplies (cumulés)
+    try {
+        if (typeof window.recalculateSetBonuses === 'function' && typeof window.applySetBonusesToPlayer === 'function') {
+            const setBonuses = window.recalculateSetBonuses(window.equippedItems);
+            window.activeSetBonuses = setBonuses;
+            window.applySetBonusesToPlayer(setBonuses);
+            // Recalculer les totaux après application des bonus de panoplie (inclut chance)
+            if (typeof recalculateTotalStats === 'function') {
+                recalculateTotalStats();
+            }
+        }
+    } catch (e) { console.warn('Set bonus calc error:', e); }
+
     // Mettre à jour l'affichage des stats
     if (typeof updateStatsDisplay === 'function') {
         updateStatsDisplay();

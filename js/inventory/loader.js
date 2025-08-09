@@ -21,7 +21,7 @@ async function loadInventoryModules() {
         await loadScript('js/inventory/stats-display.js');
         await loadScript('js/inventory/tooltips.js');
         await loadScript('js/inventory/modals.js');
-        await loadScript('js/inventory/trash-system.js');
+        // (supprimé) ancien trash-system remplacé par la poubelle intégrée aux onglets
         await loadScript('js/inventory/main.js');
         
         
@@ -41,18 +41,7 @@ async function loadInventoryModules() {
             initInventory();
         }
         
-        // PROTECTION : Initialiser le système de trash SEULEMENT si on n'est pas dans le menu
-        if (typeof initTrashSystem === 'function') {
-            // Double vérification avant d'initialiser le trash
-            const stillInMenu = document.body.classList.contains('character-menu-active') || 
-                               document.body.classList.contains('menu-active');
-            if (!stillInMenu) {
-                initTrashSystem();
-                console.log('✅ Système de trash initialisé (protection menu active)');
-            } else {
-                console.warn('⚠️ Système de trash NON initialisé - Protection menu');
-            }
-        }
+        // (supprimé) initialisation de l'ancien trash-system
         
         // Initialiser les événements du module main
         if (typeof initInventoryMain === 'function') {

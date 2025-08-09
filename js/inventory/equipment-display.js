@@ -12,6 +12,17 @@ function updateEquipmentDisplay() {
             slot.innerHTML = '<div class="slot-icon"></div>';
             slot.title = slotType;
         }
+
+        // Attacher un clic qui ouvre la fiche inline même si l'item est équipé
+        if (!slot.dataset.detailBound) {
+            slot.addEventListener('click', function() {
+                const item = getItemInSlot(slotType);
+                if (item && typeof window.showEquipmentDetailModal === 'function') {
+                    window.showEquipmentDetailModal(item, null, 'equipement');
+                }
+            });
+            slot.dataset.detailBound = 'true';
+        }
     });
 }
 

@@ -115,6 +115,15 @@ function attachGridEvents(grid, category) {
         }
         slot.dataset.listenersAttached = 'true';
 
+        // Drag & drop vers la poubelle
+        slot.setAttribute('draggable', 'true');
+        slot.addEventListener('dragstart', function(ev){
+            const index = parseInt(this.dataset.index);
+            const targetInventory = getInventoryByCategory(category);
+            const slotData = targetInventory[index];
+            ev.dataTransfer.setData('text/plain', JSON.stringify({ category, index }));
+        });
+
         let clickTimeout = null;
         let isDoubleClick = false;
         
@@ -137,7 +146,7 @@ function attachGridEvents(grid, category) {
                 
                 clickTimeout = setTimeout(() => {
                     if (!isDoubleClick) {
-                        console.log('🖱️ Ouverture fenêtre détaillée pour:', slotData.item.name);
+                        console.log('🖱️ Détails inline pour:', slotData.item.name);
                         showEquipmentDetailModal(slotData.item, index, category);
                     }
                 }, 200);
@@ -254,6 +263,104 @@ function attachGridEvents(grid, category) {
             hideEquipmentTooltip();
         });
     });
+}
+
+// Zone de drop: poubelle
+(function initTrashDropZone(){
+  const trashTab = document.getElementById('inventory-trash-tab');
+  if (!trashTab) return;
+  trashTab.addEventListener('dragover', function(e){ e.preventDefault(); this.classList.add('drag-over'); e.dataTransfer.dropEffect = 'move'; });
+  trashTab.addEventListener('dragleave', function(){ this.classList.remove('drag-over'); });
+  trashTab.addEventListener('drop', function(e){
+    e.preventDefault(); this.classList.remove('drag-over');
+    try {
+      const data = JSON.parse(e.dataTransfer.getData('text/plain') || '{}');
+      const { category, index } = data;
+      if (typeof getInventoryByCategory !== 'function') return;
+      const inv = getInventoryByCategory(category);
+      const entry = inv && inv[index];
+      if (entry && entry.item) {
+        // Ouvrir confirmation suppression
+        openTrashConfirm(entry, category, index);
+      }
+    } catch(_){}
+  });
+})();
+
+// Global dragstart to ensure data is set whether user grabs the image or the slot
+document.addEventListener('dragstart', function(e){
+  const slot = e.target && e.target.closest ? e.target.closest('.inventory-slot') : null;
+  if (!slot) return;
+  const category = slot.dataset.category;
+  const index = parseInt(slot.dataset.index);
+  try {
+    if (typeof getInventoryByCategory === 'function') {
+      const inv = getInventoryByCategory(category);
+      const entry = inv && inv[index];
+      if (!entry || !entry.item) { e.preventDefault(); return; }
+    }
+  } catch(_){}
+  if (e.dataTransfer) {
+    e.dataTransfer.setData('text/plain', JSON.stringify({ category, index }));
+    e.dataTransfer.effectAllowed = 'move';
+  }
+});
+
+// Confirmation de suppression
+function openTrashConfirm(entry, category, index) {
+  const modal = document.getElementById('trash-confirm-modal');
+  const nameEl = document.getElementById('trash-item-name');
+  const qtyInput = document.getElementById('trash-qty-input');
+  const cancelBtn = document.getElementById('trash-cancel-btn');
+  const okBtn = document.getElementById('trash-confirm-btn');
+  if (!modal || !nameEl || !qtyInput || !cancelBtn || !okBtn) return;
+  nameEl.textContent = entry.item.name || entry.item.id;
+  const maxQty = entry.item.stackable ? (entry.item.quantity || 1) : 1;
+  qtyInput.value = String(Math.min(1, maxQty));
+  qtyInput.max = String(maxQty);
+  qtyInput.min = '1';
+  // Bloquer la saisie au range [1, maxQty]
+  const clampQty = () => {
+    let v = parseInt(qtyInput.value || '');
+    if (isNaN(v) || v < 1) v = 1;
+    if (v > maxQty) v = maxQty;
+    qtyInput.value = String(v);
+  };
+  qtyInput.addEventListener('input', clampQty);
+  qtyInput.addEventListener('change', clampQty);
+  qtyInput.focus();
+  qtyInput.select();
+  // Empêcher les raccourcis de jeu pendant la saisie
+  const stopper = function(ev){ ev.stopPropagation(); };
+  qtyInput.addEventListener('keydown', stopper);
+  qtyInput.addEventListener('keyup', stopper);
+  qtyInput.addEventListener('keypress', stopper);
+  if (typeof window.disableGameInputs === 'function') window.disableGameInputs();
+  modal.style.display = 'block';
+  const close = () => { modal.style.display = 'none'; };
+  cancelBtn.onclick = () => { close(); if (typeof window.enableGameInputs === 'function') window.enableGameInputs(); };
+  okBtn.onclick = function() {
+    const n = Math.max(1, Math.min(parseInt(qtyInput.value||'1'), maxQty));
+    // Supprimer n unités en respectant le stack
+    const isStackable = !!entry.item.stackable;
+    if (typeof window.removeItemFromInventory === 'function' && isStackable) {
+      // Utiliser l'API centrale pour décrémenter la quantité
+      window.removeItemFromInventory(entry.item.id, n);
+    } else if (typeof window.removeSpecificItemFromInventory === 'function' && !isStackable) {
+      // Non stackable: retirer l'item de ce slot
+      window.removeSpecificItemFromInventory(entry.item, index, category);
+    } else {
+      // Fallback manuel
+      if (isStackable) {
+        entry.item.quantity = (entry.item.quantity || 1) - n;
+        if (entry.item.quantity <= 0) entry.item = null;
+      } else {
+        entry.item = null;
+      }
+    }
+    if (typeof window.updateAllGrids === 'function') window.updateAllGrids();
+    close(); if (typeof window.enableGameInputs === 'function') window.enableGameInputs();
+  };
 }
 
 // Fonction pour mettre à jour toutes les grilles

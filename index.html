@@ -25,6 +25,8 @@
     <link rel="stylesheet" href="assets/css/map.css">
     <link rel="stylesheet" href="assets/css/rassemblement-preview.css">
     <link rel="stylesheet" href="assets/css/harvesting.css">
+    <!-- UI responsive opt-in (chargé en DERNIER pour surcharger equipment.css & inventory.css) -->
+    <link rel="stylesheet" href="assets/css/inventory-responsive.css">
     
 
     <!-- Charger utils.js en tout premier pour les fonctions globales -->
@@ -234,6 +236,48 @@
                 <img id="player-inventory-img" src="assets/ui/playerinventaire.png" alt="Joueur">
             </div>
 
+            <!-- Panneau de détails inline (entre le player et la grille) -->
+            <div id="inline-detail-panel" style="display:none;">
+                <div class="inline-detail-header">
+                    <div class="inline-detail-title" id="inline-detail-title">Détails</div>
+                    <button class="inline-detail-close" id="inline-detail-close" title="Fermer">✕</button>
+                </div>
+                <div class="inline-detail-hero">
+                    <img id="inline-detail-image" src="" alt="aperçu" style="display:none;" />
+                </div>
+                <div class="inline-detail-info">
+                    <div class="inline-detail-row"><span class="detail-label">Catégorie:</span> <span class="detail-value" id="inline-equipment-name">-</span></div>
+                    <div class="inline-detail-row"><span class="detail-label">Type:</span> <span class="detail-value" id="inline-equipment-type">-</span></div>
+                    <div class="inline-detail-row"><span class="detail-label">Rareté:</span> <span class="detail-value" id="inline-equipment-rarity">-</span></div>
+                    <div class="inline-detail-row" id="inline-level-row" style="display:none;"><span class="detail-label">Niveau requis:</span> <span class="detail-value" id="inline-equipment-level">-</span></div>
+                </div>
+                <div class="inline-detail-stats">
+                    <div class="inline-detail-row" id="inline-force-row" style="display:none"><span class="detail-label">Force:</span> <span class="detail-value" id="inline-equipment-force">-</span></div>
+                    <div class="inline-detail-row" id="inline-intelligence-row" style="display:none"><span class="detail-label">Intelligence:</span> <span class="detail-value" id="inline-equipment-intelligence">-</span></div>
+                    <div class="inline-detail-row" id="inline-agilite-row" style="display:none"><span class="detail-label">Agilité:</span> <span class="detail-value" id="inline-equipment-agilite">-</span></div>
+                    <div class="inline-detail-row" id="inline-defense-row" style="display:none"><span class="detail-label">Défense:</span> <span class="detail-value" id="inline-equipment-defense">-</span></div>
+                    <div class="inline-detail-row" id="inline-vie-row" style="display:none"><span class="detail-label">Vie:</span> <span class="detail-value" id="inline-equipment-vie">-</span></div>
+                    <div class="inline-detail-row" id="inline-chance-row" style="display:none"><span class="detail-label">Chance:</span> <span class="detail-value" id="inline-equipment-chance">-</span></div>
+                    <div class="inline-detail-row" id="inline-vitesse-row" style="display:none"><span class="detail-label">Vitesse:</span> <span class="detail-value" id="inline-equipment-vitesse">-</span></div>
+                </div>
+                <div class="inline-detail-desc" id="inline-equipment-description">&nbsp;</div>
+
+                <!-- Section Panoplie (dynamiques) -->
+                <div id="inline-set-section" style="display:none;">
+                    <div class="inline-set-header">
+                        <div class="inline-set-title" id="inline-set-title">Panoplie</div>
+                        <div class="inline-set-progress" id="inline-set-progress">0/0</div>
+                    </div>
+                    <div class="inline-set-tabs" id="inline-set-tabs"></div>
+                    <div class="inline-set-bonuses" id="inline-set-bonuses"></div>
+                    <div class="inline-set-items" id="inline-set-items"></div>
+                </div>
+                <div class="inline-detail-actions">
+                    <button id="inline-equip-button" class="inline-detail-btn">Équiper</button>
+                    <button id="inline-unequip-button" class="inline-detail-btn">Déséquiper</button>
+                </div>
+            </div>
+
             <!-- SECTION STATISTIQUES -->
             <div id="stats-container">
                 <h3>Statistiques</h3>
@@ -309,21 +353,35 @@
                     <button class="inventory-tab" data-category="equipement" title="Équipements">🗡️</button>
                     <button class="inventory-tab" data-category="potions" title="Potions">🧪</button>
                     <button class="inventory-tab" data-category="ressources" title="Ressources">🌿</button>
+                    <div id="inventory-trash-tab" title="Supprimer (glisser-déposer)">🗑️</div>
     
                 </div>
-                
                 <div id="inventory-grid">
                   <!-- Les slots seront générés en JS -->
                 </div>
                 
-                <!-- Zone de suppression d'items -->
-                <div id="inventory-trash-zone">
-                    <div id="trash-container" title="Cliquez ou glissez un objet ici pour le supprimer">
-                        <span id="trash-icon">🗑️</span>
-                    </div>
-                </div>
+                
             </div>
         </div>
+    </div>
+
+    <!-- Confirmation suppression (poubelle) -->
+    <div id="trash-confirm-modal" style="display:none;">
+      <div id="trash-confirm-content">
+        <div class="trash-confirm-title">Supprimer l'objet</div>
+        <div class="trash-confirm-body">
+          <div class="trash-item-name" id="trash-item-name">Item</div>
+          <div class="trash-qty-row">
+            <label for="trash-qty-input">Quantité:</label>
+            <input type="number" id="trash-qty-input" min="1" step="1" inputmode="numeric" pattern="[0-9]*" placeholder="Quantité" />
+          </div>
+          <div class="trash-warning">Attention: suppression définitive</div>
+        </div>
+        <div class="trash-confirm-actions">
+          <button id="trash-cancel-btn">Annuler</button>
+          <button id="trash-confirm-btn">Supprimer</button>
+        </div>
+      </div>
     </div>
 
     <!-- Fenêtre des statistiques -->
@@ -838,6 +896,7 @@
 <script src="js/systems/equipment-system.js"></script>
 <script src="js/systems/loot-system.js"></script>
 <script src="js/systems/potion-system.js"></script>
+    <script src="js/systems/equipment-sets.js"></script>
 
 <script src="js/systems/utility-bar.js"></script>
 <script src="js/systems/minimap.js"></script>
