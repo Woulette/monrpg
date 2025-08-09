@@ -37,7 +37,7 @@ function reconcileOccupiedPositions() {
     if (typeof player !== 'undefined' && player && typeof player.x === 'number' && typeof player.y === 'number') {
       actual.add(posKey(player.x, player.y));
     }
-    if (Array.isArray(window.monsters)) {
+  if (Array.isArray(window.monsters)) {
       for (const m of window.monsters) {
         if (!m) continue;
         if (m.hp <= 0 || m.isDead) continue;
@@ -50,6 +50,13 @@ function reconcileOccupiedPositions() {
         } else {
           actual.add(posKey(m.x, m.y));
         }
+      }
+    }
+    // Inclure les PNJ comme entités bloquantes
+    if (Array.isArray(window.pnjs)) {
+      for (const p of window.pnjs) {
+        if (!p) continue;
+        actual.add(posKey(p.x, p.y));
       }
     }
     // Supprimer toute occupation « fantôme » qui n'a pas d'entité réelle

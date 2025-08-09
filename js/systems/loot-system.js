@@ -53,7 +53,7 @@ const resourceDatabase = {
     'certificat_corbeau': {
         id: 'certificat_corbeau',
         name: 'Certificat de Rang Corbeau',
-        type: 'objet spécial',
+        type: 'ressource',
         category: 'ressource',
         icon: 'assets/objets/certificadonjoncorbeau.png',
         description: 'Un certificat prouvant votre valeur auprès des corbeaux mais vous donnant aussi accès au donjon slime.',
