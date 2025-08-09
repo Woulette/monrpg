@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Blé du paysan sur map5: interaction comme pissenlit avec délai 2s
+            // Blé du paysan sur map5: file d'attente de coupe gérée par ressource-paysan.js
             if (window.currentMap === 'map5') {
                 // On déclenche la coupe si le blé est en état poussé (layer 6 visible à cette case)
                 if (typeof window.cutWheat === 'function') {
@@ -195,38 +195,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (typeof window.markWheatInteracted === 'function') {
                                 window.markWheatInteracted(nx, ny);
                             }
-                            // Se déplacer adjacent si nécessaire puis couper
-                            const distanceX = Math.abs(nx - player.x);
-                            const distanceY = Math.abs(ny - player.y);
-                            if (distanceX <= 1 && distanceY <= 1) {
-                                window.cutWheat(nx, ny);
+                            // Ajouter en file d'attente. Le système gère le déplacement et la coupe séquentielle.
+                            if (typeof window.enqueueWheatHarvest === 'function') {
+                                window.enqueueWheatHarvest(nx, ny);
                                 return;
                             } else {
-                                // Déplacement adjacent puis coupe quand arrivé
-                                if (typeof window.handleMovementClick === 'function') {
-                                    const adjacents = [
-                                        {x: nx+1, y: ny}, {x: nx-1, y: ny}, {x: nx, y: ny+1}, {x: nx, y: ny-1}
-                                    ].filter(p => p.x>=0 && p.x<window.mapData.width && p.y>=0 && p.y<window.mapData.height && !window.isBlocked(p.x,p.y));
-                                    if (adjacents.length) {
-                                        // Prendre la plus proche
-                                        let closest = adjacents[0];
-                                        let best = Math.abs(player.x - closest.x) + Math.abs(player.y - closest.y);
-                                        for (let i=1;i<adjacents.length;i++){
-                                            const d = Math.abs(player.x - adjacents[i].x) + Math.abs(player.y - adjacents[i].y);
-                                            if (d < best) { best = d; closest = adjacents[i]; }
-                                        }
-                                        window.handleMovementClick(closest.x, closest.y);
-                                        // Vérifier l’arrivée puis couper
-                                        setTimeout(function waitArrive(){
-                                            if (Math.abs(player.x - closest.x)+Math.abs(player.y - closest.y) === 0){
-                                                window.cutWheat(nx, ny);
-                                            } else {
-                                                setTimeout(waitArrive, 120);
-                                            }
-                                        }, 150);
-                                        return;
-                                    }
-                                }
+                                window.cutWheat(nx, ny);
+                                return;
                             }
                         }
                     }
@@ -235,6 +210,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Sinon, déplacement classique vers la case cliquée
+        // Si une file de blé est en cours, l'annuler sur clic ailleurs
+        if (typeof window.cancelWheatQueueAndHarvest === 'function') {
+            // Cliquer ailleurs qu'un blé annule la file
+            const layerGrown = window.mapData.layers.find(l => l.id === 6);
+            const isWheat = layerGrown && layerGrown.visible && layerGrown.data[ny * layerGrown.width + nx] === 425;
+            if (!isWheat) window.cancelWheatQueueAndHarvest();
+        }
         handleMovementClick(nx, ny);
     });
     

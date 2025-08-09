@@ -146,7 +146,8 @@ class SaveSystem {
                 tailleur: { niveau: 1, xp: 0, xpToNext: 100 },
                 cordonnier: { niveau: 1, xp: 0, xpToNext: 100 },
                 bijoutier: { niveau: 1, xp: 0, xpToNext: 100 },
-                alchimiste: { niveau: 1, xp: 0, xpToNext: 100 }
+                alchimiste: { niveau: 1, xp: 0, xpToNext: 100 },
+                paysan: { niveau: 1, xp: 0, xpToNext: 100 }
             }
         };
 
@@ -175,6 +176,16 @@ class SaveSystem {
         if (!window.currentCharacterId) {
             return false;
         }
+
+        // Reset propre des métiers AVANT chargement pour éviter le bleed d'un perso précédent
+        // (certaines références globales pouvaient persister si un nouveau perso était créé juste après un autre)
+        window.metiers = {
+            tailleur: { niveau: 1, xp: 0, xpToNext: 100 },
+            cordonnier: { niveau: 1, xp: 0, xpToNext: 100 },
+            bijoutier: { niveau: 1, xp: 0, xpToNext: 100 },
+            alchimiste: { niveau: 1, xp: 0, xpToNext: 100 },
+            paysan: { niveau: 1, xp: 0, xpToNext: 100 }
+        };
 
         try {
             const saveKey = `monrpg_save_${window.currentCharacterId}`;
@@ -339,8 +350,10 @@ class SaveSystem {
             }
 
             // Restaurer les données des métiers
-                if (data.metiers) {
-                window.metiers = data.metiers;
+            if (data.metiers) {
+                // Toujours cloner pour casser les références persistantes entre personnages
+                const safeClone = JSON.parse(JSON.stringify(data.metiers));
+                window.metiers = safeClone;
                 // Ajouter paysan si absent dans d'anciennes sauvegardes
                 if (!window.metiers.paysan) {
                     window.metiers.paysan = { niveau: 1, xp: 0, xpToNext: 100 };

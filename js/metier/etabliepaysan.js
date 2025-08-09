@@ -210,7 +210,7 @@
                   category: cat === 'potions' ? 'potion' : 'ressource',
                   icon: recette.resultat.icon,
                   stackable: true,
-                  maxStack: 99
+                  maxStack: 9999
                 };
               }
               window.addItemToInventory(recette.resultat.id, cat);

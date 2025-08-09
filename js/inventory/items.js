@@ -153,19 +153,16 @@ function addItemToInventory(itemId, category) {
             targetInventory = window.inventoryRessources;
             break;
         case 'ressources_alchimiste':
-            // S'assurer que l'inventaire des ressources alchimiste existe
-            if (!window.inventoryRessourcesAlchimiste) {
-                console.log('🔧 Initialisation de l\'inventaire ressources alchimiste');
-                window.inventoryRessourcesAlchimiste = Array.from({ length: 80 }, () => ({ item: null, category: 'ressources_alchimiste' }));
-            }
-            targetInventory = window.inventoryRessourcesAlchimiste;
+            // Compat: rediriger vers 'ressources' (plus d\'onglet alchimiste)
+            targetInventory = window.inventoryRessources;
+            category = 'ressources';
             break;
         default:
             targetInventory = window.inventoryAll;
             break;
     }
     
-    // Pour les ressources empilables, chercher d'abord un slot existant
+    // Pour les items empilables (ressources, potions), chercher d'abord un slot existant
     if (item.stackable && item.maxStack) {
         const existingSlot = targetInventory.findIndex(slot => 
             slot && slot.item && slot.item.id === itemId && 
@@ -184,35 +181,27 @@ function addItemToInventory(itemId, category) {
                 targetInventory[existingSlot].item.quantity = item.maxStack;
             }
             
-            // Mettre à jour aussi l'inventaire principal - IMPORTANT: Synchroniser les objets
-            const mainExistingSlot = window.inventoryAll.findIndex(slot => 
-                slot && slot.item && slot.item.id === itemId && 
-                (slot.item.quantity === undefined || slot.item.quantity < item.maxStack)
-            );
-            if (mainExistingSlot !== -1) {
-                if (window.inventoryAll[mainExistingSlot].item.quantity === undefined) {
-                    window.inventoryAll[mainExistingSlot].item.quantity = 1;
-                }
-                window.inventoryAll[mainExistingSlot].item.quantity += 1;
-                if (window.inventoryAll[mainExistingSlot].item.quantity > item.maxStack) {
-                    window.inventoryAll[mainExistingSlot].item.quantity = item.maxStack;
-                }
-            } else {
-                // Si l'item n'existe pas dans inventoryAll, l'ajouter
-                const mainEmptySlot = window.inventoryAll.findIndex(slot => slot.item === null);
-                if (mainEmptySlot !== -1) {
-                    const mainItemToAdd = { ...targetInventory[existingSlot].item };
-                    window.inventoryAll[mainEmptySlot] = {
-                        item: mainItemToAdd,
-                        category: category
-                    };
+            // Synchroniser l'onglet ALL: incrémenter la pile existante ou créer une entrée
+            if (Array.isArray(window.inventoryAll)) {
+                const idxAll = window.inventoryAll.findIndex(s => s && s.item && s.item.id === itemId);
+                if (idxAll !== -1) {
+                    const maxAll = (window.inventoryAll[idxAll].item.maxStack || item.maxStack || 9999);
+                    if (!window.inventoryAll[idxAll].item.quantity) window.inventoryAll[idxAll].item.quantity = 1;
+                    window.inventoryAll[idxAll].item.quantity = Math.min(maxAll, window.inventoryAll[idxAll].item.quantity + 1);
+                } else {
+                    const emptyAll = window.inventoryAll.findIndex(s => s && s.item === null);
+                    if (emptyAll !== -1) {
+                        const clone = { ...targetInventory[existingSlot].item };
+                        clone.id = clone.id || itemId;
+                        clone.stackable = clone.stackable ?? true;
+                        clone.maxStack = clone.maxStack || item.maxStack || 9999;
+                        clone.quantity = clone.quantity || 1;
+                        window.inventoryAll[emptyAll] = { item: clone, category };
+                    }
                 }
             }
-            
-            // Re-synchroniser l'onglet Ressources depuis TOUT (pissenlits, etc.)
-            if (typeof window.reconcileResourcesFromAll === 'function') {
-                window.reconcileResourcesFromAll();
-            }
+            // Puis reconstruire l'onglet Ressources depuis ALL (vue)
+            if (typeof window.reconcileResourcesFromAll === 'function') window.reconcileResourcesFromAll();
             // Mettre à jour toutes les grilles
             updateAllGrids();
             
@@ -258,14 +247,13 @@ function addItemToInventory(itemId, category) {
         category: category
     };
     
-    // Synchronisation miroir ALL <-> Catégorie (empilable ou non)
-    // 1) S'assurer que ALL reflète la présence de la ressource
+    // Synchronisation ALL: garantir une seule entrée et stacker
     if (Array.isArray(window.inventoryAll)) {
-        // Tenter de stacker si stackable
+        // Tenter de stacker si stackable côté ALL (une seule entrée côté ALL)
         if (itemToAdd.stackable) {
             const idx = window.inventoryAll.findIndex(s => s && s.item && s.item.id === itemId);
             if (idx !== -1) {
-                const max = itemToAdd.maxStack || 99;
+                const max = itemToAdd.maxStack || 9999;
                 if (!window.inventoryAll[idx].item.quantity) window.inventoryAll[idx].item.quantity = 1;
                 window.inventoryAll[idx].item.quantity = Math.min(max, window.inventoryAll[idx].item.quantity + 1);
             } else {
@@ -282,10 +270,9 @@ function addItemToInventory(itemId, category) {
         }
     }
     
-    // Reconciliation ressources depuis l'onglet TOUT → onglet RESSOURCES
-    if (typeof window.reconcileResourcesFromAll === 'function') {
-        window.reconcileResourcesFromAll();
-    }
+    // Source de vérité = inventoryAll → normaliser puis reconstruire les vues
+    if (typeof window.normalizeInventoryAllStacks === 'function') window.normalizeInventoryAllStacks();
+    if (typeof window.reconcileResourcesFromAll === 'function') window.reconcileResourcesFromAll();
     updateAllGrids();
     
     // Mettre à jour les établis si ils sont ouverts
@@ -430,8 +417,10 @@ function removeItemFromInventory(itemId, quantity = 1) {
         if (typeof window.reorganizeInventory === 'function') window.reorganizeInventory(window.inventoryAll);
     }
 
-    // 2) Retirer dans la première catégorie correspondante (Équipement → equipement, Potions → potions, Ressources → ressources)
-    const categories = [window.inventoryEquipement, window.inventoryPotions, window.inventoryRessources, window.inventoryRessourcesAlchimiste];
+    // 2) Retirer dans la première catégorie correspondante
+    // IMPORTANT: prioriser les sources RÉELLES avant les vues dérivées
+    // Ordre: equipement → potions → ressources_alchimiste (source) → ressources (vue)
+    const categories = [window.inventoryEquipement, window.inventoryPotions, window.inventoryRessourcesAlchimiste, window.inventoryRessources];
     for (const inv of categories) {
         if (!Array.isArray(inv) || toRemoveCategory <= 0) continue;
         for (let i = 0; i < inv.length && toRemoveCategory > 0; i++) {
@@ -456,6 +445,22 @@ function removeItemFromInventory(itemId, quantity = 1) {
     if (typeof window.reconcileResourcesFromAll === 'function') {
         window.reconcileResourcesFromAll();
     }
+    // Guard anti-doublon pissenlit: s'assurer qu'une seule entrée en RESSOURCES
+    try {
+        if (Array.isArray(window.inventoryRessources)) {
+            const seen = new Set();
+            for (let i = 0; i < window.inventoryRessources.length; i++) {
+                const s = window.inventoryRessources[i];
+                if (!s || !s.item) continue;
+                const key = s.item.id || s.item.name;
+                if (seen.has(key)) {
+                    window.inventoryRessources[i] = { item: null, category: 'ressources' };
+                } else {
+                    seen.add(key);
+                }
+            }
+        }
+    } catch(e) {}
     if (typeof window.updateAllGrids === 'function') window.updateAllGrids();
     if (typeof window.updateEtabliesInventory === 'function') window.updateEtabliesInventory();
     if (typeof window.autoSaveOnEvent === 'function') window.autoSaveOnEvent();
@@ -493,7 +498,7 @@ function reconcileResourcesFromAll() {
         let writeIndex = 0;
         aggregate.forEach((qty, id) => {
             const db = (window.resourceDatabase && window.resourceDatabase[id]) ? window.resourceDatabase[id] : null;
-            const maxStack = db && db.maxStack ? db.maxStack : 99;
+            const maxStack = db && db.maxStack ? db.maxStack : 9999;
             while (qty > 0 && writeIndex < newR.length) {
                 const take = Math.min(maxStack, qty);
                 // Construire l'item à partir de la DB si dispo, sinon cloner depuis ALL (première occurrence)
@@ -501,7 +506,7 @@ function reconcileResourcesFromAll() {
                 if (!base) {
                     // Chercher une occurrence dans ALL
                     const occ = window.inventoryAll.find(s => s && s.item && s.item.id === id);
-                    base = occ ? { ...occ.item } : { id, name: id, type: 'ressource', stackable: true, maxStack: maxStack };
+                base = occ ? { ...occ.item } : { id, name: id, type: 'ressource', stackable: true, maxStack: 9999 };
                 }
                 base.quantity = take;
                 newR[writeIndex] = { item: base, category: 'ressources' };
@@ -516,6 +521,82 @@ function reconcileResourcesFromAll() {
 }
 
 window.reconcileResourcesFromAll = reconcileResourcesFromAll;
+
+// Normaliser inventoryAll: une seule entrée par id, quantités agrégées pour les stackables
+window.normalizeInventoryAllStacks = function normalizeInventoryAllStacks() {
+    try {
+        if (!Array.isArray(window.inventoryAll)) return;
+        const aggregate = new Map();
+        for (const slot of window.inventoryAll) {
+            const it = slot && slot.item;
+            if (!it) continue;
+            const key = it.id || it.name;
+            const prev = aggregate.get(key);
+            if (!prev) {
+                aggregate.set(key, { item: { ...it }, category: slot.category || null });
+            } else {
+                // Addition pour stackables
+                if (it.stackable) {
+                    const currentQty = prev.item.quantity || 1;
+                    const addQty = it.quantity || 1;
+                    prev.item.quantity = currentQty + addQty;
+                    // Respecter maxStack s'il existe
+                    if (prev.item.maxStack) {
+                        prev.item.quantity = Math.min(prev.item.quantity, prev.item.maxStack);
+                    }
+                } else {
+                    // Pour non-stackable, conserver un seul exemplaire (premier)
+                }
+            }
+        }
+        // Réécrire inventoryAll proprement
+        const newAll = Array.from({ length: window.inventoryAll.length }, () => ({ item: null, category: null }));
+        let i = 0;
+        for (const [, val] of aggregate) {
+            if (i >= newAll.length) break;
+            newAll[i] = { item: { ...val.item }, category: val.category };
+            i++;
+        }
+        window.inventoryAll = newAll;
+    } catch (e) {
+        console.error('❌ normalizeInventoryAllStacks erreur:', e);
+    }
+};
+
+// Rebuild inventoryAll from category inventories to prevent stray duplicates
+window.rebuildInventoryAllFromCategories = function rebuildInventoryAllFromCategories() {
+    try {
+        if (!Array.isArray(window.inventoryAll)) return;
+        // Sources de vérité: potions, ressources (générales), equipement
+        // Supprime complètement 'inventoryRessourcesAlchimiste' des sources
+        const categories = [window.inventoryPotions, window.inventoryRessources, window.inventoryEquipement];
+        // Agréger par id
+        const aggregate = new Map();
+        categories.forEach(inv => {
+            if (!Array.isArray(inv)) return;
+            inv.forEach(s => {
+                const it = s && s.item;
+                if (!it) return;
+                const key = it.id || it.name;
+                const prev = aggregate.get(key) || { item: { ...it }, qty: 0, category: s.category };
+                prev.qty += (it.quantity || 1);
+                prev.item.quantity = prev.qty;
+                aggregate.set(key, prev);
+            });
+        });
+        // Purger ALL
+        window.inventoryAll = Array.from({ length: window.inventoryAll.length }, () => ({ item: null, category: null }));
+        // Réécrire ALL à partir de l'agrégat
+        let write = 0;
+        for (const [, val] of aggregate) {
+            if (write >= window.inventoryAll.length) break;
+            window.inventoryAll[write] = { item: { ...val.item }, category: val.item.type === 'potion' ? 'potions' : (val.item.type === 'ressource' ? 'ressources' : (val.category || 'all')) };
+            write++;
+        }
+    } catch (e) {
+        console.error('❌ rebuildInventoryAllFromCategories erreur:', e);
+    }
+};
 
 // Modifie handleItemClick pour synchroniser les retraits
 function handleItemClick(item, slotIndex, category) {

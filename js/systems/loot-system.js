@@ -37,7 +37,7 @@ const resourceDatabase = {
         description: 'Une patte de corbeau, utile pour la fabrication.',
         rarity: 'common',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     'plume_corbeau': {
         id: 'plume_corbeau',
@@ -48,7 +48,7 @@ const resourceDatabase = {
         description: 'Une plume de corbeau, utile pour la fabrication.',
         rarity: 'common',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     'certificat_corbeau': {
         id: 'certificat_corbeau',
@@ -59,7 +59,7 @@ const resourceDatabase = {
         description: 'Un certificat prouvant votre valeur auprès des corbeaux mais vous donnant aussi accès au donjon slime.',
         rarity: 'rare',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     'nouveau_sort': {
         id: 'nouveau_sort',
@@ -92,7 +92,7 @@ const resourceDatabase = {
         description: 'Une gelée visqueuse de slime, utile pour la fabrication.',
         rarity: 'common',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     'noyauslime': {
         id: 'noyauslime',
@@ -103,7 +103,7 @@ const resourceDatabase = {
         description: 'Le noyau mystérieux d\'un slime, très précieux.',
         rarity: 'common',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     'mucusslime': {
         id: 'mucusslime',
@@ -114,7 +114,7 @@ const resourceDatabase = {
         description: 'Un mucus visqueux de slime, utile pour la fabrication.',
         rarity: 'common',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     'osdeneeks': {
         id: 'osdeneeks',
@@ -125,7 +125,7 @@ const resourceDatabase = {
         description: 'Un os mystérieux d\'Aluineeks, utile pour la fabrication.',
         rarity: 'common',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     'cranedeneeks': {
         id: 'cranedeneeks',
@@ -136,7 +136,7 @@ const resourceDatabase = {
         description: 'Un crâne mystérieux d\'Aluineeks, utile pour la fabrication.',
         rarity: 'common',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     'pissenlit': {
         id: 'pissenlit',
@@ -147,7 +147,7 @@ const resourceDatabase = {
         description: 'Une plante commune utilisée par les alchimistes pour leurs potions.',
         rarity: 'common',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     'particule': {
         id: 'particule',
@@ -171,21 +171,6 @@ const resourceDatabase = {
         stackable: true,
         maxStack: 99
     },
-    'potion_soin': {
-        id: 'potion_soin',
-        name: 'Potion de Soin Basique',
-        type: 'consommable',
-        category: 'potion',
-        icon: 'assets/objets/potiondesoinbasique.png',
-        description: 'Restaure 50 points de vie.',
-        shortDescription: 'Restaure 50 points de vie',
-        rarity: 'common',
-        stackable: true,
-        maxStack: 99,
-        healAmount: 50,
-        cooldown: 3000,
-        useFunction: 'useHealingPotion'
-    },
     'potion_soin_basique': {
         id: 'potion_soin_basique',
         name: 'Potion de Soin Basique',
@@ -196,7 +181,7 @@ const resourceDatabase = {
         shortDescription: 'Restaure 50 points de vie',
         rarity: 'common',
         stackable: true,
-        maxStack: 99,
+        maxStack: 9999,
         healAmount: 50,
         cooldown: 3000,
         useFunction: 'useHealingPotion'
@@ -527,6 +512,7 @@ function attachLootEvents(existingModal) {
     validateBtn.onclick = () => {
         // Ajouter toutes les ressources accumulées à l'inventaire
         accumulatedLoot.resources.forEach(resource => {
+            // IMPORTANT: déposer dans la catégorie 'ressources' (générales)
             addResourceToInventory(resource.id, resource.quantity);
         });
         
@@ -639,12 +625,15 @@ function addResourceToInventory(resourceId, quantity) {
     const resource = resourceDatabase[resourceId];
     if (!resource) return false;
     
+    // Déterminer la catégorie cible: ressources_alchimiste si pissenlit, sinon ressources
+    // Aligner sur la logique du blé: toutes les ressources naturelles vont dans 'ressources'
+    const targetCategory = 'ressources';
     // Utiliser la fonction addItemToInventory pour chaque unité de ressource
     // Cela garantit que la sauvegarde automatique est déclenchée
     let success = true;
     for (let i = 0; i < quantity; i++) {
         if (typeof window.addItemToInventory === 'function') {
-            const added = window.addItemToInventory(resourceId, 'ressources');
+            const added = window.addItemToInventory(resourceId, targetCategory);
                     if (!added) {
             success = false;
             break;

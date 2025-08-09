@@ -236,7 +236,7 @@ function drawDamageEffects(ctx) {
     
     for (const effect of damageEffects) {
         if (effect.damage !== undefined) {
-            // Dessiner le nombre de dégâts
+            // Dessiner le nombre ou texte (convertir en string)
             ctx.globalAlpha = effect.alpha;
             ctx.fillStyle = effect.color;
             ctx.font = `bold ${effect.size}px Arial`;
@@ -245,11 +245,11 @@ function drawDamageEffects(ctx) {
             
             // Ombre pour la lisibilité
             ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-            ctx.fillText(effect.damage, effect.x + 1 + (window.mapOffsetX || 0), effect.y + 1 + (window.mapOffsetY || 0));
+            ctx.fillText(String(effect.damage), effect.x + 1 + (window.mapOffsetX || 0), effect.y + 1 + (window.mapOffsetY || 0));
             
             // Texte principal
             ctx.fillStyle = effect.color;
-            ctx.fillText(effect.damage, effect.x + (window.mapOffsetX || 0), effect.y + (window.mapOffsetY || 0));
+            ctx.fillText(String(effect.damage), effect.x + (window.mapOffsetX || 0), effect.y + (window.mapOffsetY || 0));
             
         } else if (effect.type === 'sprite_flash') {
             // Effet de changement de couleur du sprite - seulement sur les pixels non-transparents

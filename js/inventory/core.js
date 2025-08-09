@@ -3,7 +3,8 @@ let inventoryAll = Array.from({ length: 80 }, () => ({ item: null, category: nul
 let inventoryEquipement = Array.from({ length: 80 }, () => ({ item: null, category: 'equipement' }));
 let inventoryPotions = Array.from({ length: 80 }, () => ({ item: null, category: 'potions' }));
 let inventoryRessources = Array.from({ length: 80 }, () => ({ item: null, category: 'ressources' }));
-let inventoryRessourcesAlchimiste = Array.from({ length: 80 }, () => ({ item: null, category: 'ressources_alchimiste' }));
+// Suppression de l'onglet ressources_alchimiste: toutes les ressources vont dans 'ressources'
+let inventoryRessourcesAlchimiste = Array.from({ length: 0 }, () => ({ item: null, category: 'ressources' }));
 
 // Inventaire principal (pour compatibilité avec le système d'équipement)
 let inventory = inventoryAll;
@@ -41,7 +42,7 @@ function resetInventory() {
     window.inventoryEquipement = Array.from({ length: 80 }, () => ({ item: null, category: 'equipement' }));
     window.inventoryPotions = Array.from({ length: 80 }, () => ({ item: null, category: 'potions' }));
     window.inventoryRessources = Array.from({ length: 80 }, () => ({ item: null, category: 'ressources' }));
-    window.inventoryRessourcesAlchimiste = Array.from({ length: 80 }, () => ({ item: null, category: 'ressources_alchimiste' }));
+    window.inventoryRessourcesAlchimiste = Array.from({ length: 0 }, () => ({ item: null, category: 'ressources' }));
     
     // Mettre à jour l'affichage
     if (typeof updateAllGrids === 'function') {

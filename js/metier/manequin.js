@@ -5,7 +5,11 @@
 
   function getCurrentKey(){
     const id = window.currentCharacterId || 'default';
-    const day = new Date().toISOString().slice(0,10);
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const day = `${yyyy}-${mm}-${dd}`; // minuit local
     return STORAGE_KEY + id + '_' + day;
   }
 
@@ -58,6 +62,18 @@
     right.appendChild(session);
     session.appendChild(lbl);
     session.appendChild(val);
+    const sep = document.createElement('div');
+    sep.style.color = '#6b7280';
+    sep.style.margin = '0 6px';
+    sep.textContent = '•';
+    const resetLbl = document.createElement('div');
+    resetLbl.className = 'label';
+    resetLbl.textContent = 'Réinit dans:';
+    const resetVal = document.createElement('div');
+    resetVal.className = 'value';
+    session.appendChild(sep);
+    session.appendChild(resetLbl);
+    session.appendChild(resetVal);
 
     const startBtn = document.createElement('button');
     startBtn.className = 'mannequin-btn';
@@ -101,6 +117,23 @@
       if (dx === 0 && dy === -1) return player.direction === 2; // mannequin en haut → haut
       return false;
     }
+    function formatHMS(totalSeconds){
+      const h = Math.floor(totalSeconds/3600);
+      const m = Math.floor((totalSeconds%3600)/60);
+      const s = totalSeconds%60;
+      const hh = String(h).padStart(2,'0');
+      const mm = String(m).padStart(2,'0');
+      const ss = String(s).padStart(2,'0');
+      return `${hh}:${mm}:${ss}`;
+    }
+
+    function resetRemainingSeconds(){
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setHours(24,0,0,0); // minuit prochain
+      return Math.max(0, Math.floor((tomorrow.getTime() - now.getTime())/1000));
+    }
+
     function updateRemaining(){
       const used = getTodayUsedSeconds();
       const remain = Math.max(0, DAILY_LIMIT_SECONDS - used);
@@ -111,8 +144,14 @@
       boostBtn.disabled = remain <= 0;
       // Mise à jour de la position du mannequin si fournie globalement
       if (!mannequinPos && window.currentMannequinTarget) mannequinPos = window.currentMannequinTarget;
+      // MAJ compte à rebours réinit quotidienne
+      const resetSecs = resetRemainingSeconds();
+      resetVal.textContent = formatHMS(resetSecs);
     }
     updateRemaining();
+    let uiTimer = setInterval(updateRemaining, 1000);
+    const oldClose = close.onclick;
+    close.onclick = () => { if (uiTimer) clearInterval(uiTimer); if (oldClose) oldClose(); };
 
     function stop(){
       if (timer){ clearInterval(timer); timer = null; }

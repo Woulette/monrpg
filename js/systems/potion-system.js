@@ -18,21 +18,6 @@ class PotionSystem {
     // Définir les types de potions disponibles
     initPotionDefinitions() {
         this.potions = {
-            'potion_soin': {
-                id: 'potion_soin',
-                name: 'Potion de Soin Basique',
-                type: 'heal_instant',
-                healAmount: 50,
-                cooldown: 3000, // 3 secondes
-                description: 'Restaure instantanément 50 points de vie.',
-                rarity: 'common',
-                useSound: null, // TODO: ajouter des sons
-                effects: {
-                    particles: true,
-                    floatingText: true,
-                    animation: 'heal'
-                }
-            },
             'potion_soin_basique': {
                 id: 'potion_soin_basique',
                 name: 'Potion de Soin Basique',

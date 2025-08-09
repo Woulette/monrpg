@@ -25,7 +25,18 @@ class UtilityBar {
         this.setupDragAndDrop();
         this.setupSlotClicks();
         this.loadFromStorage();
+        if (typeof window.normalizeInventoryAllStacks === 'function') window.normalizeInventoryAllStacks();
+        if (typeof window.rebuildInventoryAllFromCategories === 'function') window.rebuildInventoryAllFromCategories();
+        if (this.syncSlotQuantitiesWithInventory) this.syncSlotQuantitiesWithInventory();
         this.updateDisplay();
+        if (!this._autoSyncInterval) {
+            this._autoSyncInterval = setInterval(() => {
+                if (typeof window.normalizeInventoryAllStacks === 'function') window.normalizeInventoryAllStacks();
+                if (typeof window.rebuildInventoryAllFromCategories === 'function') window.rebuildInventoryAllFromCategories();
+                if (this.syncSlotQuantitiesWithInventory) this.syncSlotQuantitiesWithInventory();
+                this.updateDisplay();
+            }, 1200);
+        }
     }
 
     // Configuration du drag & drop
@@ -130,7 +141,11 @@ class UtilityBar {
             if (grid && !grid.utilityBarObserver) {
                 const observer = new MutationObserver(() => {
                     console.log('🔄 Changement détecté dans une grille d\'inventaire');
-                    setTimeout(() => this.makeInventorySlotsDrawable(), 100);
+                    setTimeout(() => {
+                        this.makeInventorySlotsDrawable();
+                        if (this.syncSlotQuantitiesWithInventory) this.syncSlotQuantitiesWithInventory();
+                        this.updateDisplay();
+                    }, 100);
                 });
                 
                 observer.observe(grid, {
@@ -279,7 +294,15 @@ class UtilityBar {
     guessItemType(name) {
         const lowerName = name.toLowerCase();
         if (lowerName.includes('potion')) return 'potion';
-        if (lowerName.includes('pissenlit') || lowerName.includes('ressource')) return 'ressource';
+        if (window.resourceDatabase) {
+            for (const id in window.resourceDatabase) {
+                const it = window.resourceDatabase[id];
+                if (it && it.name && it.name.toLowerCase() === lowerName) {
+                    return it.type || 'ressource';
+                }
+            }
+        }
+        if (lowerName.includes('pissenlit') || lowerName.includes('blé') || lowerName.includes('ble') || lowerName.includes('ressource')) return 'ressource';
         return 'objet_special';
     }
 
@@ -325,7 +348,8 @@ class UtilityBar {
         }
 
         const slot = this.slots[slotIndex];
-        const quantityToAdd = itemData.quantity || 1;
+        // Remonter toujours depuis inventoryAll pour éviter duplication visuelle
+        const quantityToAdd = this.getInventoryTotalQuantityByName(itemData.name);
         
         console.log(`📦 Slot actuel:`, slot);
         console.log(`🔢 Quantité à ajouter: ${quantityToAdd}`);
@@ -357,17 +381,8 @@ class UtilityBar {
         }
         // Si c'est le même objet et qu'il est stackable, augmenter la quantité
         else if (slot.item.name === itemData.name && itemData.stackable) {
-            // ANTI-DUPLICATION : Si c'est depuis l'inventaire et le même objet, ne pas stacker
-            if (itemData.sourceType === 'inventory') {
-                console.log('⚠️ Tentative de stack du même objet depuis l\'inventaire bloquée');
-                if (window.showFloatingMessage) {
-                    window.showFloatingMessage(`${itemData.name} déjà présent !`, 'warning');
-                }
-                return false;
-            }
-            
-            this.slots[slotIndex].quantity += quantityToAdd;
-            console.log('✅ Quantité augmentée par stackage');
+            this.slots[slotIndex].quantity = this.getInventoryTotalQuantityByName(itemData.name);
+            console.log('✅ Quantité mise à jour via synchronisation inventaire');
         }
         // Sinon, remplacer l'objet (remettre l'ancien dans l'inventaire)
         else {
@@ -534,21 +549,11 @@ class UtilityBar {
         console.log(`🏷️ Type d'objet: ${item.type}`);
         
         // Logique d'utilisation selon le type d'objet
-        switch (item.type) {
-            case 'potion':
-                console.log('💉 Tentative d\'utilisation de potion...');
-                return this.usePotion(item, slotIndex);
-            case 'ressource':
-                console.log('🌿 Tentative d\'utilisation de ressource...');
-                return this.useResource(item, slotIndex);
-            default:
-                console.log(`🔧 Utilisation d'objet par défaut: ${item.name}`);
-                if (window.showFloatingMessage) {
-                    window.showFloatingMessage(`${item.name} utilisé !`, 'info');
-                }
-                this.consumeItem(slotIndex, 1);
-                return true;
+        if (item.type === 'potion') {
+            return this.usePotion(item, slotIndex);
         }
+        if (window.showFloatingMessage) window.showFloatingMessage(`Seules les potions sont utilisables ici`, 'warning');
+        return false;
     }
 
     // Utiliser une potion
@@ -595,6 +600,13 @@ class UtilityBar {
         }
         
         console.log('✅ Pas de cooldown, traitement de la potion...');
+
+        // Interdire l'utilisation si le joueur est full vie
+        const hpProps = this.getPlayerHpProperties();
+        if (hpProps.currentHp && hpProps.maxHp && hpProps.currentHp.value >= hpProps.maxHp.value) {
+            if (window.showFloatingMessage) window.showFloatingMessage(`Vie pleine`, 'warning');
+            return false;
+        }
 
         // Essayer d'utiliser le système de potions existant si disponible
         if (window.equipmentDatabase && potion.name) {
@@ -776,43 +788,29 @@ class UtilityBar {
     // Synchroniser la consommation avec l'inventaire
     syncronizeInventoryConsumption(itemName, quantity) {
         console.log(`🔄 Synchronisation: réduction de ${quantity} ${itemName} dans l'inventaire...`);
-        
-        const inventories = [
-            { inv: window.inventoryPotions, name: 'potions' },
-            { inv: window.inventoryRessources, name: 'ressources' },
-            { inv: window.inventoryRessourcesAlchimiste, name: 'ressourcesAlchimiste' },
-            { inv: window.inventoryEquipement, name: 'equipement' },
-            { inv: window.inventoryAll, name: 'all' }
-        ];
-
-        for (const { inv, name } of inventories) {
-            if (!inv) continue;
-            
-            for (let i = 0; i < inv.length; i++) {
-                const slot = inv[i];
-                if (slot && slot.item && slot.item.name === itemName) {
-                    console.log(`🎯 Objet trouvé dans ${name}, réduction...`);
-                    
-                    if (slot.item.quantity && slot.item.quantity > quantity) {
-                        slot.item.quantity -= quantity;
-                        console.log(`✅ Quantité réduite à ${slot.item.quantity}`);
-                    } else {
-                        // Si la quantité est 1 ou moins, on vide le slot
-                        inv[i] = { item: null, category: slot.category };
-                        console.log('✅ Slot vidé dans l\'inventaire');
-                    }
-                    
-                    // Mettre à jour l'affichage de l'inventaire
-                    if (window.updateAllGrids) {
-                        window.updateAllGrids();
-                    }
-                    
-                    return true;
-                }
+        // Utiliser l'API centrale si possible
+        let id = null;
+        if (window.equipmentDatabase) {
+            for (const key in window.equipmentDatabase) {
+                const it = window.equipmentDatabase[key];
+                if (it && it.name === itemName) { id = key; break; }
             }
         }
-        
-        console.log('❌ Objet non trouvé dans l\'inventaire pour synchronisation');
+        if (!id && window.resourceDatabase) {
+            for (const key in window.resourceDatabase) {
+                const it = window.resourceDatabase[key];
+                if (it && it.name === itemName) { id = key; break; }
+            }
+        }
+        if (id && typeof window.removeItemFromInventory === 'function') {
+            window.removeItemFromInventory(id, quantity);
+            if (window.updateAllGrids) window.updateAllGrids();
+            if (window.utilityBar && window.utilityBar.syncSlotQuantitiesWithInventory) {
+                window.utilityBar.syncSlotQuantitiesWithInventory();
+                window.utilityBar.updateDisplay();
+            }
+            return true;
+        }
         return false;
     }
 
@@ -921,6 +919,37 @@ class UtilityBar {
                 slotElement.removeAttribute('draggable');
             }
         });
+    }
+
+    // Obtenir la quantité totale d'un item par nom sans double comptage (source: inventoryAll)
+    getInventoryTotalQuantityByName(name) {
+        let total = 0;
+        if (Array.isArray(window.inventoryAll)) {
+            window.inventoryAll.forEach(s => {
+                if (s && s.item && s.item.name === name) total += (s.item.quantity || 1);
+            });
+        }
+        return total;
+    }
+
+    // Synchroniser toutes les quantités affichées avec l'inventaire
+    syncSlotQuantitiesWithInventory() {
+        let changed = false;
+        for (let i = 0; i < this.slots.length; i++) {
+            const slot = this.slots[i];
+            if (slot && slot.item) {
+                const expected = this.getInventoryTotalQuantityByName(slot.item.name);
+                if ((slot.quantity || 0) !== expected) {
+                    this.slots[i].quantity = expected;
+                    changed = true;
+                }
+                if (expected <= 0) {
+                    this.slots[i] = { item: null, quantity: 0 };
+                    changed = true;
+                }
+            }
+        }
+        if (changed) this.saveToStorage();
     }
 
     // Sauvegarder dans le localStorage

@@ -53,6 +53,15 @@ aluineeksImg.onload = () => {
     }
 };
 
+// Image du cochon
+const cochonImg = new Image();
+cochonImg.src = "assets/personnages/cochon.png";
+cochonImg.onload = () => {
+    if (typeof assignMonsterImages === "function") {
+        assignMonsterImages();
+    }
+};
+
 // Export global des images
 window.corbeauImg = corbeauImg;
 window.maitreCorbeauImg = maitreCorbeauImg;
@@ -60,6 +69,7 @@ window.corbeauEliteImg = corbeauEliteImg;
 window.slimeImg = slimeImg;
 window.slimeBossImg = slimeBossImg;
 window.aluineeksImg = aluineeksImg;
+window.cochonImg = cochonImg;
 
 // Fonction de synchronisation forcée des coordonnées des monstres
 function syncMonsterCoordinates() {
@@ -91,6 +101,8 @@ function assignMonsterImages() {
                 m.img = window.corbeauImg;
             } else if (m.type === "aluineeks") {
                 m.img = window.aluineeksImg;
+            } else if (m.type === "cochon") {
+                m.img = window.cochonImg;
             } else {
                 m.img = window.corbeauImg; // Fallback pour les autres types
             }
@@ -269,6 +281,13 @@ function drawMonsters(ctx) {
                 );
             } else if (monster.type === "aluineeks") {
                 // Affichage statique pour les Aluineeks (pas d'animation)
+                ctx.drawImage(
+                    monster.img,
+                    0, 0, 32, 32,
+                    monster.px + offsetX + (window.mapOffsetX || 0), monster.py + offsetY + (window.mapOffsetY || 0), monsterSize, monsterHeight
+                );
+            } else if (monster.type === "cochon") {
+                // Affichage statique (comme Aluineeks) pour l'instant
                 ctx.drawImage(
                     monster.img,
                     0, 0, 32, 32,

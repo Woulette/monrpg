@@ -55,35 +55,15 @@ class CraftAlchimiste {
 
     // Obtenir la quantité d'un ingrédient dans l'inventaire
     getQuantiteIngredient(nomIngredient) {
+        // Source unique de vérité: inventoryAll (vue agrégée)
         let quantiteTotale = 0;
-        
-        // Chercher dans l'inventaire des ressources alchimiste
-        if (window.inventoryRessourcesAlchimiste) {
-            for (const slot of window.inventoryRessourcesAlchimiste) {
-                if (slot && slot.item && slot.item.name === nomIngredient) {
-                    quantiteTotale += slot.item.quantity || 1;
-                }
-            }
-        }
-        
-        // Chercher dans l'inventaire général des ressources
-        if (window.inventoryRessources) {
-            for (const slot of window.inventoryRessources) {
-                if (slot && slot.item && slot.item.name === nomIngredient) {
-                    quantiteTotale += slot.item.quantity || 1;
-                }
-            }
-        }
-        
-        // Chercher dans l'inventaire général
-        if (window.inventoryAll) {
+        if (Array.isArray(window.inventoryAll)) {
             for (const slot of window.inventoryAll) {
                 if (slot && slot.item && slot.item.name === nomIngredient) {
                     quantiteTotale += slot.item.quantity || 1;
                 }
             }
         }
-
         return quantiteTotale;
     }
 
@@ -103,71 +83,52 @@ class CraftAlchimiste {
 
     // Retirer un ingrédient de l'inventaire
     retirerIngredient(nomIngredient, quantite) {
+        // Utiliser l’API centrale pour retirer par id, en s’appuyant sur inventoryAll
         let quantiteRestante = quantite;
-        
-        // Chercher d'abord dans l'inventaire des ressources alchimiste
-        if (window.inventoryRessourcesAlchimiste) {
-            for (let i = 0; i < window.inventoryRessourcesAlchimiste.length && quantiteRestante > 0; i++) {
-                const slot = window.inventoryRessourcesAlchimiste[i];
-                if (slot && slot.item && slot.item.name === nomIngredient) {
-                    const qtePrise = Math.min(slot.item.quantity || 1, quantiteRestante);
-                    if (slot.item.quantity) {
-                        slot.item.quantity -= qtePrise;
-                        if (slot.item.quantity <= 0) {
-                            window.inventoryRessourcesAlchimiste[i] = null;
+        // Trouver l’id via resourceDatabase/equipmentDatabase à partir du nom
+        const findIdByName = (name) => {
+            if (window.resourceDatabase) {
+                for (const [id, it] of Object.entries(window.resourceDatabase)) {
+                    if (it && it.name === name) return id;
+                }
+            }
+            if (window.equipmentDatabase) {
+                for (const [id, it] of Object.entries(window.equipmentDatabase)) {
+                    if (it && it.name === name) return id;
+                }
+            }
+            return null;
+        };
+        const id = findIdByName(nomIngredient);
+        if (!id) return false;
+
+        if (typeof window.removeItemFromInventory === 'function') {
+            const removed = window.removeItemFromInventory(id, quantite);
+            quantiteRestante = Math.max(0, quantite - removed);
+        } else {
+            // Fallback: retirer directement depuis inventoryAll
+            if (Array.isArray(window.inventoryAll)) {
+                for (let i = 0; i < window.inventoryAll.length && quantiteRestante > 0; i++) {
+                    const slot = window.inventoryAll[i];
+                    if (slot && slot.item && slot.item.id === id) {
+                        const qtePrise = Math.min(slot.item.quantity || 1, quantiteRestante);
+                        if (slot.item.quantity) {
+                            slot.item.quantity -= qtePrise;
+                            if (slot.item.quantity <= 0) window.inventoryAll[i] = { item: null, category: null };
+                        } else {
+                            window.inventoryAll[i] = { item: null, category: null };
                         }
-                    } else {
-                        window.inventoryRessourcesAlchimiste[i] = null;
+                        quantiteRestante -= qtePrise;
                     }
-                    quantiteRestante -= qtePrise;
                 }
             }
         }
-        
-        // Chercher ensuite dans l'inventaire général des ressources
-        if (quantiteRestante > 0 && window.inventoryRessources) {
-            for (let i = 0; i < window.inventoryRessources.length && quantiteRestante > 0; i++) {
-                const slot = window.inventoryRessources[i];
-                if (slot && slot.item && slot.item.name === nomIngredient) {
-                    const qtePrise = Math.min(slot.item.quantity || 1, quantiteRestante);
-                    if (slot.item.quantity) {
-                        slot.item.quantity -= qtePrise;
-                        if (slot.item.quantity <= 0) {
-                            window.inventoryRessources[i] = null;
-                        }
-                    } else {
-                        window.inventoryRessources[i] = null;
-                    }
-                    quantiteRestante -= qtePrise;
-                }
-            }
-        }
-        
-        // Chercher enfin dans l'inventaire général (inventoryAll)
-        if (quantiteRestante > 0 && window.inventoryAll) {
-            for (let i = 0; i < window.inventoryAll.length && quantiteRestante > 0; i++) {
-                const slot = window.inventoryAll[i];
-                if (slot && slot.item && slot.item.name === nomIngredient) {
-                    const qtePrise = Math.min(slot.item.quantity || 1, quantiteRestante);
-                    if (slot.item.quantity) {
-                        slot.item.quantity -= qtePrise;
-                        if (slot.item.quantity <= 0) {
-                            window.inventoryAll[i] = { item: null };
-                        }
-                    } else {
-                        window.inventoryAll[i] = { item: null };
-                    }
-                    quantiteRestante -= qtePrise;
-                }
-            }
-        }
-        
-        // Mettre à jour l'affichage de l'inventaire
-        if (window.updateInventoryDisplay) {
-            window.updateInventoryDisplay();
-        }
-        
-        // Retourner true si on a pu retirer toute la quantité demandée
+
+        // Après retrait, reconstruire les vues et rafraîchir
+        if (typeof window.reconcileResourcesFromAll === 'function') window.reconcileResourcesFromAll();
+        if (typeof window.updateAllGrids === 'function') window.updateAllGrids();
+        if (typeof window.updateAlchimisteInventory === 'function') window.updateAlchimisteInventory();
+
         return quantiteRestante === 0;
     }
 
@@ -176,70 +137,13 @@ class CraftAlchimiste {
         const recette = this.recettes[recetteId];
         if (!recette) return false;
 
-        const objetCraft = {
-            id: recetteId, // Ajouter l'ID !
-            name: recette.resultat.nom,
-            icon: recette.resultat.icon,
-            type: recette.resultat.type,
-            category: 'potion', // Ajouter la catégorie
-            quantity: recette.resultat.quantite,
-            stackable: true, // Permettre le stackage des potions
-            description: recette.resultat.description || 'Une potion magique.',
-            shortDescription: recette.resultat.shortDescription || 'Effet de soin',
-            rarity: recette.resultat.rarity || 'common',
-            cooldown: recette.resultat.cooldown || 3000,
-            stats: recette.resultat.stats,
-            healAmount: recette.resultat.stats ? recette.resultat.stats.soin : 50 // Ajouter healAmount
-        };
-
-        // Ajouter à l'inventaire des potions
-        if (!window.inventoryPotions) {
-            window.inventoryPotions = Array.from({ length: 80 }, () => ({ item: null, category: 'potions' }));
+        // Ajouter via l’API centrale (gère ALL + potions + normalisation + vues)
+        if (typeof window.addItemToInventory === 'function') {
+            window.addItemToInventory(recetteId, 'potions');
         }
-
-        // Chercher d'abord un slot avec le même objet pour stacker
-        let slotTrouve = false;
-        for (let i = 0; i < window.inventoryPotions.length; i++) {
-            if (window.inventoryPotions[i] && window.inventoryPotions[i].item && 
-                window.inventoryPotions[i].item.name === objetCraft.name &&
-                window.inventoryPotions[i].item.stackable) {
-                window.inventoryPotions[i].item.quantity += objetCraft.quantity;
-                slotTrouve = true;
-                break;
-            }
-        }
-        
-        // Si pas trouvé de slot à stacker, chercher un slot vide
-        if (!slotTrouve) {
-            for (let i = 0; i < window.inventoryPotions.length; i++) {
-                if (!window.inventoryPotions[i] || !window.inventoryPotions[i].item) {
-                    window.inventoryPotions[i] = { item: objetCraft, category: 'potions' };
-                    slotTrouve = true;
-                    break;
-                }
-            }
-        }
-
-        // Si pas de slot trouvé, ajouter à la fin
-        if (!slotTrouve) {
-            window.inventoryPotions.push({ item: objetCraft, category: 'potions' });
-        }
-
-        // Mettre à jour l'affichage
-        if (window.updateAllGrids) {
-            window.updateAllGrids();
-        }
-        
-        // Synchroniser avec l'inventaire principal pour l'onglet "Tout"
-        if (window.inventoryAll) {
-            // Chercher un slot vide dans l'inventaire principal
-            for (let i = 0; i < window.inventoryAll.length; i++) {
-                if (!window.inventoryAll[i] || !window.inventoryAll[i].item) {
-                    window.inventoryAll[i] = { item: objetCraft, category: 'potions' };
-                    break;
-                }
-            }
-        }
+        if (typeof window.reconcileResourcesFromAll === 'function') window.reconcileResourcesFromAll();
+        if (typeof window.updateAllGrids === 'function') window.updateAllGrids();
+        if (typeof window.updateAlchimisteInventory === 'function') window.updateAlchimisteInventory();
 
         return true;
     }

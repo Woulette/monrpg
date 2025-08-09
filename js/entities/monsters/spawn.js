@@ -424,6 +424,40 @@ function spawnSlimeBoss() {
     }
 }
 
+// Fonction pour créer des cochons (map4 et map5)
+function spawnCochons(count = 8) {
+    const currentMap = window.currentMap;
+    if (!currentMap || (currentMap !== 'map4' && currentMap !== 'map5')) return;
+
+    const TILE_SIZE = window.TILE_SIZE || 32;
+    for (let i = 0; i < count; i++) {
+        let sx, sy;
+        let attempts = 0;
+        const maxAttempts = 100;
+        do {
+            sx = Math.floor(Math.random() * PATROL_ZONE.width);
+            sy = Math.floor(Math.random() * PATROL_ZONE.height);
+            attempts++;
+        } while (
+            attempts < maxAttempts &&
+            ((window.isBlocked && window.isBlocked(sx, sy)) || isInForbiddenSpawnZone(sx, sy))
+        );
+        if (attempts >= maxAttempts) {
+            sx = Math.floor(Math.random() * PATROL_ZONE.width);
+            sy = Math.floor(Math.random() * PATROL_ZONE.height);
+        }
+
+        // Niveau 7 à 10
+        const level = Math.floor(Math.random() * 4) + 7;
+        if (typeof window.createCochon === 'function') {
+            const pig = window.createCochon(sx, sy, level);
+            window.monsters.push(pig);
+            if (typeof occupy === 'function') occupy(sx, sy);
+        }
+    }
+    if (typeof assignMonsterImages === 'function') assignMonsterImages();
+}
+
 // Fonction pour créer des corbeaux (pour les maps 1, 2, 3)
 function createCrows(count = 10) {
     

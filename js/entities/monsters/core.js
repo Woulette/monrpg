@@ -50,9 +50,11 @@ function initMonsters() {
             if (typeof window.ensureSlimeBossExists === "function") {
                 window.ensureSlimeBossExists();
             }
-        } else if (currentMap && currentMap === "map4") {
-            // Map 4 - aucun monstre pour le moment
-            // Les Aluineeks ont été déplacés vers mapzonealuineeks1
+        } else if (currentMap && (currentMap === "map4" || currentMap === "map5")) {
+            // Maps 4 et 5 - cochons
+            if (typeof window.spawnCochons === "function") {
+                window.spawnCochons(8);
+            }
         } else if (currentMap && currentMap === "mapzonealuineeks1") {
             // Map zonealuineeks1 - 10 Aluineeks
             if (typeof window.spawnAluineeks === "function") {

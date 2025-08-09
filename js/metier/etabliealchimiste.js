@@ -256,57 +256,22 @@ function openAlchimisteWorkshopModal() {
   inventoryGrid.className = 'alchimiste-inventory-grid';
   
   function getInventoryByCategory(category) {
+    // Toujours s'assurer que la vue RESSOURCES est synchronisée depuis ALL
+    if (typeof window.reconcileResourcesFromAll === 'function') {
+      window.reconcileResourcesFromAll();
+    }
     switch(category) {
-      case 'equipement': return window.inventoryEquipement || [];
-      case 'potions': return window.inventoryPotions || [];
-      case 'ressources': 
-        // Combiner ressources normales et ressources alchimiste
-        const ressourcesCombinees = Array.from({ length: 80 }, () => ({ item: null, category: 'ressources' }));
-        let index = 0;
-        
-        // Ajouter les ressources normales
-        if (window.inventoryRessources) {
-          window.inventoryRessources.forEach(slot => {
-            if (slot && slot.item && index < 80) {
-              ressourcesCombinees[index] = slot;
-              index++;
-            }
-          });
-        }
-        
-        // Ajouter les ressources alchimiste
-        if (window.inventoryRessourcesAlchimiste) {
-          window.inventoryRessourcesAlchimiste.forEach(slot => {
-            if (slot && slot.item && index < 80) {
-              ressourcesCombinees[index] = slot;
-              index++;
-            }
-          });
-        }
-        
-        return ressourcesCombinees;
+      case 'equipement':
+        return window.inventoryEquipement || Array.from({ length: 80 }, () => ({ item: null, category: 'equipement' }));
+      case 'potions':
+        return window.inventoryPotions || Array.from({ length: 80 }, () => ({ item: null, category: 'potions' }));
+      case 'ressources':
+        // UTILISER UNIQUEMENT la vue agrégée `inventoryRessources` (évite les doublons)
+        return window.inventoryRessources || Array.from({ length: 80 }, () => ({ item: null, category: 'ressources' }));
       case 'all':
-      default: 
-        // Pour l'onglet "Tout", créer un tableau de 80 slots
-        const allItems = Array.from({ length: 80 }, () => ({ item: null, category: null }));
-        let itemIndex = 0;
-        const inventories = [
-          window.inventoryEquipement || [],
-          window.inventoryPotions || [],
-          window.inventoryRessources || [],
-          window.inventoryRessourcesAlchimiste || []
-        ];
-        
-        inventories.forEach(inventory => {
-          inventory.forEach(slot => {
-            if (slot && slot.item && itemIndex < 80) {
-              allItems[itemIndex] = slot;
-              itemIndex++;
-            }
-          });
-        });
-        
-        return allItems;
+      default:
+        // UTILISER DIRECTEMENT `inventoryAll` (évite la concat de catégories et les doublons)
+        return window.inventoryAll || Array.from({ length: 80 }, () => ({ item: null, category: null }));
     }
   }
   
@@ -364,6 +329,10 @@ function openAlchimisteWorkshopModal() {
   }
 
   function updateCraftInventoryGrid() {
+    // Garder les vues synchro avant d'afficher
+    if (typeof window.reconcileResourcesFromAll === 'function') {
+      window.reconcileResourcesFromAll();
+    }
     const targetInventory = getInventoryByCategory(currentCategory);
     inventoryGrid.innerHTML = '';
     
@@ -873,15 +842,18 @@ function openAlchimisteWorkshopModal() {
               default: potionId = ''; break;
             }
             
-            if (potionId) {
-              if (typeof addItemToInventory === 'function') {
-                const result = addItemToInventory(potionId, 'potions');
-                if (result === false) {
-                  alert("Inventaire plein, impossible d'ajouter la potion !");
-                  return;
+              if (potionId) {
+                if (typeof addItemToInventory === 'function') {
+                  const result = addItemToInventory(potionId, 'potions');
+                  if (result === false) {
+                    alert("Inventaire plein, impossible d'ajouter la potion !");
+                    return;
+                  }
+                  if (typeof window.normalizeInventoryAllStacks === 'function') window.normalizeInventoryAllStacks();
+                  if (typeof window.rebuildInventoryAllFromCategories === 'function') window.rebuildInventoryAllFromCategories();
+                  if (typeof window.autoSaveOnEvent === 'function') window.autoSaveOnEvent();
                 }
               }
-            }
           }
           
           // Vider les slots de craft

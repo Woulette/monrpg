@@ -21,10 +21,15 @@ function saveMonstersForMap(mapName) {
         monstersToSave = window.monsters.filter(m => 
             (m.type === "crow" || m.type === "corbeauelite" || m.type === "maitrecorbeau") && !m.isDead
         );
-    } else if (mapName === "map4" || mapName === "mapzonealuineeks1") {
-        // Sur les maps 4 et mapzonealuineeks1, sauvegarder UNIQUEMENT les Aluineeks
+    } else if (mapName === "mapzonealuineeks1") {
+        // Sur mapzonealuineeks1, sauvegarder UNIQUEMENT les Aluineeks
         monstersToSave = window.monsters.filter(m => 
             m.type === "aluineeks" && !m.isDead
+        );
+    } else if (mapName === "map4" || mapName === "map5") {
+        // Sur les maps 4 et 5, sauvegarder UNIQUEMENT les cochons vivants
+        monstersToSave = window.monsters.filter(m => 
+            m.type === "cochon" && !m.isDead
         );
     } else {
         // Sur les autres maps (non reconnues), ne sauvegarder aucun monstre
@@ -144,8 +149,9 @@ function loadMonstersForMap(mapName) {
             expectedCount = 5; // 5 corbeaux pour les maps normales
         } else if (mapName === "mapzonealuineeks1") {
             expectedCount = 10; // 10 Aluineeks pour mapzonealuineeks1
-        } else if (mapName === "map4") {
-            expectedCount = 0; // Aucun monstre sur map4 pour le moment
+        } else if (mapName === "map4" || mapName === "map5") {
+            // Il doit y avoir au moins 1 cochon sauvegardé, sinon on considère que la sauvegarde est invalide et on respawn fresh
+            expectedCount = 1;
         } else {
             expectedCount = 0; // Aucun monstre pour les autres maps
         }

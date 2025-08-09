@@ -1,6 +1,20 @@
 // js/metier/ressource-alchimiste.js
 
 // Système de récolte des ressources d'alchimiste
+function computePissenlitYieldByLevel(level) {
+    if (level >= 100) return { min: 10, max: 20 };
+    if (level >= 90) return { min: 8, max: 18 };
+    if (level >= 80) return { min: 7, max: 16 };
+    if (level >= 70) return { min: 6, max: 14 };
+    if (level >= 60) return { min: 5, max: 12 };
+    if (level >= 50) return { min: 4, max: 10 };
+    if (level >= 40) return { min: 3, max: 8 };
+    if (level >= 30) return { min: 2, max: 6 };
+    if (level >= 20) return { min: 1, max: 4 };
+    if (level >= 10) return { min: 1, max: 3 };
+    return { min: 1, max: 2 };
+}
+
 class RessourceAlchimiste {
     constructor() {
         this.ressourcesEnCours = new Map(); // Ressources en cours de récolte
@@ -92,9 +106,14 @@ class RessourceAlchimiste {
         
         // Remplacer la ressource par l'ID 225 du calque 3
         this.remplacerRessource(x, y);
-        
-        // Ajouter la ressource à l'inventaire
-        this.ajouterRessourceInventaire();
+
+        // Calculer le rendement selon le niveau d'alchimiste
+        const level = window.metiers?.alchimiste?.niveau || 1;
+        const yieldCfg = computePissenlitYieldByLevel(level);
+        const harvestedQty = Math.floor(Math.random() * (yieldCfg.max - yieldCfg.min + 1)) + yieldCfg.min;
+
+        // Ajouter la ressource à l'inventaire (quantité variable)
+        this.ajouterRessourceInventaire(harvestedQty);
         
         // Marquer comme récoltée avec timestamp ET map d'origine
         this.ressourcesRecoltees.set(key, {
@@ -107,9 +126,18 @@ class RessourceAlchimiste {
         // Retirer de la liste des ressources interactives
         this.ressourcesInteractives.delete(key);
         
-        // Afficher un message de succès
-        if (window.showFloatingMessage) {
-            window.showFloatingMessage("Ressource récoltée !", x, y - 50);
+        // Afficher un message façon blé: quantité en rouge près de la tuile et XP en jaune près du joueur
+        const xpGained = 10;
+        if (typeof window.displayDamage === 'function') {
+            const ts = window.TILE_SIZE || 32;
+            // Rouge (type damage) pour la quantité de pissenlits
+            window.displayDamage(x * ts, y * ts, `+${harvestedQty} Pissenlit`, 'damage', false);
+            // Jaune (type xp) pour l'XP, proche du joueur
+            const px = (window.player?.px) ?? (window.player?.x || 0) * ts;
+            const py = (window.player?.py) ?? (window.player?.y || 0) * ts;
+            window.displayDamage(px, py, `+${xpGained} XP`, 'xp', true);
+        } else if (window.showFloatingMessage) {
+            window.showFloatingMessage(`+${harvestedQty} Pissenlit | +${xpGained} XP`);
         }
     }
 
@@ -190,9 +218,9 @@ class RessourceAlchimiste {
         console.log(`✅ Ressource restaurée sur map1 à position (${x}, ${y})`);
     }
 
-    // Ajouter la ressource à l'inventaire
-    ajouterRessourceInventaire() {
-        console.log('🌿 Tentative d\'ajout de pissenlit à l\'inventaire');
+    // Ajouter la ressource à l'inventaire (quantité variable)
+    ajouterRessourceInventaire(quantity = 1) {
+        console.log('🌿 Tentative d\'ajout de pissenlit à l\'inventaire (qty=', quantity, ')');
         console.log('🔍 window.addItemToInventory existe?', typeof window.addItemToInventory);
         console.log('🔍 window.resourceDatabase existe?', typeof window.resourceDatabase);
         
@@ -205,23 +233,20 @@ class RessourceAlchimiste {
         
         // Utiliser le système d'inventaire existant pour les ressources d'alchimiste
         if (window.addItemToInventory) {
-            const result = window.addItemToInventory('pissenlit', 'ressources_alchimiste');
-            console.log('📦 Résultat ajout pissenlit:', result);
-            
-            if (result !== false) {
-                console.log('✅ Pissenlit ajouté avec succès!');
-                
-                // Mettre à jour l'affichage
-                if (window.updateAllGrids) {
-                    window.updateAllGrids();
-                }
-                
-                // Afficher un message de succès spécifique
-                if (window.showFloatingMessage) {
-                    window.showFloatingMessage("Pissenlit récolté !", window.player.x, window.player.y - 70, '#4CAF50');
-                }
+            let ok = true;
+            for (let i = 0; i < quantity; i++) {
+                const result = window.addItemToInventory('pissenlit', 'ressources');
+                console.log('📦 Résultat ajout pissenlit (it=', i, '):', result);
+                if (result === false) { ok = false; break; }
+            }
+            if (ok) {
+                console.log('✅ Pissenlit ajouté avec succès (x', quantity, ')');
+                if (typeof window.normalizeInventoryAllStacks === 'function') window.normalizeInventoryAllStacks();
+                if (typeof window.reconcileResourcesFromAll === 'function') window.reconcileResourcesFromAll();
+                if (window.updateAllGrids) window.updateAllGrids();
+                if (typeof window.autoSaveOnEvent === 'function') window.autoSaveOnEvent();
             } else {
-                console.error('❌ Échec de l\'ajout du pissenlit');
+                console.error('❌ Échec de l\'ajout du pissenlit (batch)');
             }
         } else {
             console.error('❌ window.addItemToInventory non disponible');
@@ -235,11 +260,7 @@ class RessourceAlchimiste {
             console.log('🔍 Debug XP - XP avant:', window.metiers?.alchimiste?.xp);
             window.gainMetierXP('alchimiste', 10);
             console.log('🔍 Debug XP - XP après:', window.metiers?.alchimiste?.xp);
-            
-            // Afficher un message de gain d'XP
-            if (window.showFloatingMessage) {
-                window.showFloatingMessage("+10 XP Alchimie !", window.player.x, window.player.y - 30);
-            }
+            // Le message XP est inclus dans le message combiné ci-dessus
         } else {
             console.error('❌ window.gainMetierXP non disponible');
         }
@@ -434,33 +455,13 @@ class RessourceAlchimiste {
 
     // Appliquer les effets visuels aux ressources
     appliquerEffetsVisuels(ctx, x, y, gid) {
-        // Vérifier si c'est une ressource d'alchimiste (ID 25)
+        // Style discret aligné au blé: léger highlight uniquement si interactif
         if (gid === 25 && window.currentMap === "map1") {
             const key = `${x},${y}`;
-            const info = this.getRessourceInfo(x, y);
-            
-            if (info) {
-                switch (info.type) {
-                    case 'disponible':
-                        // Effet visuel seulement si on a déjà interagi avec cette ressource
-                        if (this.ressourcesInteractives.has(key)) {
-                            // Surbrillance pour les ressources avec lesquelles on a interagi
-                            ctx.globalAlpha = 1.4;
-                            ctx.filter = 'brightness(1.4) drop-shadow(0 0 15px rgba(255, 255, 0, 0.8)) hue-rotate(10deg)';
-                        }
-                        break;
-                    case 'recolte_en_cours':
-                        // Animation de récolte en cours très visible
-                        const pulse = Math.sin(Date.now() / 200) * 0.4 + 1.6;
-                        ctx.globalAlpha = pulse;
-                        ctx.filter = `brightness(${pulse}) drop-shadow(0 0 25px rgba(255, 165, 0, 1)) hue-rotate(25deg) saturate(1.8)`;
-                        break;
-                    case 'recoltee':
-                        // Ressource récoltée (disparue)
-                        ctx.globalAlpha = 0.1;
-                        ctx.filter = 'grayscale(1) brightness(0.3)';
-                        break;
-                }
+            if (this.ressourcesInteractives.has(key)) {
+                const pulse = Math.sin(Date.now() / 240) * 0.15 + 1.05;
+                ctx.globalAlpha = pulse;
+                ctx.filter = `brightness(${pulse}) drop-shadow(0 0 14px rgba(191,161,74,0.9))`;
             }
         }
     }

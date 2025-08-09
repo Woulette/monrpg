@@ -56,6 +56,12 @@ function updateMonsterRespawn() {
                     monstersToRemove.push(monster);
                     return;
                 }
+            } else if (currentMap === "map4" || currentMap === "map5") {
+                // Sur map4 et map5, seuls les cochons peuvent respawn
+                if (monster.type !== "cochon") {
+                    monstersToRemove.push(monster);
+                    return;
+                }
             } else {
                 // Sur les autres maps (non reconnues), supprimer tous les monstres
                 monstersToRemove.push(monster);
@@ -138,6 +144,29 @@ function updateMonsterRespawn() {
                 monster.xpValue = Math.floor(baseXp * xpMultiplier);
                 monster.force = Math.floor(baseForce * forceMultiplier);
                 monster.defense = Math.floor(baseDefense * defenseMultiplier);
+            } else if (monster.type === "cochon") {
+                // Niveau aléatoire 7-10 pour cochon
+                newLevel = Math.floor(Math.random() * 4) + 7;
+                const levelDelta = newLevel - 7;
+                const baseHp = 100;
+                const hpMultiplier = 1 + levelDelta * 0.07;
+                const baseXpMin = 35;
+                const baseXpMax = 50;
+                const xpBase = Math.floor(Math.random() * (baseXpMax - baseXpMin + 1)) + baseXpMin;
+                const xpValue = xpBase + Math.floor(levelDelta * 2);
+                const baseForce = 15;
+                const baseDefense = 10;
+                const forceMultiplier = 1 + levelDelta * 0.06;
+                const defenseMultiplier = 1 + levelDelta * 0.05;
+
+                monster.isDead = false;
+                monster.level = newLevel;
+                monster.hp = Math.floor(baseHp * hpMultiplier);
+                monster.maxHp = Math.floor(baseHp * hpMultiplier);
+                monster.xpValue = xpValue;
+                monster.force = Math.floor(baseForce * forceMultiplier);
+                monster.defense = Math.floor(defenseMultiplier * baseDefense);
+                monster.damage = 7;
             } else {
                 // Type de monstre non reconnu, utiliser un niveau par défaut
                 newLevel = 1;

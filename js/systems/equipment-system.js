@@ -223,7 +223,7 @@ const equipmentDatabase = {
         description: 'Une patte de corbeau mystérieuse.',
         rarity: 'common',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     
     plume_corbeau: {
@@ -234,7 +234,7 @@ const equipmentDatabase = {
         description: 'Une plume noire brillante.',
         rarity: 'common',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     
     // Ressources Slime
@@ -246,7 +246,7 @@ const equipmentDatabase = {
         description: 'Une gelée visqueuse de slime.',
         rarity: 'common',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     
     noyauslime: {
@@ -257,7 +257,7 @@ const equipmentDatabase = {
         description: 'Le noyau mystérieux d\'un slime.',
         rarity: 'common',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     
     mucusslime: {
@@ -268,7 +268,7 @@ const equipmentDatabase = {
         description: 'Un mucus visqueux de slime.',
         rarity: 'common',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     
     pissenlit: {
@@ -279,7 +279,7 @@ const equipmentDatabase = {
         description: 'Une plante commune utilisée par les alchimistes pour leurs potions.',
         rarity: 'common',
         stackable: true,
-        maxStack: 99
+        maxStack: 9999
     },
     
             // Orbe atypique niveau 10
