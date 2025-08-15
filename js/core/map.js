@@ -102,31 +102,34 @@ async function loadMap(mapName) {
             console.warn("Fonction updateBlockedGids non disponible");
         }
         
-        // Réinitialiser les monstres après le chargement de la map
-        if (typeof window.initMonsters === "function") {
-            window.initMonsters();
-        }
-        
-        // Charger les monstres pour cette map
-        if (typeof loadMonstersForMap === "function") {
-            const monstersLoaded = loadMonstersForMap(mapName);
-            if (!monstersLoaded) {
-                if (typeof initMonsters === "function") {
-                    initMonsters();
+        // Réinitialiser/Charger les monstres uniquement en mode SOLO.
+        if (!(window.multiplayerManager && window.multiplayerManager.connected)) {
+            // Réinitialiser les monstres après le chargement de la map
+            if (typeof window.initMonsters === "function") {
+                window.initMonsters();
+            }
+            
+            // Charger les monstres pour cette map (solo)
+            if (typeof loadMonstersForMap === "function") {
+                const monstersLoaded = loadMonstersForMap(mapName);
+                if (!monstersLoaded) {
+                    if (typeof initMonsters === "function") {
+                        initMonsters();
+                    }
                 }
-            }
-            
-            // Forcer la réassignation des images des monstres
-            if (typeof window.assignMonsterImages === "function") {
-                window.assignMonsterImages();
-            }
-            
-            // Forcer une deuxième réassignation après un délai pour s'assurer que les images sont chargées
-            setTimeout(() => {
+                
+                // Forcer la réassignation des images des monstres
                 if (typeof window.assignMonsterImages === "function") {
                     window.assignMonsterImages();
                 }
-            }, 500);
+                
+                // Forcer une deuxième réassignation après un délai pour s'assurer que les images sont chargées
+                setTimeout(() => {
+                    if (typeof window.assignMonsterImages === "function") {
+                        window.assignMonsterImages();
+                    }
+                }, 500);
+            }
         }
         
         // Nettoyage spécial pour mapdonjonslimeboss - supprimer tous les slimes existants
@@ -170,12 +173,14 @@ async function loadMap(mapName) {
         
         // Sauvegarder les monstres après un délai pour s'assurer qu'ils sont créés
         
-        // Sauvegarder les monstres après un délai pour s'assurer qu'ils sont créés
-        setTimeout(() => {
-            if (typeof window.saveMonstersForMap === "function") {
-                window.saveMonstersForMap(mapName);
-            }
-        }, 250);
+        // Sauvegarder les monstres seulement en SOLO
+        if (!(window.multiplayerManager && window.multiplayerManager.connected)) {
+            setTimeout(() => {
+                if (typeof window.saveMonstersForMap === "function") {
+                    window.saveMonstersForMap(mapName);
+                }
+            }, 250);
+        }
         
         return true;
     } catch (error) {

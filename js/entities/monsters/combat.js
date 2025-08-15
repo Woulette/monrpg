@@ -101,6 +101,24 @@ function killMonster(monster) {
         if (typeof window.saveMonstersForMap === "function" && window.currentMap) {
             window.saveMonstersForMap(window.currentMap);
         }
+
+        // Multijoueur: notifier le serveur de la mort (serveur gère le respawn)
+        if (window.multiplayerManager && window.multiplayerManager.connected && window.multiplayerManager.socket) {
+            try {
+                window.multiplayerManager.socket.send(JSON.stringify({
+                    type: 'monster_killed',
+                    data: {
+                        map: window.currentMap,
+                        type: monster.type,
+                        x: monster.x,
+                        y: monster.y,
+                        respawnMs: Math.max(0, Number(monster.respawnTime || 30000))
+                    }
+                }));
+            } catch (e) {
+                // silencieux
+            }
+        }
         
         // Forcer la sauvegarde du personnage après avoir tué un monstre
         if (typeof window.forceSaveOnEvent === "function") {

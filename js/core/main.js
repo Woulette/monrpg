@@ -340,21 +340,61 @@ function gameLoop(ts) {
     // Mise à jour du joueur (toujours nécessaire)
     updatePlayer(ts);
 
-    // Mise à jour des monstres (seulement si ils existent)
+    // Mise à jour des monstres
     if (window.monsters && window.monsters.length > 0) {
-        // Déplacement pixel par pixel des monstres
-        if (typeof moveMonsters === "function") {
-            moveMonsters(ts);
-        }
-
-        // Logique IA des monstres
-        if (typeof updateMonsters === "function") {
-            updateMonsters(ts);
-        }
-
-        // Mise à jour des respawns de monstres
-        if (typeof updateMonsterRespawn === "function") {
-            updateMonsterRespawn(ts);
+        const isMultiplayer = !!(window.multiplayerManager && window.multiplayerManager.connected);
+        if (!isMultiplayer) {
+            // SOLO: tout en local
+            if (typeof moveMonsters === "function") {
+                moveMonsters(ts);
+            }
+            if (typeof updateMonsters === "function") {
+                updateMonsters(ts);
+            }
+            if (typeof updateMonsterRespawn === "function") {
+                updateMonsterRespawn(ts);
+            }
+        } else {
+            // MULTI: serveur autoritaire → pas d'IA/mouvement local
+            // Interpolation client: lisser des chemins complets (monster_paths) ou fallback case-à-case
+            const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+            for (const m of window.monsters) {
+                if (!m) continue;
+                if (Array.isArray(m.lerpSegments) && m.lerpSegments.length > 0) {
+                    // Suivre les segments séquentiellement
+                    if (typeof m.lerpIndex !== 'number') m.lerpIndex = 0;
+                    // Avancer les segments déjà écoulés en mettant à jour x/y au passage
+                    while (m.lerpIndex < m.lerpSegments.length && now >= m.lerpSegments[m.lerpIndex].end) {
+                        const seg = m.lerpSegments[m.lerpIndex];
+                        m.x = seg.tx; m.y = seg.ty; // mettre à jour la tuile courante
+                        m.px = seg.ex; m.py = seg.ey; // finir le segment proprement
+                        m.lerpIndex++;
+                    }
+                    if (m.lerpIndex >= m.lerpSegments.length) {
+                        // Chemin terminé
+                        m.lerpSegments = [];
+                        m.moving = false;
+                        continue;
+                    }
+                    const seg = m.lerpSegments[m.lerpIndex];
+                    const dur = Math.max(1, seg.end - seg.start);
+                    const t = Math.max(0, Math.min(1, (now - seg.start) / dur));
+                    m.px = seg.sx + (seg.ex - seg.sx) * t;
+                    m.py = seg.sy + (seg.ey - seg.sy) * t;
+                    // Ne pas forcer moving=false tant que le chemin n'est pas fini
+                    m.moving = true;
+                } else if (typeof m.nextPx === 'number' && typeof m.prevPx === 'number' && typeof m.lerpStart === 'number' && typeof m.lerpEnd === 'number') {
+                    // Fallback: interpolation d'une case vers l'autre
+                    const t = Math.max(0, Math.min(1, (now - m.lerpStart) / (m.lerpEnd - m.lerpStart)));
+                    m.px = m.prevPx + (m.nextPx - m.prevPx) * t;
+                    m.py = m.prevPy + (m.nextPy - m.prevPy) * t;
+                    if (t >= 1) {
+                        m.px = m.nextPx; m.py = m.nextPy;
+                        m.moving = false;
+                        m.prevPx = m.nextPx; m.prevPy = m.nextPy;
+                    }
+                }
+            }
         }
     }
 

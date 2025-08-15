@@ -473,6 +473,8 @@ class MinimapSystem {
         
         // Dessiner le joueur
         this.drawPlayer();
+        // Dessiner les membres du groupe
+        this.drawPartyMembers();
         
         // Dessiner les donjons
         this.drawDungeons();
@@ -482,6 +484,38 @@ class MinimapSystem {
         
         // Dessiner le rectangle de vue
         this.drawViewport();
+    }
+
+    drawPartyMembers() {
+        try {
+            if (!window.partyState || !Array.isArray(window.partyState.members)) return;
+            const playerMap = this.worldMapSystem.findPlayerMap();
+            if (!playerMap) return;
+            const sameMapPlayers = [];
+            // Récupérer positions des autres joueurs (via multiplayerManager)
+            if (window.multiplayerManager && window.multiplayerManager.otherPlayers) {
+                window.multiplayerManager.otherPlayers.forEach((p) => {
+                    if (window.partyState.members.some(m => m.id === p.id)) {
+                        sameMapPlayers.push(p);
+                    }
+                });
+            }
+            sameMapPlayers.forEach(p => {
+                // Calculer la position absolue comme pour le joueur
+                const absoluteX = playerMap.position.x + p.x * this.worldMapSystem.tileSize;
+                const absoluteY = playerMap.position.y + p.y * this.worldMapSystem.tileSize;
+                const px = (absoluteX * this.scale) + this.centerOffsetX;
+                const py = (absoluteY * this.scale) + this.centerOffsetY;
+                const r = Math.max(4, 7 * this.scale);
+                this.ctx.fillStyle = '#00c8ff';
+                this.ctx.beginPath();
+                this.ctx.arc(px, py, r, 0, 2*Math.PI);
+                this.ctx.fill();
+                this.ctx.strokeStyle = '#ffffff';
+                this.ctx.lineWidth = 1;
+                this.ctx.stroke();
+            });
+        } catch(_) {}
     }
     
     centerOnPlayerMap() {

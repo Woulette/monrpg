@@ -9,6 +9,15 @@
 
   function handleUiKeydown(e){
     if (!gameInputsEnabled || window.gameState !== 'playing') return;
+    // Si le chat est ouvert ou un champ du chat a le focus, ignorer les raccourcis du jeu
+    try {
+      const chatCont = document.getElementById('chat-container');
+      const chatOpen = chatCont && !chatCont.classList.contains('chat-hidden') && chatCont.style.display !== 'none';
+      const chatInputFocused = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('chat-input');
+      if (chatOpen || chatInputFocused) {
+        return; // laisser chat.js gérer Enter/Escape/etc.
+      }
+    } catch(_) {}
     // Affichage rapide des coordonnées avec G
     if (e.key === 'g' || e.key === 'G') {
       e.preventDefault();

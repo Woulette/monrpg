@@ -44,6 +44,11 @@ class MultiplayerManager {
                 }
                 
                 this.startPositionUpdates();
+
+                // Demander l'état des monstres morts pour la carte courante
+                try {
+                    this.socket.send(JSON.stringify({ type: 'request_dead_monsters', mapName: this.currentMap }));
+                } catch(_) {}
             };
             
             this.socket.onmessage = (event) => {
@@ -74,6 +79,99 @@ class MultiplayerManager {
     // Gérer les messages reçus du serveur
     handleMessage(message) {
         switch(message.type) {
+            case 'party_invite': {
+                // Affichage via UI non bloquante (pane HUD)
+                const fromName = message.data?.fromName || 'Joueur';
+                const partyId = message.data?.partyId;
+                const fromId = message.data?.fromId;
+                if (window.partyUi && typeof window.partyUi.addInvite === 'function') {
+                    window.partyUi.addInvite(fromId, fromName, partyId);
+                }
+                break;
+            }
+            case 'party_update': {
+                window.partyState = message.data || null;
+                if (typeof window.partyRenderUpdate === 'function') window.partyRenderUpdate();
+                break;
+            }
+            case 'party_disband': {
+                window.partyState = null;
+                if (typeof window.partyRenderUpdate === 'function') window.partyRenderUpdate();
+                break;
+            }
+            case 'party_kicked': {
+                window.partyState = null;
+                if (typeof window.partyRenderUpdate === 'function') window.partyRenderUpdate();
+                alert('Vous avez été exclu du groupe.');
+                break;
+            }
+            case 'party_declined': {
+                // Optionnel: feedback à l’invitant
+                console.log('Invitation refusée par', message.data?.byName || message.data?.byId);
+                break;
+            }
+            case 'party_member_hp': {
+                if (!window.partyState) break;
+                const { id, hp, maxHp } = message.data || {};
+                if (!id) break;
+                if (!window.partyHp) window.partyHp = new Map();
+                window.partyHp.set(id, { hp, maxHp });
+                if (typeof window.partyRenderUpdate === 'function') window.partyRenderUpdate();
+                break;
+            }
+            case 'party_xp': {
+                const amt = (message.data && message.data.amount) || 0;
+                if (amt > 0 && typeof window.gainXP === 'function') {
+                    window.gainXP(amt);
+                    // Message flottant XP au-dessus du joueur
+                    if (typeof window.showFloatingMessage === 'function' && typeof window.player !== 'undefined') {
+                        window.showFloatingMessage(`+${amt} XP`, window.player.x, window.player.y - 1);
+                    }
+                }
+                break;
+            }
+            case 'chat_global':
+            case 'chat_party': {
+                if (typeof window.__applyNetworkChatMessage === 'function') {
+                    window.__applyNetworkChatMessage(message);
+                }
+                // Affichage bulle au-dessus du joueur émetteur si connu
+                try {
+                    const fromName = message.data?.from;
+                    if (fromName && window.multiplayerManager) {
+                        // Si c'est nous: éviter le doublon de bulle (on l'affiche déjà côté local)
+                        if (fromName === (window.playerName || '')) break;
+                        // Trouver le joueur dans otherPlayers
+                        const other = Array.from(window.multiplayerManager.otherPlayers.values()).find(p => p.name === fromName);
+                        if (other && typeof window.createFloatingBubbleForOther === 'function') {
+                            window.createFloatingBubbleForOther(other.id, message.data?.text || '');
+                        }
+                    }
+                } catch(_) {}
+                break;
+            }
+            case 'loot_award': {
+                const loot = message.data && message.data.loot;
+                if (!loot) break;
+                // Ajouter ressources
+                if (loot.resources && Array.isArray(loot.resources)) {
+                    loot.resources.forEach(entry => {
+                        if (entry && entry.id && entry.quantity) {
+                            if (typeof window.addResourceToInventory === 'function') {
+                                window.addResourceToInventory(entry.id, entry.quantity);
+                            }
+                        }
+                    });
+                }
+                // Ajouter pecka
+                if (loot.pecka && window.player) {
+                    window.player.pecka = (window.player.pecka || 0) + loot.pecka;
+                    if (typeof window.updatePeckaDisplay === 'function') window.updatePeckaDisplay();
+                }
+                // Ouvrir/mettre à jour la fenêtre de loot agrégé
+                if (typeof window.showLootWindow === 'function') window.showLootWindow(loot);
+                break;
+            }
             case 'player_connected':
                 this.playerId = message.data.id;
                 console.log('🎯 Mon ID:', this.playerId);
@@ -107,6 +205,47 @@ class MultiplayerManager {
                 });
                 
                 console.log(`👥 ${this.otherPlayers.size} autres joueurs chargés sur cette carte`);
+                break;
+
+            case 'monster_list':
+                if (Array.isArray(message.data)) {
+                    const TILE = typeof TILE_SIZE === 'number' ? TILE_SIZE : 32;
+                    window.monsters = message.data.map(m => {
+                        const t = m.type;
+                        const name = t === 'crow' ? 'Corbeau' : (t === 'cochon' ? 'Cochon' : (t === 'slime' ? 'Slime' : (t === 'slimeboss' ? 'SlimeBoss' : (t === 'aluineeks' ? 'Aluineeks' : t))));
+                        const defaultMoveSpeed = (t === 'corbeauelite') ? 0.8 : (t === 'slimeboss') ? 0.8 : (t === 'slime') ? 0.5 : 0.5;
+                        const defaultAnimDelay = (t === 'slime') ? 200 : (t === 'slimeboss') ? 150 : 120;
+                        return {
+                            id: m.id,
+                            type: t,
+                            name,
+                            level: m.level || 1,
+                            x: m.x, y: m.y,
+                            px: m.x * TILE,
+                            py: m.y * TILE,
+                            hp: m.hp,
+                            maxHp: m.maxHp,
+                            xpValue: m.xpValue || 0,
+                            force: m.force || 0,
+                            defense: m.defense || 0,
+                            respawnMs: m.respawnMs || 30000,
+                            isDead: false,
+                            deathTime: 0,
+                            moving: false,
+                            frame: 0,
+                            state: 'idle',
+                            moveTarget: { x: m.x, y: m.y },
+                            movePath: [],
+                            moveSpeed: defaultMoveSpeed,
+                            animDelay: defaultAnimDelay,
+                            lastAnim: 0,
+                            moveCooldown: 0,
+                            stuckSince: 0
+                        };
+                    });
+                    if (typeof assignMonsterImages === 'function') assignMonsterImages();
+                    console.log(`🐉 Liste des monstres chargée: ${window.monsters.length}`);
+                }
                 break;
                 
             case 'player_joined':
@@ -161,6 +300,131 @@ class MultiplayerManager {
                     // Recevoir une attaque d'un autre joueur
                     if (typeof window.monsterSyncManager !== 'undefined') {
                         window.monsterSyncManager.handleMonsterAttack(message.data);
+                    }
+                    break;
+
+                case 'monster_hp':
+                    if (Array.isArray(window.monsters)) {
+                        const m = window.monsters.find(mm => mm.id === message.data.id);
+                        if (m) {
+                            m.hp = Math.max(0, message.data.hp);
+                        }
+                    }
+                    break;
+
+                case 'monster_positions':
+                    if (Array.isArray(window.monsters) && Array.isArray(message.data)) {
+                        const TILE = typeof TILE_SIZE === 'number' ? TILE_SIZE : 32;
+                        const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+                        const INTERP_MS = 180; // petit buffer pour lisser le mouvement
+                        message.data.forEach(pos => {
+                            const m = window.monsters.find(mm => mm.id === pos.id);
+                            if (m) {
+                                // Préparer une interpolation fluide vers la nouvelle case
+                                m.prevPx = (typeof m.px === 'number') ? m.px : pos.x * TILE;
+                                m.prevPy = (typeof m.py === 'number') ? m.py : pos.y * TILE;
+                                m.nextPx = pos.x * TILE;
+                                m.nextPy = pos.y * TILE;
+                                m.lerpStart = now;
+                                m.lerpEnd = now + INTERP_MS;
+                                // Maintenir la position logique cible
+                                m.x = pos.x;
+                                m.y = pos.y;
+                                m.moveTarget = { x: pos.x, y: pos.y };
+                                // Marquer en mouvement pendant l'interpolation pour éviter les snaps
+                                m.moving = true;
+                            }
+                        });
+                    }
+                    break;
+
+                case 'monster_paths':
+                    if (Array.isArray(window.monsters) && Array.isArray(message.data)) {
+                        const TILE = typeof TILE_SIZE === 'number' ? TILE_SIZE : 32;
+                        const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+                        message.data.forEach(evt => {
+                            const m = window.monsters.find(mm => mm.id === evt.id);
+                            if (!m || !Array.isArray(evt.path) || evt.path.length === 0) return;
+                            const per = Math.max(80, Math.min(600, Number(evt.perTileMs) || 240));
+                            // Construire des segments continus à partir de la position pixel actuelle vers chaque waypoint
+                            let sx = (typeof m.px === 'number') ? m.px : (m.x * TILE);
+                            let sy = (typeof m.py === 'number') ? m.py : (m.y * TILE);
+                            let start = now; // on ignore startAt serveur ici pour éviter désynchro horloge
+                            const segments = [];
+                            for (let i = 0; i < evt.path.length; i++) {
+                                const wp = evt.path[i];
+                                const ex = wp.x * TILE;
+                                const ey = wp.y * TILE;
+                                const end = start + per;
+                                segments.push({ sx, sy, ex, ey, start, end, tx: wp.x, ty: wp.y });
+                                sx = ex; sy = ey; start = end;
+                            }
+                            m.lerpSegments = segments;
+                            m.lerpIndex = 0;
+                            m.moving = true;
+                            // Cible logique finale pour l'affichage/IA locale (même si IA locale est off)
+                            const last = evt.path[evt.path.length - 1];
+                            m.moveTarget = { x: last.x, y: last.y };
+                            // Important: mettre à jour x/y au fil du temps dans la boucle (pas ici) pour que les événements serveur (kill par x,y) matchent
+                        });
+                    }
+                    break;
+
+                case 'dead_monsters':
+                    if (typeof window.monsterSyncManager !== 'undefined') {
+                        window.monsterSyncManager.applyDeadMonsters(message.data);
+                    }
+                    break;
+
+                case 'monster_killed':
+                    if (Array.isArray(window.monsters)) {
+                        const local = window.monsters.find(m => m.type === message.data.type && m.x === message.data.x && m.y === message.data.y && !m.isDead);
+                        if (local) {
+                            // Mettre à jour l'état local SANS renvoyer d'événement au serveur
+                            if (typeof release === 'function') release(local.x, local.y);
+                            local.isDead = true;
+                            local.hp = 0;
+                            local.deathTime = Date.now();
+                        }
+                    }
+                    break;
+
+            case 'monster_respawn':
+                    if (message.data && typeof message.data.x === 'number') {
+                        if (!Array.isArray(window.monsters)) window.monsters = [];
+                        const TILE = typeof TILE_SIZE === 'number' ? TILE_SIZE : 32;
+                        const t = message.data.type;
+                        const name = t === 'crow' ? 'Corbeau' : (t === 'cochon' ? 'Cochon' : (t === 'slime' ? 'Slime' : (t === 'slimeboss' ? 'SlimeBoss' : (t === 'aluineeks' ? 'Aluineeks' : t))));
+                        const defaultMoveSpeed = (t === 'corbeauelite') ? 0.8 : (t === 'slimeboss') ? 0.8 : (t === 'slime') ? 0.5 : 0.5;
+                        const defaultAnimDelay = (t === 'slime') ? 200 : (t === 'slimeboss') ? 150 : 120;
+                        window.monsters.push({
+                            id: message.data.id,
+                            type: t,
+                            name,
+                            level: message.data.level || 1,
+                            x: message.data.x, y: message.data.y,
+                            px: message.data.x * TILE,
+                            py: message.data.y * TILE,
+                            hp: message.data.hp || 10,
+                            maxHp: message.data.maxHp || 10,
+                            xpValue: message.data.xpValue || 0,
+                            force: message.data.force || 0,
+                            defense: message.data.defense || 0,
+                            respawnMs: message.data.respawnMs || 30000,
+                            isDead: false,
+                            deathTime: 0,
+                            moving: false,
+                            frame: 0,
+                            state: 'idle',
+                            moveTarget: { x: message.data.x, y: message.data.y },
+                            movePath: [],
+                            moveSpeed: defaultMoveSpeed,
+                            animDelay: defaultAnimDelay,
+                            lastAnim: 0,
+                            moveCooldown: 0,
+                            stuckSince: 0
+                        });
+                        if (typeof assignMonsterImages === 'function') assignMonsterImages();
                     }
                     break;
         }
@@ -221,6 +485,11 @@ class MultiplayerManager {
                 mapName: mapName
             }));
             console.log('🗺️ Changement de carte envoyé au serveur:', mapName);
+
+            // Redemander l'état des monstres morts pour la nouvelle carte
+            try {
+                this.socket.send(JSON.stringify({ type: 'request_dead_monsters', mapName }));
+            } catch(_) {}
         } else if (!this.connected) {
             console.log('❌ Impossible de changer de carte: non connecté');
         } else if (this.currentMap === mapName) {
@@ -288,6 +557,41 @@ class MultiplayerManager {
              }
             
             ctx.restore();
+
+            // Clic pour inviter dans le groupe (MVP)
+            if (!ctx.canvas._partyClickBound) {
+                ctx.canvas.addEventListener('click', (e) => {
+                    const rect = ctx.canvas.getBoundingClientRect();
+                    const mx = e.clientX - rect.left;
+                    const my = e.clientY - rect.top;
+                    // Détecter clic sur un autre joueur (tuile 32x32)
+                    for (const p of this.otherPlayers.values()) {
+                        const px = p.x * TILE_SIZE, py = p.y * TILE_SIZE;
+                        if (mx >= px && mx < px + 32 && my >= py && my < py + 32) {
+                            const confirmInvite = confirm(`Inviter ${p.name} dans le groupe ?`);
+                            if (confirmInvite) {
+                                try { this.socket.send(JSON.stringify({ type: 'party_invite', targetId: p.id })); } catch(_) {}
+                            }
+                            break;
+                        }
+                    }
+                });
+                ctx.canvas._partyClickBound = true;
+            }
+
+            // Halo uniquement pour le CHEF du groupe
+            try {
+                const isLeader = window.partyState && window.partyState.leaderId === otherPlayer.id;
+                if (isLeader) {
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(0, 200, 255, 0.8)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(x + 16, y + 16, 18, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            } catch(_) {}
         });
     }
     

@@ -160,7 +160,16 @@ function updatePlayer(ts) {
                 const baseDamage = damage;
                 // Prendre en compte la défense du monstre, minimum 1 dégât
                 const finalDamage = Math.max(1, baseDamage - (attackTarget.defense || 0));
-                attackTarget.hp -= finalDamage;
+                if (window.multiplayerManager && window.multiplayerManager.connected && window.multiplayerManager.socket && attackTarget.id) {
+                    try {
+                        window.multiplayerManager.socket.send(JSON.stringify({
+                            type: 'monster_hit',
+                            data: { id: attackTarget.id, damage: finalDamage }
+                        }));
+                    } catch(_) {}
+                } else {
+                    attackTarget.hp -= finalDamage;
+                }
                 
                 // DÉCLENCHER L'AGGRO SEULEMENT LORS D'UNE VRAIE ATTAQUE
                 attackTarget.aggro = true;
@@ -209,7 +218,7 @@ function updatePlayer(ts) {
                 }
 
                 // Monstre mort
-                if (attackTarget.hp <= 0) {
+                if (attackTarget.hp <= 0 && !(window.multiplayerManager && window.multiplayerManager.connected)) {
                     if (typeof release === "function") release(attackTarget.x, attackTarget.y);
                     
                     // Afficher l'XP gagné au-dessus du joueur

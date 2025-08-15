@@ -238,6 +238,19 @@ class MonsterSyncManager {
         }
     }
 
+    // Appliquer une liste de monstres morts fournie par le serveur
+    applyDeadMonsters(deadList) {
+        if (!Array.isArray(deadList)) return;
+        deadList.forEach(dm => {
+            // Retirer/masquer le monstre correspondant s'il existe localement
+            const local = window.monsters && window.monsters.find(m => m.type === dm.type && m.x === dm.x && m.y === dm.y && !m.isDead);
+            if (local) {
+                if (typeof release === 'function') release(local.x, local.y);
+                if (typeof killMonster === 'function') killMonster(local);
+            }
+        });
+    }
+
     // Dessiner les monstres synchronisés
     drawSyncedMonsters(ctx) {
         if (!this.isEnabled || this.syncedMonsters.size === 0) return;

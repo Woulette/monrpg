@@ -665,39 +665,31 @@ class UtilityBar {
                 }
             }
         } else {
-            console.log('❌ equipmentDatabase non disponible ou nom de potion manquant');
         }
 
         // Fallback : utiliser les stats directes de la potion
-        console.log('🔄 Fallback activé - tentative de soin direct...');
         
         if (potion.stats && potion.stats.soin) {
-            console.log('💊 Stats de soin trouvées dans la potion:', potion.stats);
             const healAmount = potion.stats.soin;
             const oldHp = window.player.hp;
             window.player.hp = Math.min(window.player.maxHp, window.player.hp + healAmount);
             const actualHeal = window.player.hp - oldHp;
             
-            console.log(`💚 Soin appliqué: ${actualHeal} HP`);
             
             if (window.showFloatingMessage) {
                 window.showFloatingMessage(`+${actualHeal} HP`, 'heal');
             }
         } else {
-            console.log('🔧 Pas de stats de soin, utilisation du soin par défaut...');
             // Si pas de stats, essayer un soin par défaut basé sur le nom
             let healAmount = 50; // Valeur par défaut
             if (potion.name && potion.name.toLowerCase().includes('basique')) {
                 healAmount = 50;
-                console.log('🎯 Potion basique détectée, soin: 50 HP');
             }
             
             // Détecter les bonnes propriétés HP
             const hpProps = this.getPlayerHpProperties();
-            console.log('🔍 Propriétés HP détectées:', hpProps);
             
             if (!hpProps.currentHp || !hpProps.maxHp) {
-                console.log('❌ Impossible de trouver les propriétés HP du joueur');
                 if (window.showFloatingMessage) {
                     window.showFloatingMessage('Erreur: propriétés HP non trouvées', 'error');
                 }
@@ -705,13 +697,11 @@ class UtilityBar {
             }
             
             const oldHp = hpProps.currentHp.value;
-            console.log(`🩺 HP avant fallback: ${oldHp}, soin: ${healAmount}, maxHP: ${hpProps.maxHp.value}`);
             
             const newHp = Math.min(hpProps.maxHp.value, oldHp + healAmount);
             hpProps.currentHp.setValue(newHp);
             const actualHeal = newHp - oldHp;
             
-            console.log(`💚 HP après fallback: ${newHp}, soin effectif: ${actualHeal}`);
             
             if (window.showFloatingMessage) {
                 window.showFloatingMessage(`+${actualHeal} HP`, 'heal');
@@ -722,7 +712,6 @@ class UtilityBar {
         this.lastPotionUse = now;
         
         // Consommer la potion
-        console.log('🍽️ Consommation de la potion...');
         
         // Consommer dans la barre utilitaire
         this.consumeItem(slotIndex, 1);
@@ -765,7 +754,6 @@ class UtilityBar {
                 if (typeof currentVal === 'number' && !isNaN(currentVal) && 
                     typeof maxVal === 'number' && !isNaN(maxVal) && maxVal > 0) {
                     
-                    console.log(`✅ Propriétés HP trouvées: ${currentProp}=${currentVal}, ${maxProp}=${maxVal}`);
                     
                     return {
                         currentHp: {
@@ -781,13 +769,11 @@ class UtilityBar {
             }
         }
         
-        console.log('❌ Aucune propriété HP valide trouvée');
         return { currentHp: null, maxHp: null };
     }
 
     // Synchroniser la consommation avec l'inventaire
     syncronizeInventoryConsumption(itemName, quantity) {
-        console.log(`🔄 Synchronisation: réduction de ${quantity} ${itemName} dans l'inventaire...`);
         // Utiliser l'API centrale si possible
         let id = null;
         if (window.equipmentDatabase) {
@@ -824,64 +810,49 @@ class UtilityBar {
 
     // Consommer un certain nombre d'objets d'un slot
     consumeItem(slotIndex, amount = 1) {
-        console.log(`🍽️ consumeItem appelé - slot ${slotIndex}, quantité: ${amount}`);
         
         if (slotIndex < 0 || slotIndex >= this.slots.length) {
-            console.log('❌ Index de slot invalide pour consommation');
             return false;
         }
         
         const slot = this.slots[slotIndex];
-        console.log('📦 Slot avant consommation:', slot);
         
         if (!slot.item || slot.quantity < amount) {
-            console.log('❌ Pas d\'objet ou quantité insuffisante');
             return false;
         }
 
         slot.quantity -= amount;
-        console.log(`🔢 Nouvelle quantité: ${slot.quantity}`);
         
         // Si plus d'objets, vider le slot
         if (slot.quantity <= 0) {
-            console.log('🗑️ Slot vidé (quantité = 0)');
             this.slots[slotIndex] = { item: null, quantity: 0 };
         }
 
-        console.log('🔄 Mise à jour de l\'affichage...');
         this.updateDisplay();
         this.saveToStorage();
         
-        console.log('✅ Objet consommé avec succès');
         return true;
     }
 
     // Mettre à jour l'affichage de la barre
     updateDisplay() {
-        console.log('🔄 Mise à jour de l\'affichage de la barre utilitaire...');
         const utilityBar = document.getElementById('utility-bar');
         if (!utilityBar) {
-            console.log('❌ Barre utilitaire non trouvée');
             return;
         }
 
         const slots = utilityBar.querySelectorAll('.utility-slot');
-        console.log(`📋 ${slots.length} slots trouvés`);
         
         slots.forEach((slotElement, index) => {
             const slot = this.slots[index];
-            console.log(`🔍 Slot ${index}:`, slot);
             
             // Vider le contenu du slot
             slotElement.innerHTML = '';
             
             if (slot && slot.item) {
-                console.log(`📦 Affichage objet dans slot ${index}:`, slot.item);
-                console.log(`🖼️ Icône de l'objet: "${slot.item.icon}"`);
                 
                 // Ajouter l'icône
                 if (slot.item.icon && (slot.item.icon.startsWith('assets/') || slot.item.icon.startsWith('http'))) {
-                    console.log(`✅ Affichage image pour slot ${index}`);
                     const img = document.createElement('img');
                     img.src = slot.item.icon;
                     img.alt = slot.item.name || 'Objet';
@@ -889,11 +860,8 @@ class UtilityBar {
                     img.title = slot.item.name || 'Objet';
                     img.style.width = '32px';
                     img.style.height = '32px';
-                    img.onerror = () => console.log(`❌ Erreur de chargement d'image: ${img.src}`);
-                    img.onload = () => console.log(`✅ Image chargée: ${img.src}`);
                     slotElement.appendChild(img);
                 } else {
-                    console.log(`✅ Affichage texte pour slot ${index}: "${slot.item.icon}"`);
                     const span = document.createElement('span');
                     span.textContent = slot.item.icon || '?';
                     span.className = 'utility-item-icon';
@@ -957,7 +925,6 @@ class UtilityBar {
         try {
             localStorage.setItem('utilityBarSlots', JSON.stringify(this.slots));
         } catch (error) {
-            console.error('Erreur lors de la sauvegarde de la barre utilitaire:', error);
         }
     }
 
@@ -972,7 +939,6 @@ class UtilityBar {
                 }
             }
         } catch (error) {
-            console.error('Erreur lors du chargement de la barre utilitaire:', error);
         }
     }
 
@@ -1023,7 +989,6 @@ window.initUtilityBar = initUtilityBar;
 // Fonction globale pour forcer la mise à jour des draggables
 window.updateUtilityBarDraggables = function() {
     if (window.utilityBar && window.utilityBar.makeInventorySlotsDrawable) {
-        console.log('🔄 Mise à jour manuelle des draggables demandée');
         window.utilityBar.makeInventorySlotsDrawable();
     }
 };

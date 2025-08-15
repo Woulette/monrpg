@@ -3,6 +3,10 @@
 
 // Fonction pour gérer le respawn des monstres
 function updateMonsterRespawn() {
+    // En multijoueur, le serveur est autoritaire → ne pas respawn côté client
+    if (window.multiplayerManager && window.multiplayerManager.connected) {
+        return;
+    }
     const currentTime = Date.now();
     const currentMap = window.currentMap;
     

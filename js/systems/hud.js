@@ -101,6 +101,7 @@ function drawHUD(ctx) {
     drawLifeBar(ctx);
     if (typeof drawXPBar === "function") drawXPBar(ctx);
     if (typeof drawMonsterInfo === "function") drawMonsterInfo(ctx); // Ajoute cette ligne
+    // Le panneau de groupe est désormais en DOM (déplaçable), pas en canvas
 }
 
 // Fonction pour afficher le nom du joueur au survol
@@ -195,6 +196,167 @@ function drawOtherPlayersNameTooltip(ctx, mouseX, mouseY) {
         }
     });
 }
+
+// === Panneau de groupe (affichage minimal à gauche du canvas) ===
+// Panneau de groupe en DOM déplaçable
+function ensurePartyDomPanel() {
+    let panel = document.getElementById('party-panel');
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'party-panel';
+        panel.style.position = 'fixed';
+        panel.style.zIndex = '1200';
+        panel.style.width = '180px';
+        panel.style.maxWidth = '35vw';
+        panel.style.background = 'rgba(28,32,40,0.92)';
+        panel.style.border = '2px solid #3fa9f5';
+        panel.style.borderRadius = '8px';
+        panel.style.color = '#fff';
+        panel.style.boxShadow = '0 6px 18px rgba(0,0,0,0.35)';
+        panel.style.userSelect = 'none';
+        panel.style.display = 'none';
+        // Position par défaut ou sauvegardée
+        const savedLeft = localStorage.getItem('party_panel_left');
+        const savedTop = localStorage.getItem('party_panel_top');
+        panel.style.left = savedLeft ? `${parseInt(savedLeft,10)}px` : '12px';
+        panel.style.top = savedTop ? `${parseInt(savedTop,10)}px` : '80px';
+
+        const header = document.createElement('div');
+        header.id = 'party-panel-header';
+        header.textContent = 'Groupe';
+        header.style.fontWeight = 'bold';
+        header.style.fontSize = '14px';
+        header.style.padding = '6px 8px';
+        header.style.cursor = 'move';
+        header.style.borderBottom = '1px solid #334455';
+
+        const body = document.createElement('div');
+        body.id = 'party-panel-body';
+        body.style.padding = '6px 8px 8px 8px';
+        body.style.display = 'flex';
+        body.style.flexDirection = 'column';
+        body.style.gap = '6px';
+
+        panel.appendChild(header);
+        panel.appendChild(body);
+        document.body.appendChild(panel);
+
+        // Drag & drop
+        (function() {
+            let dragging = false;
+            let offX = 0, offY = 0;
+            header.addEventListener('mousedown', (e) => {
+                dragging = true;
+                const rect = panel.getBoundingClientRect();
+                offX = e.clientX - rect.left;
+                offY = e.clientY - rect.top;
+                document.body.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+            window.addEventListener('mouseup', () => {
+                if (dragging) {
+                    dragging = false;
+                    document.body.style.cursor = '';
+                    // Sauvegarder position
+                    const rect = panel.getBoundingClientRect();
+                    localStorage.setItem('party_panel_left', Math.max(0, Math.floor(rect.left)));
+                    localStorage.setItem('party_panel_top', Math.max(0, Math.floor(rect.top)));
+                }
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (!dragging) return;
+                const maxL = Math.max(0, window.innerWidth - panel.offsetWidth);
+                const maxT = Math.max(0, window.innerHeight - panel.offsetHeight);
+                const newL = Math.max(0, Math.min(maxL, e.clientX - offX));
+                const newT = Math.max(0, Math.min(maxT, e.clientY - offY));
+                panel.style.left = `${newL}px`;
+                panel.style.top = `${newT}px`;
+            });
+        })();
+    }
+    return panel;
+}
+
+function updatePartyDomPanel() {
+    const panel = ensurePartyDomPanel();
+    const body = panel.querySelector('#party-panel-body');
+    if (!window.partyState || !Array.isArray(window.partyState.members) || window.partyState.members.length === 0) {
+        panel.style.display = 'none';
+        if (body) body.innerHTML = '';
+        return;
+    }
+    panel.style.display = 'block';
+    if (!body) return;
+    body.innerHTML = '';
+    // Ligne d’actions si chef
+    if (window.partyState && window.partyState.leaderId === (window.multiplayerManager?.playerId)) {
+        const actions = document.createElement('div');
+        actions.style.display = 'flex'; actions.style.gap = '6px'; actions.style.marginBottom = '6px';
+        const btnLeave = document.createElement('button'); btnLeave.textContent = 'Quitter'; btnLeave.style.cursor = 'pointer';
+        btnLeave.onclick = () => { try { window.multiplayerManager?.socket?.send(JSON.stringify({ type: 'party_leave' })); } catch(_) {} };
+        actions.appendChild(btnLeave);
+        body.appendChild(actions);
+    } else {
+        const btnLeave = document.createElement('button'); btnLeave.textContent = 'Quitter'; btnLeave.style.cursor = 'pointer'; btnLeave.style.marginBottom = '6px';
+        btnLeave.onclick = () => { try { window.multiplayerManager?.socket?.send(JSON.stringify({ type: 'party_leave' })); } catch(_) {} };
+        body.appendChild(btnLeave);
+    }
+    const members = window.partyState.members;
+    members.forEach(m => {
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.flexDirection = 'column';
+        row.style.gap = '4px';
+
+        const name = document.createElement('div');
+        name.textContent = m.name || `Joueur ${m.id}`;
+        name.style.fontSize = '12px';
+        name.style.fontWeight = (m.id === window.partyState.leaderId) ? 'bold' : 'normal';
+        name.style.color = (m.id === window.partyState.leaderId) ? '#ffd952' : '#fff';
+        // Actions chef par membre (kick/transfer)
+        if (window.partyState.leaderId === (window.multiplayerManager?.playerId) && m.id !== window.multiplayerManager?.playerId) {
+            const actions = document.createElement('div'); actions.style.display = 'flex'; actions.style.gap = '4px';
+            const btnKick = document.createElement('button'); btnKick.textContent = 'Kick'; btnKick.style.cursor = 'pointer';
+            btnKick.onclick = () => { try { window.multiplayerManager?.socket?.send(JSON.stringify({ type: 'party_kick', targetId: m.id })); } catch(_) {} };
+            const btnLead = document.createElement('button'); btnLead.textContent = 'Chef'; btnLead.style.cursor = 'pointer';
+            btnLead.onclick = () => { try { window.multiplayerManager?.socket?.send(JSON.stringify({ type: 'party_transfer_leader', targetId: m.id })); } catch(_) {} };
+            name.appendChild(actions); actions.appendChild(btnKick); actions.appendChild(btnLead);
+        }
+
+        const barWrap = document.createElement('div');
+        barWrap.style.width = '100%';
+        barWrap.style.height = '10px';
+        barWrap.style.background = '#222';
+        barWrap.style.border = '1px solid #fff';
+        const barFill = document.createElement('div');
+        barFill.style.height = '100%';
+        const info = (window.partyHp && window.partyHp.get(m.id)) || { hp: 0, maxHp: 1 };
+        const ratio = Math.max(0, Math.min(1, info.hp / Math.max(1, info.maxHp)));
+        barFill.style.width = `${Math.floor(ratio * 100)}%`;
+        barFill.style.background = ratio > 0.5 ? '#44ff44' : (ratio > 0.25 ? '#ffd952' : '#e53935');
+        barWrap.appendChild(barFill);
+
+        row.appendChild(name);
+        row.appendChild(barWrap);
+        body.appendChild(row);
+    });
+}
+
+// Demander l’état de groupe et pousser nos HP régulièrement
+window.partyRenderUpdate = function() { try { updatePartyDomPanel(); } catch(_) {} };
+setInterval(() => {
+    if (window.multiplayerManager && window.multiplayerManager.connected && window.multiplayerManager.socket && window.gameState === 'playing') {
+        // Pousser nos HP aux membres du groupe
+        if (typeof player !== 'undefined') {
+            const hp = player.life || 0; const maxHp = player.maxLife || 1;
+            try { window.multiplayerManager.socket.send(JSON.stringify({ type: 'party_member_hp', hp, maxHp })); } catch(_) {}
+        }
+        // Rafraîchir l’état si non défini
+        if (typeof window.partyState === 'undefined') {
+            try { window.multiplayerManager.socket.send(JSON.stringify({ type: 'request_party' })); } catch(_) {}
+        }
+    }
+}, 1500);
 
 // Fonction de positionnement des icônes du HUD avec pourcentages
 function positionHudIcons() {

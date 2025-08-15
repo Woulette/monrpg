@@ -893,6 +893,14 @@ function initializeGame(character) {
         }
     }
     
+    // Activer le multijoueur automatiquement et synchroniser la carte
+    if (typeof enableMultiplayer === 'function') {
+        enableMultiplayer();
+        if (typeof syncMultiplayerMap === 'function') {
+            setTimeout(() => { syncMultiplayerMap(); }, 300);
+        }
+    }
+
     // Débloquer l'inventaire après un court délai pour s'assurer que tout est initialisé
     setTimeout(() => {
         if (typeof window.debloquerInventaireEtStats === 'function') {

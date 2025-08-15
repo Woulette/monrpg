@@ -329,6 +329,16 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Touche espace pour attaquer le monstre sélectionné
         if (e.code === 'Space') {
+            // Si le chat est ouvert ou si on est dans un champ de saisie, ne pas intercepter l'espace
+            try {
+                const chatCont = document.getElementById('chat-container');
+                const chatOpen = chatCont && !chatCont.classList.contains('chat-hidden') && chatCont.style.display !== 'none';
+                const isChatInput = e.target && e.target.classList && e.target.classList.contains('chat-input');
+                const isTyping = isChatInput || (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable));
+                if (chatOpen || isTyping) {
+                    return; // laisser le chat gérer l'espace
+                }
+            } catch(_) {}
             e.preventDefault(); // Empêcher le défilement de la page
             handleSpaceAttack();
         }
@@ -667,9 +677,18 @@ function handleSpaceAttack() {
                 }
                 
                 // Appliquer les dégâts au monstre
-                const baseDamage = getPlayerAttackDamage();
+                const baseDamage = damage; // déjà critiqué
                 const finalDamage = Math.max(1, baseDamage - (attackTarget.defense || 0));
-                attackTarget.hp -= finalDamage;
+                if (window.multiplayerManager && window.multiplayerManager.connected && window.multiplayerManager.socket && attackTarget.id) {
+                    try {
+                        window.multiplayerManager.socket.send(JSON.stringify({
+                            type: 'monster_hit',
+                            data: { id: attackTarget.id, damage: finalDamage }
+                        }));
+                    } catch(_) {}
+                } else {
+                    attackTarget.hp -= finalDamage;
+                }
                 
                 // Synchroniser l'attaque en multijoueur
                 if (typeof syncMonsterAttack === 'function') {
@@ -710,7 +729,7 @@ function handleSpaceAttack() {
                 }
                 
                 // Vérifier si le monstre est mort
-                if (attackTarget.hp <= 0) {
+                if (attackTarget.hp <= 0 && !(window.multiplayerManager && window.multiplayerManager.connected)) {
                     if (typeof release === "function") release(attackTarget.x, attackTarget.y);
                     
                     // Gain d'XP

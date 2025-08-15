@@ -27,6 +27,13 @@ function initMonsters() {
             window.monsters.length = 0;
         }
         
+        // Si le multijoueur/serveur est autoritaire pour les monstres, ne pas générer localement
+        if ((window.multiplayerManager && window.multiplayerManager.connected) || window.authoritativeMonsters === true) {
+            // Le serveur enverra 'monster_list' → on n'instancie rien ici
+            if (typeof assignMonsterImages === "function") assignMonsterImages();
+            return;
+        }
+
         // ESSAYER DE CHARGER LES MONSTRES SAUVEGARDÉS D'ABORD
         if (currentMap && typeof window.loadMonstersForMap === "function") {
             const loaded = window.loadMonstersForMap(currentMap);

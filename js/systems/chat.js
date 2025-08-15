@@ -173,6 +173,22 @@ function setupEventListeners() {
                 closeChat();
             }
         }
+        // Espace: si chat ouvert mais pas focus sur input, basculer focus et insérer espace
+        if ((e.key === ' ' || e.code === 'Space')) {
+            const chatOpen = chatContainer && !chatContainer.classList.contains('chat-hidden') && chatContainer.style.display !== 'none';
+            const isInInput = e.target.classList && e.target.classList.contains('chat-input');
+            if (chatOpen && !isInInput) {
+                e.preventDefault();
+                const input = chatElements[currentTab]?.input;
+                if (input) {
+                    input.focus();
+                    const start = input.selectionStart || input.value.length;
+                    const end = input.selectionEnd || input.value.length;
+                    input.value = input.value.slice(0, start) + ' ' + input.value.slice(end);
+                    input.selectionStart = input.selectionEnd = start + 1;
+                }
+            }
+        }
     });
 }
 
@@ -192,6 +208,13 @@ function openChat() {
     if (!chatContainer) return;
     chatContainer.classList.remove('chat-hidden');
     chatContainer.style.display = 'flex';
+    // Focus sur l'input actif
+    try {
+        const input = chatElements[currentTab]?.input;
+        if (input) {
+            setTimeout(() => { input.focus(); }, 0);
+        }
+    } catch(_) {}
 }
 
 // Fermer le chat
@@ -226,11 +249,24 @@ function switchTab(tabName) {
 function handleMessage(tabName, message) {
     if (!message.trim()) return;
     const messageType = getMessageType(tabName);
-    addMessage(tabName, message, messageType);
-    
-    // Si c'est un message de jeu, l'afficher au-dessus du personnage
-    if (tabName === 'game') {
-        showPlayerMessage(message);
+    // Pour éviter le doublon (nous verrons aussi notre propre message relayé par le serveur avec "Nom: texte")
+    // on n'ajoute pas immédiatement dans la fenêtre locale. On laisse le serveur renvoyer le format unifié.
+    // Bulle locale au-dessus de la tête pour feedback immédiat
+    if (tabName === 'game') { showPlayerMessage(message); }
+
+    // Multijoueur: envoyer au serveur
+    if (window.multiplayerManager && window.multiplayerManager.connected && window.multiplayerManager.socket) {
+        try {
+            if (tabName === 'recruit') {
+                window.multiplayerManager.socket.send(JSON.stringify({ type: 'chat_party', text: message }));
+            } else if (tabName === 'trade' || tabName === 'drops') {
+                // Pour l'instant, tout part dans global
+                window.multiplayerManager.socket.send(JSON.stringify({ type: 'chat_global', text: message }));
+            } else if (tabName === 'game') {
+                // Par défaut: global
+                window.multiplayerManager.socket.send(JSON.stringify({ type: 'chat_global', text: message }));
+            }
+        } catch (_) {}
     }
 }
 
@@ -299,3 +335,17 @@ window.addRecruitMessage = addRecruitMessage;
 window.addGameMessage = addGameMessage;
 window.addSystemMessage = addSystemMessage;
 window.showPlayerMessage = showPlayerMessage; 
+
+// Réception des messages réseau (branché dans multiplayer-manager via window)
+window.__applyNetworkChatMessage = function(payload) {
+    try {
+        if (!payload || !payload.type) return;
+        if (payload.type === 'chat_global') {
+            const from = payload.data?.from || '???';
+            addMessage('game', `${from}: ${payload.data?.text || ''}`, 'player');
+        } else if (payload.type === 'chat_party') {
+            const from = payload.data?.from || '???';
+            addMessage('recruit', `[Groupe] ${from}: ${payload.data?.text || ''}`, 'player');
+        }
+    } catch(_) {}
+};
