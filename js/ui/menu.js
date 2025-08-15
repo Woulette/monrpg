@@ -11,6 +11,31 @@ let characterCreationMenu;
 let deleteConfirmMenu;
 let loadingScreen;
 let gameMenuBtn;
+let characterMenuInitialized = false;
+const API_BASE = (typeof window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : (location.hostname === 'localhost' ? 'http://localhost:3001' : '/');
+
+async function apiGetCharacters(){
+    const t = localStorage.getItem('monrpg_token');
+    const res = await fetch(API_BASE + '/characters', { headers: { 'Authorization': 'Bearer ' + t }});
+    if (!res.ok) throw new Error('Erreur /characters');
+    return res.json();
+}
+
+async function apiCreateCharacter(name, avatar){
+    const t = localStorage.getItem('monrpg_token');
+    const res = await fetch(API_BASE + '/characters', { method:'POST', headers: { 'Authorization': 'Bearer ' + t, 'Content-Type':'application/json' }, body: JSON.stringify({ name, avatar }) });
+    if (res.status === 401) { throw new Error('401'); }
+    if (!res.ok) throw new Error('Erreur création personnage');
+    return res.json();
+}
+
+async function apiDeleteCharacter(id){
+    const t = localStorage.getItem('monrpg_token');
+    const res = await fetch(API_BASE + '/characters/'+id, { method:'DELETE', headers: { 'Authorization': 'Bearer ' + t }});
+    if (res.status === 401) { throw new Error('401'); }
+    if (!res.ok) throw new Error('Erreur suppression personnage');
+    return res.json();
+}
 
 // ===== INITIALISATION =====
 window.addEventListener('DOMContentLoaded', function() {
@@ -38,31 +63,58 @@ window.addEventListener('DOMContentLoaded', function() {
         multiplayerBtn.style.display = 'none';
     }
     
-    // Charger les personnages sauvegardés
-    loadCharacterSlots();
-    
-    // Afficher le menu de sélection
-    showCharacterSelectionMenu();
-    
-    // Initialiser les événements
-    initializeEvents();
+    // Ne pas initialiser automatiquement le menu personnages au chargement.
+    // On laisse le module login gérer l'affichage: Login d'abord, puis onLoginSuccess() → menu personnages.
+    const loginScreen = document.getElementById('login-screen');
+    if (loginScreen) loginScreen.style.display = 'block';
+    return;
 });
+
+// Appelé après un login réussi côté client
+window.onLoginSuccess = function() {
+    if (characterMenuInitialized) return;
+    try {
+        // Cacher l'écran de login si présent
+        const loginScreen = document.getElementById('login-screen');
+        if (loginScreen) loginScreen.style.display = 'none';
+        // Charger et afficher le menu (attendre le chargement)
+        (async () => {
+            await loadCharacterSlots();
+            showCharacterSelectionMenu();
+            initializeEvents();
+            characterMenuInitialized = true;
+        })();
+    } catch (e) {
+        console.error('Erreur onLoginSuccess:', e);
+    }
+};
+
+// Permettre au module login de réinitialiser l'init du menu après déconnexion
+window.resetCharacterMenuInit = function(){ characterMenuInitialized = false; };
 
 // ===== GESTION DES PERSONNAGES =====
 
 // Charger les personnages depuis localStorage
-function loadCharacterSlots() {
-    
+async function loadCharacterSlots() {
     try {
-        const savedSlots = localStorage.getItem('monrpg_character_slots');
-        if (savedSlots) {
-            window.characterSlots = JSON.parse(savedSlots);
-        } else {
-            window.characterSlots = [null, null, null, null, null];
-        }
-    } catch (error) {
-        console.error('❌ Erreur lors du chargement des slots:', error);
-        window.characterSlots = [null, null, null, null, null];
+        const chars = await apiGetCharacters();
+        // Convertir liste → 5 slots (remplir depuis l’index 0)
+        const slots = [null, null, null, null, null];
+        chars.slice(0,5).forEach((c, i) => {
+            slots[i] = {
+                id: c.id,
+                name: c.name,
+                avatar: c.avatar,
+                level: 1,
+                lastPlayed: c.createdAt
+            };
+        });
+        window.characterSlots = slots;
+        // Rafraîchir l'affichage si le menu est présent
+        try { updateCharacterSlotsDisplay(); } catch(_) {}
+    } catch(error) {
+        console.error('❌ Erreur /characters:', error);
+        // Ne pas écraser les slots existants en cas d'erreur réseau
     }
 }
 
@@ -76,87 +128,19 @@ function saveCharacterSlots() {
 }
 
 // Créer un nouveau personnage
-function createCharacter(slotIndex, name, avatar) {
+async function createCharacter(slotIndex, name, avatar) {
     
-    const character = {
-        id: Date.now() + Math.random(),
-        name: name,
-        avatar: avatar,
-        level: 1,
-        xp: 0,
-        xpToNextLevel: 100,
-        life: 50,
-        maxLife: 50,
-        // Stats de base
-        baseForce: 1,
-        baseIntelligence: 1,
-        baseAgilite: 1,
-        baseDefense: 1,
-        baseChance: 1,
-        baseVitesse: 1,
-        baseVie: 1,
-        // Stats de combat
-        combatForce: 0,
-        combatIntelligence: 0,
-        combatAgilite: 0,
-        combatDefense: 0,
-        combatChance: 0,
-        combatVitesse: 0,
-        combatVie: 0,
-        // Stats d'équipement
-        equipForce: 0,
-        equipIntelligence: 0,
-        equipAgilite: 0,
-        equipDefense: 0,
-        equipChance: 0,
-        equipVitesse: 0,
-        equipVie: 0,
-        // Stats totales
-        force: 1,
-        intelligence: 1,
-        agilite: 1,
-        defense: 1,
-        chance: 1,
-        vitesse: 1,
-        vie: 1,
-        // XP des stats
-        forceXp: 0,
-        intelligenceXp: 0,
-        agiliteXp: 0,
-        defenseXp: 0,
-        chanceXp: 0,
-        vitesseXp: 0,
-        // Points et monnaie
-        statPoints: 0,
-        pecka: 0,
-        // Position de départ
-        x: 25,
-        y: 12,
-        px: 25 * 32,
-        py: 12 * 32,
-        spawnX: 25,
-        spawnY: 12,
-        // Autres propriétés
-        direction: 0,
-        frame: 0,
-        moving: false,
-        moveTarget: { x: 25, y: 12 },
-        path: [],
-        inCombat: false,
-        lastCombatTime: 0,
-        lastRegenTime: 0,
-        autoFollow: false,
-        isDead: false,
-        deathTime: 0,
-        respawnTime: 3000, // 3 secondes pour le respawn
-        // Date de création
-        createdAt: Date.now(),
-        lastPlayed: Date.now()
-    };
-    
-    // Sauvegarder dans le slot
-    window.characterSlots[slotIndex] = character;
-    saveCharacterSlots();
+    // Crée côté serveur
+    let serverChar;
+    try {
+        serverChar = await apiCreateCharacter(name, avatar);
+    } catch (e) {
+        console.error('❌ Création personnage échouée:', e);
+        // Ne pas forcer logout ici. Afficher un message si besoin, rester sur le menu.
+        return null;
+    }
+    // Recharge les slots depuis serveur
+    await loadCharacterSlots();
     
     // Réinitialiser les quêtes pour le nouveau personnage
     if (typeof window.resetQuestsToInitial === 'function') {
@@ -200,18 +184,28 @@ function createCharacter(slotIndex, name, avatar) {
     
     // Mettre à jour l'affichage des slots
     updateCharacterSlotsDisplay();
+
+    // Démarrer directement le jeu avec le personnage créé (trouve son slot réel)
+    try {
+        const idx = (window.characterSlots || []).findIndex(s => s && s.id === serverChar.id);
+        const toStart = idx >= 0 ? idx : slotIndex;
+        startGame(toStart);
+        return serverChar;
+    } catch(e) {
+        console.error('Erreur startGame après création:', e);
+        // Si échec, revenir au menu de sélection
+        showCharacterSelectionMenu();
+    }
     
-    // Retourner au menu de sélection
-    showCharacterSelectionMenu();
-    
-    return character;
+    return serverChar;
 }
 
 // Supprimer un personnage
-function deleteCharacter(slotIndex) {
+async function deleteCharacter(slotIndex) {
     
     if (window.characterSlots[slotIndex]) {
         const character = window.characterSlots[slotIndex];
+        try { await apiDeleteCharacter(character.id); } catch(e) { console.error(e); }
         
         // Supprimer toutes les données liées à ce personnage
         localStorage.removeItem(`monrpg_save_${character.id}`);
@@ -249,7 +243,17 @@ function deleteCharacter(slotIndex) {
 
 // Afficher le menu de sélection
 function showCharacterSelectionMenu() {
-    
+    // Sécurité: si pas de token, ne pas afficher le menu, montrer le login
+    try {
+        const t = localStorage.getItem('monrpg_token');
+        if (!t) {
+            const login = document.getElementById('login-screen');
+            if (login) { login.style.display = 'block'; document.body.classList.add('login-open'); }
+            if (characterSelectionMenu) characterSelectionMenu.style.display = 'none';
+            return;
+        }
+    } catch(_) {}
+
     gameState = "menu";
     characterSelectionMenu.style.display = 'flex';
     characterCreationMenu.style.display = 'none';
@@ -285,6 +289,8 @@ function showCharacterCreationMenu(slotIndex) {
     
     gameState = "creation";
     window.currentCharacterSlot = slotIndex;
+    // Bloquer l'overlay login pendant la création (évite un flash retour login si une requête lente répond)
+    window.__blockLoginOverlay = true;
     
     characterSelectionMenu.style.display = 'none';
     characterCreationMenu.style.display = 'flex';
@@ -389,14 +395,11 @@ function initializeEvents() {
     
     // Bouton de création
     if (createCharacterBtn) {
-        createCharacterBtn.addEventListener('click', function() {
-            const name = characterNameInput.value.trim();
-            const selectedAvatar = document.querySelector('.avatar-option.selected');
-            
-            if (name && selectedAvatar) {
-                const avatar = selectedAvatar.dataset.avatar;
-                createCharacter(window.currentCharacterSlot, name, avatar);
-            }
+        try { createCharacterBtn.setAttribute('type', 'button'); } catch(_){}
+        createCharacterBtn.addEventListener('click', function(e) {
+            if (e && typeof e.preventDefault === 'function') e.preventDefault();
+            if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+            handleCharacterCreation();
         });
     }
     
@@ -419,11 +422,29 @@ function initializeEvents() {
     // Input du nom
     if (characterNameInput) {
         characterNameInput.addEventListener('input', updateCreateButton);
-        characterNameInput.addEventListener('keypress', function(e) {
+        characterNameInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
-                createCharacterBtn.click();
+                if (e && typeof e.preventDefault === 'function') e.preventDefault();
+                if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+                handleCharacterCreation();
             }
         });
+    }
+    
+    // Fonction centralisée pour la création de personnage (évite la double exécution)
+    function handleCharacterCreation() {
+        const name = characterNameInput.value.trim();
+        const selectedAvatar = document.querySelector('.avatar-option.selected');
+        
+        if (name && selectedAvatar) {
+            const avatar = selectedAvatar.dataset.avatar;
+            // Protéger le flux de création (éviter overlays)
+            window.__blockLoginOverlay = true;
+            createCharacter(window.currentCharacterSlot, name, avatar).finally(() => {
+                // Si on est resté en menu (pas de startGame), on peut débloquer
+                setTimeout(() => { if (gameState !== 'playing') window.__blockLoginOverlay = false; }, 500);
+            });
+        }
     }
     
     // Boutons de confirmation de suppression
@@ -626,6 +647,7 @@ function startGame(slotIndex) {
     // NETTOYAGE CRITIQUE : Supprimer toutes les classes de menu pour débloquer l'inventaire
     document.body.classList.remove('character-menu-active', 'menu-active');
     console.log('🧹 Classes de menu nettoyées pour débloquer l\'inventaire');
+    window.__blockLoginOverlay = true;
     
     const character = window.characterSlots[slotIndex];
     if (!character) {
@@ -876,6 +898,8 @@ function initializeGame(character) {
         if (typeof window.debloquerInventaireEtStats === 'function') {
             window.debloquerInventaireEtStats();
         }
+        // Une fois le jeu lancé, on réautorise le login overlay (utile pour futures 401)
+        window.__blockLoginOverlay = false;
     }, 1000);
 }
 

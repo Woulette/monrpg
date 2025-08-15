@@ -4,10 +4,15 @@
 const WebSocket = require('ws');
 const express = require('express');
 const cors = require('cors');
+const { authRouter, requireAuth } = require('./auth');
+const { charactersRouter } = require('./characters');
 
 // Créer le serveur Express
 const app = express();
 app.use(cors());
+app.use(express.json());
+app.use('/auth', authRouter);
+app.use('/characters', charactersRouter);
 
 // Créer le serveur HTTP
 const PORT = process.env.PORT || 3001;
@@ -271,6 +276,11 @@ app.get('/', (req, res) => {
             players: Array.from(players.values()).filter(p => p.map === map).length
         }))
     });
+});
+
+// Exemple: route protégée (future API perso/inventaire)
+app.get('/protected/ping', requireAuth, (req, res) => {
+    res.json({ ok: true, user: req.user });
 });
 
 console.log('🎮 Serveur MonRPG Multijoueur prêt !');

@@ -30,6 +30,7 @@
     
 
     <!-- Charger utils.js en tout premier pour les fonctions globales -->
+    <script>window.API_BASE_URL = 'http://localhost:3001';</script>
     <script src="js/core/utils.js"></script>
     
     <!-- Charger les PNJ - ordre important pour les dépendances -->
@@ -72,12 +73,38 @@
     <script src="js/save/savemonster.js"></script>
     <!-- Charger le système de menu multi-personnages -->
     <script src="js/ui/menu.js"></script>
+    <script src="js/ui/login.js"></script>
 </head>
 <body>
+    <!-- Écran de connexion (overlay) -->
+    <div id="login-screen" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:2000;">
+      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:#2a2a3a; border:2px solid #4a4a6a; border-radius:14px; width: clamp(280px, 50vw, 420px); padding:16px; color:#eee; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+        <div style="font-weight:bold; font-size:18px; margin-bottom:10px; text-align:center;">Connexion</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div>
+            <label for="login-username" style="display:block; margin-bottom:4px;">Nom d'utilisateur</label>
+            <input id="login-username" type="text" autocomplete="username" style="width:100%; padding:8px; border-radius:8px; border:1px solid #555; background:#1f1f1f; color:#fff;">
+          </div>
+          <div>
+            <label for="login-password" style="display:block; margin-bottom:4px;">Mot de passe</label>
+            <input id="login-password" type="password" autocomplete="current-password" style="width:100%; padding:8px; border-radius:8px; border:1px solid #555; background:#1f1f1f; color:#fff;">
+          </div>
+          <div id="login-error" style="color:#ff8c6b; min-height:18px;"></div>
+          <div style="display:flex; gap:8px; justify-content:flex-end;">
+            <button id="btn-signup" style="padding:8px 12px; border-radius:8px; border:1px solid #555; background:#333; color:#eee; cursor:pointer;">Créer un compte</button>
+            <button id="btn-login" style="padding:8px 12px; border-radius:8px; border:1px solid #ffd952; background:#2c2553cc; color:#ffd952; cursor:pointer;">Se connecter</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Menu principal de sélection de personnages -->
     <div id="character-selection-menu" style="display:none;">
       <div class="menu-box character-selection-box">
-        <div class="menu-title">Sélection du personnage</div>
+        <div class="menu-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span>Sélection du personnage</span>
+          <button id="logout-btn" style="padding:6px 10px;border-radius:8px;border:1px solid #555;background:#333;color:#eee;cursor:pointer;">Déconnexion</button>
+        </div>
         <div class="character-slots">
           <div class="character-slot" data-slot="0">
             <div class="slot-content empty-slot">
@@ -127,11 +154,11 @@
             </div>
             <div id="preview-name" class="preview-name">&nbsp;</div>
           </div>
-          <div class="name-form">
+          <form class="name-form" onsubmit="return false;">
             <label class="form-label" for="character-name-input">Nom du personnage</label>
             <input id="character-name-input" type="text" maxlength="16" autocomplete="off" placeholder="Entrez votre nom..." />
-            <button id="create-character-btn" disabled>Créer le personnage</button>
-          </div>
+            <button id="create-character-btn" type="button" disabled>Créer le personnage</button>
+          </form>
         </div>
       </div>
     </div>

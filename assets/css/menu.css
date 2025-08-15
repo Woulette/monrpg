@@ -1,3 +1,23 @@
+/* Quand l'écran login est ouvert, masquer l'UI du jeu */
+body.login-open #hud-layer,
+body.login-open #spell-shortcut-bar,
+body.login-open #utility-bar,
+body.login-open #minimap-icon,
+body.login-open #inventory-modal,
+body.login-open #stats-modal,
+body.login-open #quests-main-modal,
+body.login-open #sort-modal,
+body.login-open #map-modal,
+body.login-open #gameCanvas { display: none !important; }
+
+/* Option: fond derrière le login (image ou couleur) */
+body.login-open::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, #1a1a2a 0%, #0f0f17 60%, #000 100%);
+  z-index: 1999;
+}
 /* ===== GÉNÉRAL ===== */
 body.menu-active {
   overflow: hidden;

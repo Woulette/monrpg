@@ -1,0 +1,17 @@
+{
+  "nextUserId": 3,
+  "users": {
+    "woulette": {
+      "id": 1,
+      "username": "woulette",
+      "passwordHash": "$2a$10$WHpsGqTiFsyE98v1g5G00uTuvo69s3O7cjpi8OSLG3Ot3ZeDFAY/q",
+      "createdAt": 1755181998730
+    },
+    "woulette72": {
+      "id": 2,
+      "username": "woulette72",
+      "passwordHash": "$2a$10$R76Z2fdwxtr3aVz4OiBl1u6DluFk9O5NErRxaHMsoGnsttCwXreZS",
+      "createdAt": 1755182255696
+    }
+  }
+}

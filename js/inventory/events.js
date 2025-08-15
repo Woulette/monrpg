@@ -1,6 +1,9 @@
 // Gestion des événements d'inventaire et de stats
 
 function initInventoryEvents() {
+	// Éviter les doubles/triples liaisons d'événements
+	if (window.__inventoryEventsInit) return;
+	window.__inventoryEventsInit = true;
     const icon = document.getElementById("inventory-icon");
     const statsIcon = document.getElementById("stats-icon");
     const modal = document.getElementById("inventory-modal");
@@ -10,7 +13,9 @@ function initInventoryEvents() {
 
     if (icon && modal && closeBtn) {
         icon.onclick = () => { 
-            modal.style.display = "block"; 
+            if (window.gameState === 'playing') {
+                modal.style.display = "block"; 
+            }
         };
         // Fermer par X
         closeBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); modal.style.display = "none"; };
@@ -23,6 +28,7 @@ function initInventoryEvents() {
     if (statsIcon && statsModal && closeStatsBtn) {
         // Gestion de l'icône des statistiques
         statsIcon.onclick = () => {
+            if (window.gameState !== 'playing') return;
             statsModal.style.display = "block";
             if (typeof updateStatsModalDisplay === 'function') {
                 updateStatsModalDisplay();
@@ -107,6 +113,7 @@ function initInventoryEvents() {
 
     // Touche "I"
     document.addEventListener("keydown", (e) => {
+        if (window.gameState !== 'playing') return;
         // Vérifier si on est dans un input du chat
         const isInChatInput = e.target.classList.contains('chat-input');
         
@@ -178,14 +185,16 @@ function initInventoryEvents() {
 window.initInventoryEvents = initInventoryEvents;
 
 // Exposer des helpers globaux attendus ailleurs
-window.openInventoryModal = function() {
+    window.openInventoryModal = function() {
+        if (window.gameState !== 'playing') return;
     const modal = document.getElementById('inventory-modal');
     if (modal) {
         modal.style.display = 'block';
         if (typeof updateStatsDisplay === 'function') updateStatsDisplay();
     }
 };
-window.openStatsModal = function() {
+    window.openStatsModal = function() {
+        if (window.gameState !== 'playing') return;
     const statsModal = document.getElementById('stats-modal');
     if (statsModal) {
         statsModal.style.display = 'block';
