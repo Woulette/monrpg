@@ -211,7 +211,7 @@ function computeRassemblementDamage() {
     damage += forceBonus;
     
     // Vérifier le coup critique (basé sur l'agilité)
-    const critChance = Math.min((window.player.agilite || 0) * 0.5, 25); // Max 25% de chance
+    const critChance = typeof window.getPlayerCritChance === 'function' ? window.getPlayerCritChance() : 0;
     const isCrit = Math.random() * 100 < critChance;
     
     if (isCrit) {

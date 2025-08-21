@@ -5,7 +5,7 @@ function getPlayerDamageReceived(baseDamage) {
 
 // Calcul de la chance de critique avec l'agilité
 function getPlayerCritChance() {
-    return Math.floor(player.agilite / 10) * 0.5; // 10 agilité = 0.5% critique
+    return Math.min(player.agilite * 0.5, 25); // 100 agilité = 50% critique (max 25%)
 }
 
 // Calcul des dégâts critiques avec l'agilité
@@ -15,8 +15,7 @@ function getPlayerCritDamage() {
 
 // Vérification si le joueur fait un critique
 function isPlayerCrit() {
-    return Math.random() * 100 < 1; // 1% de chance pour tester
-    // return Math.random() * 100 < getPlayerCritChance();
+    return Math.random() * 100 < getPlayerCritChance();
 }
 
 // Vérification si le joueur esquive
