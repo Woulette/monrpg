@@ -20,6 +20,10 @@
       "dest": "/js/$1"
     },
     {
+      "src": "/chat/(.*)",
+      "dest": "/chat/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
