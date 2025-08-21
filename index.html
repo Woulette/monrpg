@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon RPG 2D</title>
+    <!-- Ordre : style.css (général) → hud.css (icone inventaire) → inventory.css (modale + slots inventaire) → equipment.css (slots équipement) -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/hud.css">
+    <link rel="stylesheet" href="assets/css/inventory.css">
+    <link rel="stylesheet" href="assets/css/equipment.css">
+    <link rel="stylesheet" href="assets/css/tooltip.css">
+    <link rel="stylesheet" href="assets/css/equipment-detail.css">
+    <link rel="stylesheet" href="assets/css/loot.css">
+    <link rel="stylesheet" href="assets/css/etablie.css">
+    <link rel="stylesheet" href="assets/css/etablie-cordonnier.css">
+    <link rel="stylesheet" href="assets/css/etablie-bijoutier.css">
+    <link rel="stylesheet" href="assets/css/etablie-alchimiste.css">
+    <link rel="stylesheet" href="assets/css/metier.css">
+    <link rel="stylesheet" href="assets/css/mannequin.css">
+    <link rel="stylesheet" href="assets/css/sort.css">
+    <link rel="stylesheet" href="assets/css/utility-bar.css">
+    <link rel="stylesheet" href="assets/css/menu.css">
+    <link rel="stylesheet" href="assets/css/pnj.css">
+    <link rel="stylesheet" href="assets/css/quetes.css">
+    <link rel="stylesheet" href="assets/css/map.css">
+    <link rel="stylesheet" href="assets/css/rassemblement-preview.css">
+    <link rel="stylesheet" href="assets/css/harvesting.css">
+    <link rel="stylesheet" href="assets/css/banquier.css">
+    <link rel="stylesheet" href="assets/css/mentor.css">
+    <!-- UI responsive opt-in (chargé en DERNIER pour surcharger equipment.css & inventory.css) -->
+    <link rel="stylesheet" href="assets/css/inventory-responsive.css">
+    
+
+    <!-- Charger utils.js en tout premier pour les fonctions globales -->
+    <script>window.API_BASE_URL = 'https://monrpg.onrender.com';</script>
+    <script src="js/core/utils.js"></script>
+    
+    <!-- Charger les PNJ - ordre important pour les dépendances -->
+    <script src="js/entities/npcs/quest/papi.js"></script>
+    <!-- Charger le système des mentors -->
+    <script src="js/entities/npcs/mentors/mentorsmage.js"></script>
+    <script src="js/entities/npcs/mentors/index.js"></script>
+    <!-- Charger le système des banquiers -->
+    <script src="js/entities/npcs/banquier/index.js"></script>
+    <script src="js/entities/npcs/banquier/bank-system.js"></script>
+    <!-- Système de quêtes modulaire -->
+    <script src="js/quests/quest-definitions.js"></script>
+    <script src="js/quests/quest-logic.js"></script>
+    <script src="js/quests/quest-ui.js"></script>
+    <script src="js/quests/quests.js"></script>
+    <!-- Charger les IA partagées des monstres -->
+    <script src="js/entities/monsters/ai/passiveAI.js"></script>
+    <script src="js/entities/monsters/ai/chasePlayerAI.js"></script>
+    <script src="js/entities/monsters/ai/rangedAI.js"></script>
+    <script src="js/entities/monsters/ai/flyingAI.js"></script>
+    
+    <!-- Charger les monstres spécifiques -->
+    <script src="js/entities/monsters/slime/slime-basic.js"></script>
+    <script src="js/entities/monsters/corbeau/corbeau.js"></script>
+    <script src="js/entities/monsters/slime/slime-boss.js"></script>
+    <script src="js/entities/monsters/aluineeks/aluineeks.js"></script>
+    <script src="js/entities/monsters/cochon/cochon.js"></script>
+    
+    <!-- Charger la logique des monstres découpée -->
+    <script src="js/entities/monsters/counters.js"></script>
+    <script src="js/entities/monsters/spawn.js"></script>
+    <script src="js/entities/monsters/respawn.js"></script>
+    <script src="js/entities/monsters/combat.js"></script>
+    <script src="js/entities/monsters/core.js"></script>
+    <script src="js/entities/monsters/draw.js"></script>
+    <script src="js/entities/monsters/ai.js"></script>
+    <!-- Charger la logique de progression du donjon -->
+    <script src="js/dungeon/dungeon-progression.js"></script>
+    <!-- Charger le système de sauvegarde -->
+    <script src="js/save/save-system.js"></script>
+    <script src="js/save/saveQuests.js"></script>
+    <script src="js/save/loader.js"></script>
+    <!-- Charger le système de sauvegarde des monstres -->
+    <script src="js/save/savemonster.js"></script>
+    <!-- Charger le système de menu multi-personnages -->
+    <script src="js/ui/menu.js"></script>
+    <script src="js/ui/login.js"></script>
+</head>
+<body>
+    <!-- Écran de connexion (overlay) -->
+    <div id="login-screen" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:2000;">
+      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:#2a2a3a; border:2px solid #4a4a6a; border-radius:14px; width: clamp(280px, 50vw, 420px); padding:16px; color:#eee; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+        <div style="font-weight:bold; font-size:18px; margin-bottom:10px; text-align:center;">Connexion</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div>
+            <label for="login-username" style="display:block; margin-bottom:4px;">Nom d'utilisateur</label>
+            <input id="login-username" type="text" autocomplete="username" style="width:100%; padding:8px; border-radius:8px; border:1px solid #555; background:#1f1f1f; color:#fff;">
+          </div>
+          <div>
+            <label for="login-password" style="display:block; margin-bottom:4px;">Mot de passe</label>
+            <input id="login-password" type="password" autocomplete="current-password" style="width:100%; padding:8px; border-radius:8px; border:1px solid #555; background:#1f1f1f; color:#fff;">
+          </div>
+          <div id="login-error" style="color:#ff8c6b; min-height:18px;"></div>
+          <div style="display:flex; gap:8px; justify-content:flex-end;">
+            <button id="btn-signup" style="padding:8px 12px; border-radius:8px; border:1px solid #555; background:#333; color:#eee; cursor:pointer;">Créer un compte</button>
+            <button id="btn-login" style="padding:8px 12px; border-radius:8px; border:1px solid #ffd952; background:#2c2553cc; color:#ffd952; cursor:pointer;">Se connecter</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menu principal de sélection de personnages -->
+    <div id="character-selection-menu" style="display:none;">
+      <div class="menu-box character-selection-box">
+        <div class="menu-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span>Sélection du personnage</span>
+          <button id="logout-btn" style="padding:6px 10px;border-radius:8px;border:1px solid #555;background:#333;color:#eee;cursor:pointer;">Déconnexion</button>
+        </div>
+        <div class="character-slots">
+          <div class="character-slot" data-slot="0">
+            <div class="slot-content empty-slot">
+              <div class="slot-icon">+</div>
+              <div class="slot-text">Créer un personnage</div>
+            </div>
+          </div>
+          <div class="character-slot" data-slot="1">
+            <div class="slot-content empty-slot">
+              <div class="slot-icon">+</div>
+              <div class="slot-text">Créer un personnage</div>
+            </div>
+          </div>
+          <div class="character-slot" data-slot="2">
+            <div class="slot-content empty-slot">
+              <div class="slot-icon">+</div>
+              <div class="slot-text">Créer un personnage</div>
+            </div>
+          </div>
+          <div class="character-slot" data-slot="3">
+            <div class="slot-content empty-slot">
+              <div class="slot-icon">+</div>
+              <div class="slot-text">Créer un personnage</div>
+            </div>
+          </div>
+          <div class="character-slot" data-slot="4">
+            <div class="slot-content empty-slot">
+              <div class="slot-icon">+</div>
+              <div class="slot-text">Créer un personnage</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menu de création de personnage -->
+    <div id="character-creation-menu" style="display:none;">
+      <div class="menu-box character-creation-box">
+        <button id="back-to-selection-btn" class="back-btn" title="Retour à la sélection">&#128682;</button>
+        <div class="menu-title">Création du personnage</div>
+        <div class="creation-content">
+          <div class="avatar-selection">
+            <div class="avatar-options">
+              <img class="avatar-option" src="assets/ui/playerinventaire.png" alt="Avatar 1" data-avatar="assets/ui/playerinventaire.png" />
+              <img class="avatar-option" src="assets/personnages/player.png" alt="Avatar 2" data-avatar="assets/personnages/player.png" />
+              <img class="avatar-option" src="assets/personnages/corbeau.png" alt="Avatar 3" data-avatar="assets/personnages/corbeau.png" />
+            </div>
+            <div id="preview-name" class="preview-name">&nbsp;</div>
+          </div>
+          <form class="name-form" onsubmit="return false;">
+            <label class="form-label" for="character-name-input">Nom du personnage</label>
+            <input id="character-name-input" type="text" maxlength="16" autocomplete="off" placeholder="Entrez votre nom..." />
+            <button id="create-character-btn" type="button" disabled>Créer le personnage</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menu de confirmation de suppression -->
+    <div id="delete-confirm-menu" style="display:none;">
+      <div class="menu-box delete-confirm-box">
+        <div class="menu-title">Confirmation</div>
+        <div class="confirm-content">
+          <div class="confirm-icon">⚠️</div>
+          <div class="confirm-text">Voulez-vous vraiment supprimer ce personnage ?</div>
+          <div class="confirm-character-info">
+            <img id="confirm-avatar" src="" alt="Avatar" />
+            <div id="confirm-name"></div>
+            <div id="confirm-level"></div>
+          </div>
+          <div class="confirm-actions">
+            <button id="confirm-delete-btn" class="delete-btn">Supprimer</button>
+            <button id="cancel-delete-btn" class="cancel-btn">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Écran de chargement -->
+    <div id="loading-screen" style="display:none;">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Chargement en cours...</div>
+      </div>
+    </div>
+
+    <!-- Bouton Menu en haut à droite du jeu -->
+    <button id="game-menu-btn" style="position:fixed;top:18px;right:24px;z-index:1001;display:none;background:#ffd952;color:#23272e;font-weight:bold;font-size:1.1rem;padding:8px 18px;border-radius:8px;border:none;box-shadow:0 2px 8px #0005;cursor:pointer;">Menu</button>
+    
+    <!-- Bouton Multijoueur en haut à gauche du jeu -->
+    <button id="multiplayer-btn" style="position:fixed;top:18px;left:24px;z-index:1001;display:none;background:#4CAF50;color:white;font-weight:bold;font-size:1.1rem;padding:8px 18px;border-radius:8px;border:none;box-shadow:0 2px 8px #0005;cursor:pointer;">Multijoueur OFF</button>
+
+                                    <!-- Panneau MMO du joueur -->
+                <div id="player-mmo-panel" style="display:none; position:fixed; top:14px; left:5px; z-index:999; background:linear-gradient(135deg, #2c3e50, #34495e); border:2px solid #3498db; border-left:none; border-radius:0 10px 10px 0; padding:8px; width:162px; box-shadow:2px 0 8px rgba(0,0,0,0.3);">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <img id="player-mmo-avatar" src="assets/ui/playerinventaire.png" style="width:50px; height:50px; border-radius:50%; border:1px solid #3498db;">
+                        <div style="flex:1; min-width:0;">
+                            <div id="player-mmo-name" style="color:white; font-weight:bold; font-size:18px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Nom du joueur</div>
+                            <div id="player-mmo-level" style="color:#3498db; font-size:18px;">Niveau 1</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:6px; padding-top:6px; border-top:1px solid #34495e;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="color:#95a5a6; font-size:9px;">Multi:</span>
+                            <span id="player-mmo-status" style="color:#e74c3c; font-size:9px; font-weight:bold;">OFF</span>
+                        </div>
+                    </div>
+                </div>
+
+    <!-- Canvas du jeu -->
+    <div id="canvas-wrapper" style="position: relative; width: fit-content; margin: 0 auto;">
+        <canvas id="gameCanvas" width="1536" height="910"></canvas>
+        <div id="hud-layer">
+            <div id="minimap-icon"><span style="font-size: 1.5em; line-height: 1;">➕</span></div>
+            <div id="inventory-icon"></div>
+            <div id="stats-icon">⭐</div>
+            <div id="metier-icon">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <rect x="18" y="5" width="5" height="22" rx="2.2" fill="#bfa14a" stroke="#684726" stroke-width="2.5"/>
+                    <rect x="12" y="2" width="16" height="8" rx="2.5" fill="#8d8d8d" stroke="#684726" stroke-width="2.5"/>
+                    <rect x="19.5" y="28" width="2" height="10" rx="1.2" fill="#684726"/>
+                </svg>
+            </div>
+            <div id="quetes-icon"><span>📋</span></div>
+            <div id="sort-icon"><span style="font-size: 2em; line-height: 1;">✨</span></div>
+            <div id="map-icon"><span style="font-size: 2em; line-height: 1;">🗺️</span></div>
+        </div>
+    </div>
+
+    <!-- Fenêtre d'inventaire -->
+    <div id="inventory-modal">
+        <div id="inventory-modal-content">
+            <span id="close-inventory">&times;</span>
+
+            
+            <!-- SECTION PECKA (positionnable) -->
+            <div id="pecka-section">
+                <div class="pecka-display">
+                    <div class="pecka-icon">P</div>
+                    <div class="pecka-info">
+                        <div class="pecka-label">Pecka</div>
+                        <div class="pecka-amount" id="pecka-amount">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="equipment-container">
+                <div class="equip-slot" data-slot="coiffe" title="Coiffe"><div class="slot-icon"></div></div>
+                <div class="equip-slot" data-slot="cape" title="Cape"><div class="slot-icon"></div></div>
+                <div class="equip-slot" data-slot="amulette" title="Amulette"><div class="slot-icon"></div></div>
+                <div class="equip-slot" data-slot="arme" title="Arme"><div class="slot-icon"></div></div>
+                <div class="equip-slot" data-slot="bouclier" title="Bouclier"><div class="slot-icon"></div></div>
+                <div class="equip-slot" data-slot="ceinture" title="Ceinture"><div class="slot-icon"></div></div>
+                <div class="equip-slot" data-slot="bottes" title="Bottes"><div class="slot-icon"></div></div>
+                <div class="equip-slot" data-slot="anneau" title="Anneau"><div class="slot-icon"></div></div>
+                <img id="player-inventory-img" src="assets/ui/playerinventaire.png" alt="Joueur">
+            </div>
+
+            <!-- Panneau de détails inline (entre le player et la grille) -->
+            <div id="inline-detail-panel" style="display:none;">
+                <div class="inline-detail-header">
+                    <div class="inline-detail-title" id="inline-detail-title">Détails</div>
+                    <button class="inline-detail-close" id="inline-detail-close" title="Fermer">✕</button>
+                </div>
+                <div class="inline-detail-hero">
+                    <img id="inline-detail-image" src="" alt="aperçu" style="display:none;" />
+                </div>
+                <div class="inline-detail-info">
+                    <div class="inline-detail-row"><span class="detail-label">Catégorie:</span> <span class="detail-value" id="inline-equipment-name">-</span></div>
+                    <div class="inline-detail-row"><span class="detail-label">Type:</span> <span class="detail-value" id="inline-equipment-type">-</span></div>
+                    <div class="inline-detail-row"><span class="detail-label">Rareté:</span> <span class="detail-value" id="inline-equipment-rarity">-</span></div>
+                    <div class="inline-detail-row" id="inline-level-row" style="display:none;"><span class="detail-label">Niveau requis:</span> <span class="detail-value" id="inline-equipment-level">-</span></div>
+                </div>
+                <div class="inline-detail-stats">
+                    <div class="inline-detail-row" id="inline-force-row" style="display:none"><span class="detail-label">Force:</span> <span class="detail-value" id="inline-equipment-force">-</span></div>
+                    <div class="inline-detail-row" id="inline-intelligence-row" style="display:none"><span class="detail-label">Intelligence:</span> <span class="detail-value" id="inline-equipment-intelligence">-</span></div>
+                    <div class="inline-detail-row" id="inline-agilite-row" style="display:none"><span class="detail-label">Agilité:</span> <span class="detail-value" id="inline-equipment-agilite">-</span></div>
+                    <div class="inline-detail-row" id="inline-defense-row" style="display:none"><span class="detail-label">Défense:</span> <span class="detail-value" id="inline-equipment-defense">-</span></div>
+                    <div class="inline-detail-row" id="inline-vie-row" style="display:none"><span class="detail-label">Vie:</span> <span class="detail-value" id="inline-equipment-vie">-</span></div>
+                    <div class="inline-detail-row" id="inline-chance-row" style="display:none"><span class="detail-label">Chance:</span> <span class="detail-value" id="inline-equipment-chance">-</span></div>
+                    <div class="inline-detail-row" id="inline-vitesse-row" style="display:none"><span class="detail-label">Vitesse:</span> <span class="detail-value" id="inline-equipment-vitesse">-</span></div>
+                </div>
+                <div class="inline-detail-desc" id="inline-equipment-description">&nbsp;</div>
+
+                <!-- Section Panoplie (dynamiques) -->
+                <div id="inline-set-section" style="display:none;">
+                    <div class="inline-set-header">
+                        <div class="inline-set-title" id="inline-set-title">Panoplie</div>
+                        <div class="inline-set-progress" id="inline-set-progress">0/0</div>
+                    </div>
+                    <div class="inline-set-tabs" id="inline-set-tabs"></div>
+                    <div class="inline-set-bonuses" id="inline-set-bonuses"></div>
+                    <div class="inline-set-items" id="inline-set-items"></div>
+                </div>
+                <div class="inline-detail-actions">
+                    <button id="inline-equip-button" class="inline-detail-btn">Équiper</button>
+                    <button id="inline-unequip-button" class="inline-detail-btn">Déséquiper</button>
+                </div>
+            </div>
+
+            <!-- SECTION STATISTIQUES -->
+            <div id="stats-container">
+                <h3>Statistiques</h3>
+                <div id="stats-grid">
+                    <div class="stat-slot" data-stat="force">
+                        <div class="stat-header">
+                            <div class="stat-icon">💪</div>
+                            <div class="stat-name">Force</div>
+                        </div>
+                        <div class="stat-value" id="stat-force">1</div>
+                        <div class="stat-xp-bar">
+                            <div class="stat-xp-fill" id="stat-force-xp"></div>
+                        </div>
+                        <div class="stat-xp-text" id="stat-force-xp-text">0/10</div>
+                    </div>
+                    
+                    <div class="stat-slot" data-stat="intelligence">
+                        <div class="stat-header">
+                            <div class="stat-icon">🧠</div>
+                            <div class="stat-name">Intelligence</div>
+                        </div>
+                        <div class="stat-value" id="stat-intelligence">1</div>
+                        <div class="stat-xp-bar">
+                            <div class="stat-xp-fill" id="stat-intelligence-xp"></div>
+                        </div>
+                        <div class="stat-xp-text" id="stat-intelligence-xp-text">0/10</div>
+                    </div>
+                    
+                    <div class="stat-slot" data-stat="agilite">
+                        <div class="stat-header">
+                            <div class="stat-icon">⚡</div>
+                            <div class="stat-name">Agilité</div>
+                        </div>
+                        <div class="stat-value" id="stat-agilite">1</div>
+                        <div class="stat-xp-bar">
+                            <div class="stat-xp-fill" id="stat-agilite-xp"></div>
+                        </div>
+                        <div class="stat-xp-text" id="stat-agilite-xp-text">0/10</div>
+                    </div>
+                    
+                    <div class="stat-slot" data-stat="defense">
+                        <div class="stat-header">
+                            <div class="stat-icon">🛡️</div>
+                            <div class="stat-name">Défense</div>
+                        </div>
+                        <div class="stat-value" id="stat-defense">1</div>
+                        <div class="stat-xp-bar">
+                            <div class="stat-xp-fill" id="stat-defense-xp"></div>
+                        </div>
+                        <div class="stat-xp-text" id="stat-defense-xp-text">0/10</div>
+                    </div>
+                    
+                    <div class="stat-slot" data-stat="chance">
+                        <div class="stat-header">
+                            <div class="stat-icon">🍀</div>
+                            <div class="stat-name">Chance</div>
+                        </div>
+                        <div class="stat-value" id="stat-chance">1</div>
+                        <div class="stat-xp-bar">
+                            <div class="stat-xp-fill" id="stat-chance-xp"></div>
+                        </div>
+                        <div class="stat-xp-text" id="stat-chance-xp-text">Équipement</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRILLE + BARRE DE CATÉGORIES (dans le même bloc) -->
+            <div id="inventory-grid-container">
+                <div id="inventory-categories">
+                    <button class="inventory-tab active" data-category="all" title="Tout">
+                        <img src="assets/ui/tout.png" alt="Tout" style="width:40px;height:32px;">
+                    </button>
+                    <button class="inventory-tab" data-category="equipement" title="Équipements">🗡️</button>
+                    <button class="inventory-tab" data-category="potions" title="Potions">🧪</button>
+                    <button class="inventory-tab" data-category="ressources" title="Ressources">🌿</button>
+                    <div id="inventory-trash-tab" title="Supprimer (glisser-déposer)">🗑️</div>
+    
+                </div>
+                <div id="inventory-grid">
+                  <!-- Les slots seront générés en JS -->
+                </div>
+                
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation suppression (poubelle) -->
+    <div id="trash-confirm-modal" style="display:none;">
+      <div id="trash-confirm-content">
+        <div class="trash-confirm-title">Supprimer l'objet</div>
+        <div class="trash-confirm-body">
+          <div class="trash-item-name" id="trash-item-name">Item</div>
+          <div class="trash-qty-row">
+            <label for="trash-qty-input">Quantité:</label>
+            <input type="number" id="trash-qty-input" min="1" step="1" inputmode="numeric" pattern="[0-9]*" placeholder="Quantité" />
+          </div>
+          <div class="trash-warning">Attention: suppression définitive</div>
+        </div>
+        <div class="trash-confirm-actions">
+          <button id="trash-cancel-btn">Annuler</button>
+          <button id="trash-confirm-btn">Supprimer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fenêtre des statistiques -->
+    <div id="stats-modal">
+        <div id="stats-modal-content">
+            <span id="close-stats">&times;</span>
+            <h2>Statistiques du Personnage</h2>
+            
+            <div id="player-level-section">
+                <h3>Niveau du Joueur</h3>
+                <div class="level-display">
+                    <span class="level-label">Niveau:</span>
+                    <span class="level-value" id="player-level">1</span>
+                </div>
+                <div class="xp-display">
+                    <span class="xp-label">Expérience:</span>
+                    <div class="xp-bar">
+                        <div class="xp-fill" id="player-xp-fill"></div>
+                    </div>
+                    <span class="xp-text" id="player-xp-text">0/10</span>
+                </div>
+                <div class="stat-points-display">
+                    <span class="stat-points-label">Points à distribuer:</span>
+                    <span class="stat-points-value" id="stat-points-value">0</span>
+                </div>
+            </div>
+
+            <div id="stats-grid-modal">
+                <div class="stat-slot-modal" data-stat="vie">
+                    <div class="stat-header-modal">
+                        <div class="stat-icon-modal">❤️</div>
+                        <div class="stat-name-modal">Vie</div>
+                    </div>
+                    <div class="stat-controls">
+                        <button class="stat-btn stat-minus" data-stat="vie">-</button>
+                        <div class="stat-value-modal" id="stat-vie-modal">1</div>
+                        <button class="stat-btn stat-plus" data-stat="vie">+</button>
+                    </div>
+                    <div class="stat-xp-bar-modal">
+                        <div class="stat-xp-fill-modal" id="stat-vie-xp-modal"></div>
+                    </div>
+                    <div class="stat-xp-text-modal" id="stat-vie-xp-text-modal">Caractéristiques</div>
+                </div>
+                <div class="stat-slot-modal" data-stat="force">
+                    <div class="stat-header-modal">
+                        <div class="stat-icon-modal">💪</div>
+                        <div class="stat-name-modal">Force</div>
+                    </div>
+                    <div class="stat-controls">
+                        <button class="stat-btn stat-minus" data-stat="force">-</button>
+                        <div class="stat-value-modal" id="stat-force-modal">1</div>
+                        <button class="stat-btn stat-plus" data-stat="force">+</button>
+                    </div>
+                    <div class="stat-xp-bar-modal">
+                        <div class="stat-xp-fill-modal" id="stat-force-xp-modal"></div>
+                    </div>
+                    <div class="stat-xp-text-modal" id="stat-force-xp-text-modal">0/10</div>
+                </div>
+                
+                <div class="stat-slot-modal" data-stat="intelligence">
+                    <div class="stat-header-modal">
+                        <div class="stat-icon-modal">🧠</div>
+                        <div class="stat-name-modal">Intelligence</div>
+                    </div>
+                    <div class="stat-controls">
+                        <button class="stat-btn stat-minus" data-stat="intelligence">-</button>
+                        <div class="stat-value-modal" id="stat-intelligence-modal">1</div>
+                        <button class="stat-btn stat-plus" data-stat="intelligence">+</button>
+                    </div>
+                    <div class="stat-xp-bar-modal">
+                        <div class="stat-xp-fill-modal" id="stat-intelligence-xp-modal"></div>
+                    </div>
+                    <div class="stat-xp-text-modal" id="stat-intelligence-xp-text-modal">0/10</div>
+                </div>
+                
+                <div class="stat-slot-modal" data-stat="agilite">
+                    <div class="stat-header-modal">
+                        <div class="stat-icon-modal">⚡</div>
+                        <div class="stat-name-modal">Agilité</div>
+                    </div>
+                    <div class="stat-controls">
+                        <button class="stat-btn stat-minus" data-stat="agilite">-</button>
+                        <div class="stat-value-modal" id="stat-agilite-modal">1</div>
+                        <button class="stat-btn stat-plus" data-stat="agilite">+</button>
+                    </div>
+                    <div class="stat-xp-bar-modal">
+                        <div class="stat-xp-fill-modal" id="stat-agilite-xp-modal"></div>
+                    </div>
+                    <div class="stat-xp-text-modal" id="stat-agilite-xp-text-modal">0/10</div>
+                </div>
+                
+                <div class="stat-slot-modal" data-stat="defense">
+                    <div class="stat-header-modal">
+                        <div class="stat-icon-modal">🛡️</div>
+                        <div class="stat-name-modal">Défense</div>
+                    </div>
+                    <div class="stat-controls">
+                        <button class="stat-btn stat-minus" data-stat="defense">-</button>
+                        <div class="stat-value-modal" id="stat-defense-modal">1</div>
+                        <button class="stat-btn stat-plus" data-stat="defense">+</button>
+                    </div>
+                    <div class="stat-xp-bar-modal">
+                        <div class="stat-xp-fill-modal" id="stat-defense-xp-modal"></div>
+                    </div>
+                    <div class="stat-xp-text-modal" id="stat-defense-xp-text-modal">0/10</div>
+                </div>
+                
+                <div class="stat-slot-modal" data-stat="chance">
+                    <div class="stat-header-modal">
+                        <div class="stat-icon-modal">🍀</div>
+                        <div class="stat-name-modal">Chance</div>
+                    </div>
+                    <div class="stat-controls">
+                        <button class="stat-btn stat-minus" data-stat="chance">-</button>
+                        <div class="stat-value-modal" id="stat-chance-modal">1</div>
+                        <button class="stat-btn stat-plus" data-stat="chance">+</button>
+                    </div>
+                    <div class="stat-xp-bar-modal">
+                        <div class="stat-xp-fill-modal" id="stat-chance-xp-modal"></div>
+                    </div>
+                    <div class="stat-xp-text-modal" id="stat-chance-xp-text-modal">Équipement</div>
+                </div>
+                
+                <div class="stat-slot-modal" data-stat="vitesse">
+                    <div class="stat-header-modal">
+                        <div class="stat-icon-modal">🏃</div>
+                        <div class="stat-name-modal">Vitesse</div>
+                    </div>
+                    <div class="stat-controls">
+                        <button class="stat-btn stat-minus" data-stat="vitesse">-</button>
+                        <div class="stat-value-modal" id="stat-vitesse-modal">1</div>
+                        <button class="stat-btn stat-plus" data-stat="vitesse">+</button>
+                    </div>
+                    <div class="stat-xp-bar-modal">
+                        <div class="stat-xp-fill-modal" id="stat-vitesse-xp-modal"></div>
+                    </div>
+                    <div class="stat-xp-text-modal" id="stat-vitesse-xp-text-modal">Caractéristiques</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fenêtre détaillée de l'équipement -->
+    <div id="equipment-detail-modal">
+        <div id="equipment-detail-content">
+            <div id="equipment-detail-header">
+                <span id="close-equipment-detail">&times;</span>
+                <h2 id="equipment-detail-title">Détails de l'Équipement</h2>
+            </div>
+            
+            <div id="equipment-detail-info">
+                <div class="equipment-detail-section">
+                    <h3>Informations</h3>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Catégorie:</span>
+                        <span class="detail-value" id="equipment-name">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Type:</span>
+                        <span class="detail-value" id="equipment-type">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Rareté:</span>
+                        <span class="detail-value" id="equipment-rarity">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Niveau requis:</span>
+                        <span class="detail-value" id="equipment-level">-</span>
+                    </div>
+                </div>
+                
+                <div class="equipment-detail-section">
+                    <h3>Statistiques</h3>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Force:</span>
+                        <span class="detail-value" id="equipment-force">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Intelligence:</span>
+                        <span class="detail-value" id="equipment-intelligence">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Agilité:</span>
+                        <span class="detail-value" id="equipment-agilite">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Défense:</span>
+                        <span class="detail-value" id="equipment-defense">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Vie:</span>
+                        <span class="detail-value" id="equipment-vie">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Chance:</span>
+                        <span class="detail-value" id="equipment-chance">-</span>
+                    </div>
+                    <div class="equipment-detail-row">
+                        <span class="detail-label">Vitesse:</span>
+                        <span class="detail-value" id="equipment-vitesse">-</span>
+                    </div>
+                </div>
+                
+                <div class="equipment-detail-section">
+                    <h3>Description</h3>
+                    <div class="equipment-description" id="equipment-description">-</div>
+                </div>
+            </div>
+            
+            <div id="equipment-detail-actions">
+                <button id="equip-button" class="equipment-action-btn">Équiper</button>
+                <button id="unequip-button" class="equipment-action-btn">Déséquiper</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fenêtre des sorts -->
+    <div id="sort-modal">
+      <div id="sort-modal-content">
+        <span id="close-sort-modal">&times;</span>
+        <div class="sort-main">
+          <div class="sort-list">
+            <div class="sort-row selected" id="sort-punch-row">
+              <span class="sort-row-icon">👊</span>
+              <span class="sort-row-name">Coup de poing</span>
+            </div>
+            <div class="sort-row" id="sort-doublepunch-row">
+              <span class="sort-row-icon" style="margin-left: 18px;">👊<span style="margin-left:6px; margin-right:32px;">💥</span></span>
+              <span class="sort-row-name">Coup de poing explosif</span>
+            </div>
+            <div class="sort-row" id="sort-triplepunch-row">
+              <span class="sort-row-icon">
+                <img src="assets/sorts/triplecoupdepoing.png" alt="Triple Coup de Poing" style="width: 24px; height: 24px;">
+              </span>
+              <span class="sort-row-name">Triple Coup de Poing</span>
+            </div>
+                      <div class="sort-row" id="sort-poingheal-row">
+            <img src="assets/sorts/poingheal.png" alt="Poingheal" class="sort-row-icon">
+            <span class="sort-row-name">Poingheal</span>
+          </div>
+                      <div class="sort-row" id="sort-rassemblement-row">
+                         <img src="assets/sorts/rassemblement.png" alt="Rassemblement" class="sort-row-icon">
+            <span class="sort-row-name">Rassemblement</span>
+          </div>
+            <!-- D'autres sorts viendront ici -->
+          </div>
+          <div class="sort-damage-panel" id="sort-damage-panel-punch">
+            <div class="sort-detail-level sort-detail-level-centered">
+              <span class="sort-detail-level-label">Niveau requis :</span> <span class="sort-detail-level-star">⭐ 1</span>
+            </div>
+            <div class="sort-detail-header sort-detail-header-left">
+              <span class="sort-detail-icon">👊</span>
+              <span class="sort-detail-name">Coup de poing</span>
+            </div>
+            <p class="sort-desc">Un coup simple mais efficace.</p>
+            <div class="sort-detail-row sort-detail-row-punch">
+              <span class="sort-detail-damage-label">Dégâts :</span>
+              <span class="sort-detail-damage-value">3-6</span>
+              <span class="sort-detail-damage-icon">💥</span>
+            </div>
+            <div class="sort-upgrade-slots sort-upgrade-slots-punch">
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+            </div>
+          </div>
+                      <div class="sort-damage-panel" id="sort-damage-panel-explosive" style="display:none;">
+            <div class="sort-detail-level sort-detail-level-centered">
+              <span class="sort-detail-level-label">Niveau requis :</span> <span class="sort-detail-level-star">⭐ 3</span>
+            </div>
+            <div class="sort-detail-header sort-detail-header-left">
+              <span class="sort-detail-icon">👊<span style='margin-left:6px;'>💥</span></span>
+              <span class="sort-detail-name">Coup de poing explosif</span>
+            </div>
+            <p class="sort-desc">Un coup puissant qui explose à l'impact. Inflige de lourds dégâts.</p>
+            <div class="sort-detail-row sort-detail-row-explosive">
+              <span class="sort-detail-damage-label">Dégâts :</span>
+              <span class="sort-detail-damage-value">12-20</span>
+              <span class="sort-detail-damage-icon">💥</span>
+            </div>
+            <div class="sort-upgrade-slots sort-upgrade-slots-explosive">
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+            </div>
+          </div>
+          <div class="sort-damage-panel" id="sort-damage-panel-triple" style="display:none;">
+            <div class="sort-detail-level sort-detail-level-centered">
+              <span class="sort-detail-level-label">Niveau requis :</span> <span class="sort-detail-level-star">⭐ 7</span>
+            </div>
+            <div class="sort-detail-header sort-detail-header-left">
+              <span class="sort-detail-icon">
+                <img src="assets/sorts/triplecoupdepoing.png" alt="Triple Coup de Poing" style="width: 32px; height: 32px;">
+              </span>
+              <span class="sort-detail-name">Triple Coup de Poing</span>
+            </div>
+            <p class="sort-desc">Un enchaînement de trois coups rapides et précis. Inflige des dégâts multiples.</p>
+            <div class="sort-detail-row sort-detail-row-triple">
+              <span class="sort-detail-damage-label">Dégâts :</span>
+              <span class="sort-detail-damage-value">6-10 (x3)</span>
+              <span class="sort-detail-damage-icon">💥</span>
+            </div>
+            <div class="sort-upgrade-slots sort-upgrade-slots-triple">
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+            </div>
+          </div>
+          <div class="sort-damage-panel" id="sort-damage-panel-poingheal" style="display:none;">
+            <div class="sort-detail-level sort-detail-level-centered">
+              <span class="sort-detail-level-label">Niveau requis :</span> <span class="sort-detail-level-star">⭐ 15</span>
+            </div>
+                         <div class="sort-detail-header sort-detail-header-left">
+               <img src="assets/sorts/poingheal.png" alt="Poingheal" class="sort-detail-icon">
+               <span class="sort-detail-name">Poingheal</span>
+             </div>
+            <p class="sort-desc">Un coup de poing qui soigne le lanceur de 20% des dégâts infligés.</p>
+            <div class="sort-detail-row sort-detail-row-poingheal">
+              <span class="sort-detail-damage-label">Dégâts :</span>
+              <span class="sort-detail-damage-value">10-15</span>
+              <span class="sort-detail-damage-icon">💥</span>
+            </div>
+            <div class="sort-detail-row sort-detail-row-poingheal">
+              <span class="sort-detail-damage-label">Soin :</span>
+              <span class="sort-detail-damage-value">20% des dégâts</span>
+              <span class="sort-detail-damage-icon">💚</span>
+            </div>
+            <div class="sort-upgrade-slots sort-upgrade-slots-poingheal">
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+            </div>
+          </div>
+          <div class="sort-damage-panel" id="sort-damage-panel-rassemblement" style="display:none;">
+            <div class="sort-detail-level sort-detail-level-centered">
+              <span class="sort-detail-level-label">Niveau requis :</span> <span class="sort-detail-level-star">⭐ 20</span>
+            </div>
+            <div class="sort-detail-header sort-detail-header-left">
+                               <img src="assets/sorts/rassemblement.png" alt="Rassemblement" class="sort-detail-icon">
+              <span class="sort-detail-name">Rassemblement</span>
+            </div>
+            <p class="sort-desc">Un sort puissant qui rassemble les ennemis proches vers le point d'impact.</p>
+                           <div class="sort-detail-row sort-detail-row-rassemblement">
+                 <span class="sort-detail-damage-label">Dégâts :</span>
+                 <span class="sort-detail-damage-value">10-15</span>
+                 <span class="sort-detail-damage-icon">💥</span>
+               </div>
+            <div class="sort-detail-row sort-detail-row-rassemblement">
+              <span class="sort-detail-damage-label">Effet :</span>
+              <span class="sort-detail-damage-value">Rassemble les ennemis</span>
+              <span class="sort-detail-damage-icon">🌪️</span>
+            </div>
+            <div class="sort-upgrade-slots sort-upgrade-slots-rassemblement">
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+              <div class="sort-upgrade-slot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="spell-shortcut-bar">
+      <div class="spell-slot" id="spell-slot-1">
+        <span class="spell-icon">👊</span>
+        <span class="spell-cooldown" id="cooldown-1"></span>
+      </div>
+      <div class="spell-slot" id="spell-slot-2">
+        <span class="spell-icon">👊<span style='margin-left:4px;'>💥</span></span>
+        <span class="spell-cooldown" id="cooldown-2"></span>
+      </div>
+      <div class="spell-slot" id="spell-slot-3">
+        <img src="assets/sorts/triplecoupdepoing.png" alt="Triple Coup de Poing" style="width: 24px; height: 24px;">
+        <span class="spell-cooldown" id="cooldown-3"></span>
+      </div>
+                 <div class="spell-slot" id="spell-slot-4">
+             <img src="assets/sorts/poingheal.png" alt="Poingheal" class="spell-icon">
+             <span class="spell-cooldown" id="cooldown-4"></span>
+           </div>
+                 <div class="spell-slot" id="spell-slot-5">
+                           <img src="assets/sorts/rassemblement.png" alt="Rassemblement" class="spell-icon">
+             <span class="spell-cooldown" id="cooldown-5"></span>
+           </div>
+      <div class="spell-slot empty"></div>
+      <div class="spell-slot empty"></div>
+      <div class="spell-slot empty"></div>
+      <div class="spell-slot empty"></div>
+      <div class="spell-slot empty"></div>
+      <div class="spell-slot empty"></div>
+      <div class="spell-slot empty"></div>
+      <div class="spell-slot empty"></div>
+    </div>
+
+    <!-- Barre utilitaire latérale -->
+    <div id="utility-bar">
+      <div class="utility-slot empty" title="Slot utilitaire 1"></div>
+      <div class="utility-slot empty" title="Slot utilitaire 2"></div>
+      <div class="utility-slot empty" title="Slot utilitaire 3"></div>
+      <div class="utility-slot empty" title="Slot utilitaire 4"></div>
+      <div class="utility-slot empty" title="Slot utilitaire 5"></div>
+      <div class="utility-slot empty" title="Slot utilitaire 6"></div>
+      <div class="utility-slot empty" title="Slot utilitaire 7"></div>
+      <div class="utility-slot empty" title="Slot utilitaire 8"></div>
+    </div>
+
+    <!-- Modal d'amélioration de sorts -->
+    <div id="spell-upgrade-modal" class="spell-upgrade-modal">
+        <div class="spell-upgrade-header">
+            <div class="spell-upgrade-title">Amélioration de Sort</div>
+            <button class="spell-upgrade-close" id="close-spell-upgrade">&times;</button>
+        </div>
+        <div class="spell-upgrade-content">
+            <div class="spell-upgrade-orbe">
+                <img src="assets/objets/orbesatypiquesortniveau10.png" alt="Orbe Atypique Sort" id="spell-upgrade-orbe-img">
+            </div>
+            <div class="spell-upgrade-text" id="spell-upgrade-text">
+                Voulez-vous équiper votre orbe atypique ?
+            </div>
+            <div class="spell-upgrade-buttons">
+                <button class="spell-upgrade-btn spell-upgrade-btn-yes" id="spell-upgrade-yes">Oui</button>
+                <button class="spell-upgrade-btn spell-upgrade-btn-no" id="spell-upgrade-no">Non</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fenêtre principale des quêtes -->
+    <div id="quests-main-modal">
+        <div id="quests-main-content">
+            <div class="quests-header">
+                <div class="quests-title">Journal de Quêtes</div>
+                <button class="quests-close" id="close-quests-modal">✕</button>
+            </div>
+            <div class="quests-body">
+                <div class="quests-tabs">
+                    <div class="quest-tab active" data-tab="all">
+                        Toutes
+                        <span class="quest-tab-count" id="count-all">0</span>
+                    </div>
+                    <div class="quest-tab" data-tab="available">
+                        Disponibles
+                        <span class="quest-tab-count" id="count-available">0</span>
+                    </div>
+                    <div class="quest-tab" data-tab="active">
+                        En cours
+                        <span class="quest-tab-count" id="count-active">0</span>
+                    </div>
+                    <div class="quest-tab" data-tab="completed">
+                        Terminées
+                        <span class="quest-tab-count" id="count-completed">0</span>
+                    </div>
+                </div>
+                <div class="quests-list" id="quests-list">
+                    <!-- Les quêtes seront générées dynamiquement ici -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de dialogue des banquiers -->
+    <div id="banquier-dialog-modal">
+        <div id="banquier-dialog-content">
+            <div class="banquier-dialog-header">
+                <div class="banquier-dialog-icon">
+                    <img id="banquier-dialog-icon-img" src="assets/pnj/banquier.png" alt="Banquier">
+                </div>
+                <div class="banquier-dialog-name" id="banquier-dialog-name">Banquier</div>
+                <button class="banquier-dialog-close" id="banquier-dialog-close">&times;</button>
+            </div>
+            <div class="banquier-dialog-text" id="banquier-dialog-text">
+                Bienvenue ! Je peux vous aider avec vos affaires bancaires.
+            </div>
+            <div class="banquier-dialog-buttons">
+                <button class="banquier-dialog-button" id="banquier-dialog-open-bank">Ouvrir la banque</button>
+                <button class="banquier-dialog-button" id="banquier-dialog-close-btn">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de la banque -->
+    <div id="bank-modal">
+        <div id="bank-content">
+            <div class="bank-header">
+                <div class="bank-title">🏦 Banque</div>
+                <button class="bank-close" id="bank-close">&times;</button>
+            </div>
+            
+            <div class="bank-body">
+                <!-- Section banque (gauche) -->
+                <div class="bank-section">
+                    <h3>🏛️ Stockage de la Banque</h3>
+                    <div class="bank-inventory-container">
+                        <!-- Catégories d'inventaire pour la banque -->
+                        <div class="bank-inventory-categories">
+                            <button class="bank-inventory-tab active" data-category="all" title="Tout">
+                                <img src="assets/ui/tout.png" alt="Tout" style="width:32px;height:26px;">
+                            </button>
+                            <button class="bank-inventory-tab" data-category="equipement" title="Équipements">🗡️</button>
+                            <button class="bank-inventory-tab" data-category="potions" title="Potions">🧪</button>
+                            <button class="bank-inventory-tab" data-category="ressources" title="Ressources">🌿</button>
+                        </div>
+                        
+                        <div id="bank-inventory-grid" class="bank-inventory-grid">
+                            <!-- Les slots de la banque seront générés dynamiquement -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section inventaire du joueur (droite) -->
+                <div class="bank-section">
+                    <h3>💼 Mon Inventaire</h3>
+                    <div class="player-inventory-container">
+                        <!-- Catégories d'inventaire -->
+                        <div class="bank-inventory-categories">
+                            <button class="bank-inventory-tab active" data-category="all" title="Tout">
+                                <img src="assets/ui/tout.png" alt="Tout" style="width:32px;height:26px;">
+                            </button>
+                            <button class="bank-inventory-tab" data-category="equipement" title="Équipements">🗡️</button>
+                            <button class="bank-inventory-tab" data-category="potions" title="Potions">🧪</button>
+                            <button class="bank-inventory-tab" data-category="ressources" title="Ressources">🌿</button>
+                        </div>
+                        
+                        <!-- Grille de l'inventaire du joueur -->
+                        <div id="player-inventory-bank-grid" class="player-inventory-bank-grid">
+                            <!-- Les slots de l'inventaire seront générés dynamiquement -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS à charger en dernier (sauf utils.js et monsters/ déjà chargés dans le head) -->
+<script src="js/systems/hud.js"></script>
+<script src="js/systems/display.js"></script>
+<script src="js/systems/input.js"></script>
+<script src="js/systems/dev-utils.js"></script>
+<script src="js/core/pathfinding.js"></script>
+<script src="js/entities/player/constants.js"></script>
+<script src="js/entities/player/stats.js"></script>
+<script src="js/entities/player/combat.js"></script>
+<script src="js/entities/player/movement.js"></script>
+<script src="js/entities/player/bubbles.js"></script>
+<script src="js/entities/player/respawn.js"></script>
+<script src="js/entities/player/interaction.js"></script>
+<script src="js/entities/player/update.js"></script>
+<script src="js/entities/player/main.js"></script>
+<script src="js/core/collision.js"></script>
+<script src="js/tools/tileset.js"></script>
+
+<script src="js/core/map.js"></script>
+    <!-- MODULES RESTRUCTURÉS MAIN.JS -->
+    <script src="js/systems/spell-utils.js"></script>
+    <script src="js/systems/boss-rewards.js"></script>
+    <script src="js/systems/house-chest.js"></script>
+    <!-- Charger le noyau des sorts et les modules AVANT main.js pour compatibilité -->
+    <script src="js/sort/core.js"></script>
+    <script src="js/sort/punch.js"></script>
+    <script src="js/sort/explosivePunch.js"></script>
+    <script src="js/sort/triplePunch.js"></script>
+    <script src="js/sort/poingheal.js"></script>
+    <script src="js/sort/rassemblement.js"></script>
+    <script src="js/sort/ui.js"></script>
+    <script src="js/core/main.js"></script>
+<script src="js/inventory/loader.js"></script>
+<script src="js/inventory/grid.js"></script>
+<script src="js/inventory/items.js"></script>
+<script src="js/inventory/tooltips.js"></script>
+<script src="js/inventory/equipment-display.js"></script>
+<script src="js/inventory/stats-display.js"></script>
+<script src="js/inventory/main.js"></script>
+<script src="js/inventory/events.js"></script>
+<script src="js/systems/chat.js"></script>
+<script src="js/systems/floating-chat.js"></script>
+<script src="js/systems/damage-display.js"></script>
+<script src="js/systems/equipment-system.js"></script>
+<script src="js/systems/loot-system.js"></script>
+<script src="js/systems/potion-system.js"></script>
+    <script src="js/systems/equipment-sets.js"></script>
+
+<script src="js/systems/utility-bar.js"></script>
+<script src="js/systems/minimap.js"></script>
+<script src="js/systems/map-system.js"></script>
+<script src="js/systems/party.js"></script>
+
+<!-- SYSTÈME BANCAIRE -->
+<!-- Les banquiers sont déjà chargés via js/entities/npcs/banquier/index.js dans le head -->
+
+        <script src="js/metier/etablie.js"></script>
+    <script src="js/metier/etabliealchimiste.js"></script>
+    <script src="js/metier/craftalchimiste.js"></script>
+    <script src="js/metier/fusionalchimiste.js"></script>
+        <script src="js/metier/niveaudemetier.js"></script>
+        <script src="js/metier/ressource-paysan.js"></script>
+        <script src="js/metier/etabliepaysan.js"></script>
+        <script src="js/metier/manequin.js"></script>
+        <script src="js/metier/ressource-alchimiste.js"></script>
+        <script src="js/metier/corbac-items-fix.js"></script>
+        <script src="multiplayer/client/player-name-manager.js"></script>
+        <script src="multiplayer/client/multiplayer-manager.js"></script>
+        <script src="multiplayer/monster-sync.js"></script>
+        <!-- (suppression des doublons de chargement des sorts) -->
+        
+        <!-- FICHIER DE TEST POUR CORRECTION ORBES ATYPIQUES -->
+        <script src="test-correction-orbes.js"></script>
+        
+        <!-- SYSTÈME D'OPTIMISATION DES PERFORMANCES -->
+        <script src="js/systems/performance-optimizer.js"></script>
+        
+        <!-- SYSTÈME DE PARAMÈTRES DE QUALITÉ GRAPHIQUE -->
+        <script src="js/systems/quality-settings.js"></script>
+        
+        <!-- SYSTÈME DE CORRECTION DES BUGS DE CARTE -->
+        <script src="js/systems/map-bug-fixes.js"></script>
+        
+        <!-- SYSTÈME DE CHARGEMENT INTELLIGENT DES MAPS POUR MMO -->
+        <script src="js/systems/smart-map-loader.js"></script>
+        
+        <!-- FICHIER DE TEST DES PERFORMANCES -->
+        <script src="test-performance.js"></script>
+
+
+</body>
+</html>

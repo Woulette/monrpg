@@ -1,0 +1,63 @@
+<!-- Chat multi-onglets pour Mon RPG 2D -->
+<div id="chat-container" class="chat-hidden">
+    <div class="chat-header">
+        <div class="chat-tabs">
+            <button class="chat-tab active" data-tab="game">🎮 Jeu</button>
+            <button class="chat-tab" data-tab="drops">💰 Drops</button>
+            <button class="chat-tab" data-tab="trade">🛒 Commerce</button>
+            <button class="chat-tab" data-tab="recruit">👥 Recrutement</button>
+        </div>
+        <button class="chat-close" id="chat-close">&times;</button>
+    </div>
+    
+    <!-- Onglet Chat de Jeu -->
+    <div class="chat-content active" id="chat-game">
+        <div class="chat-messages" id="chat-messages-game">
+            <div class="chat-message system">🎮 Bienvenue dans Mon RPG 2D !</div>
+            <div class="chat-message system">💡 Appuyez sur T pour ouvrir/fermer le chat</div>
+            <div class="chat-message system">⚔️ Combattez des monstres et gagnez de l'expérience !</div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chat-input-game" placeholder="Message de jeu..." maxlength="100">
+        </div>
+    </div>
+    
+    <!-- Onglet Chat de Drops -->
+    <div class="chat-content" id="chat-drops">
+        <div class="chat-messages" id="chat-messages-drops">
+            <div class="chat-message system">💰 Ici vous verrez tous vos drops et récompenses</div>
+            <div class="chat-message drop">💰 +3 pecka trouvé !</div>
+            <div class="chat-message drop">🌿 +2 herbes récoltées !</div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chat-input-drops" placeholder="Message de drops..." maxlength="100">
+        </div>
+    </div>
+    
+    <!-- Onglet Chat de Commerce -->
+    <div class="chat-content" id="chat-trade">
+        <div class="chat-messages" id="chat-messages-trade">
+            <div class="chat-message system">🛒 Zone de commerce et de vente</div>
+            <div class="chat-message trade">[VENTE] Épée en fer - 50 pecka</div>
+            <div class="chat-message trade">[ACHAT] Potions de vie - 10 pecka chacune</div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chat-input-trade" placeholder="Message de commerce..." maxlength="100">
+        </div>
+    </div>
+    
+    <!-- Onglet Chat de Recrutement -->
+    <div class="chat-content" id="chat-recruit">
+        <div class="chat-messages" id="chat-messages-recruit">
+            <div class="chat-message system">👥 Zone de recrutement et de groupe</div>
+            <div class="chat-message recruit">[RECRUTE] Guerrier niveau 5+ pour donjon</div>
+            <div class="chat-message recruit">[CHERCHE] Groupe pour boss de zone</div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chat-input-recruit" placeholder="Message de recrutement..." maxlength="100">
+        </div>
+    </div>
+</div>
+
+<!-- Bouton pour ouvrir le chat -->
+<button class="chat-toggle" id="chat-toggle">💬</button> 

@@ -1,0 +1,252 @@
+/* Chat multi-onglets pour Mon RPG 2D */
+
+/* Container principal du chat */
+#chat-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 400px;
+    height: 300px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #4a90e2;
+    border-radius: 10px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, sans-serif;
+    color: white;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+    overflow: hidden;
+    pointer-events: auto;
+}
+
+.chat-hidden {
+    display: none !important;
+}
+
+/* Header avec onglets */
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: linear-gradient(135deg, #2a2a3a, #1a1a2a);
+    border-bottom: 2px solid #4a90e2;
+    border-radius: 8px 8px 0 0;
+}
+
+.chat-tabs {
+    display: flex;
+    gap: 5px;
+}
+
+.chat-tab {
+    background: rgba(74, 144, 226, 0.3);
+    border: 1px solid #4a90e2;
+    border-radius: 5px;
+    padding: 5px 10px;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.chat-tab:hover {
+    background: rgba(74, 144, 226, 0.5);
+}
+
+.chat-tab.active {
+    background: #4a90e2;
+    box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+}
+
+.chat-close {
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.chat-close:hover {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff8c8c;
+}
+
+/* Contenu des onglets */
+.chat-content {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    height: calc(100% - 60px);
+}
+
+.chat-content.active {
+    display: flex;
+}
+
+/* Zone des messages */
+.chat-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.3);
+    margin: 5px;
+    border-radius: 5px;
+    max-height: 200px;
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: #4a90e2;
+    border-radius: 3px;
+}
+
+/* Types de messages */
+.chat-message {
+    margin-bottom: 8px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    word-wrap: break-word;
+}
+
+.chat-message.system {
+    background: rgba(74, 144, 226, 0.2);
+    border-left: 3px solid #4a90e2;
+    color: #a0c8ff;
+}
+
+.chat-message.drop {
+    background: rgba(255, 215, 0, 0.2);
+    border-left: 3px solid #ffd700;
+    color: #ffed4e;
+}
+
+.chat-message.trade {
+    background: rgba(255, 152, 0, 0.2);
+    border-left: 3px solid #ff9800;
+    color: #ffcc80;
+}
+
+.chat-message.recruit {
+    background: rgba(156, 39, 176, 0.2);
+    border-left: 3px solid #9c27b0;
+    color: #ce93d8;
+}
+
+.chat-message.player {
+    background: rgba(76, 175, 80, 0.2);
+    border-left: 3px solid #4caf50;
+    color: #a5d6a7;
+}
+
+/* Zone de saisie */
+.chat-input-container {
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 1px solid #4a90e2;
+    border-radius: 0 0 8px 8px;
+    box-sizing: border-box;
+}
+
+.chat-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #4a90e2;
+    border-radius: 5px;
+    color: white;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.chat-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.chat-input:focus {
+    border-color: #6ba3e8;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
+}
+
+/* Bouton toggle du chat */
+.chat-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #4a90e2, #357abd);
+    border: 2px solid #2a5a8a;
+    border-radius: 50%;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 9998;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    pointer-events: auto;
+}
+
+.chat-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.chat-toggle:active {
+    transform: scale(0.95);
+}
+
+/* Animation d'apparition */
+@keyframes chatSlideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+#chat-container:not(.chat-hidden) {
+    animation: chatSlideIn 0.3s ease-out;
+}
+
+/* S'assurer que le chat reste toujours visible */
+#chat-container,
+#chat-container *,
+.chat-toggle {
+    z-index: 9999 !important;
+    position: relative;
+}
+
+#chat-container {
+    z-index: 9999 !important;
+    position: fixed !important;
+}
+
+.chat-toggle {
+    z-index: 9998 !important;
+    position: fixed !important;
+} 

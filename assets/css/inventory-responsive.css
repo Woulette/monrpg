@@ -1,0 +1,357 @@
+/* Inventaire responsive (UI uniquement) - n'altère pas la logique */
+#inventory-modal #inventory-modal-content {
+  /* Centrage parfait au milieu de l'écran */
+  display: block !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -59%) !important; /* remonter la modale */
+}
+
+/* Éviter que des enfants forcent des débordements */
+#inventory-modal #inventory-modal-content > * { min-width: 0; }
+
+/* Pecka en pleine largeur en haut */
+#pecka-section { grid-column: 1 / -1; }
+
+/* Annuler tout placement grid introduit précédemment */
+#equipment-container, #stats-container, #inventory-grid-container {
+  grid-column: auto !important;
+  grid-row: auto !important;
+}
+
+/* Neutraliser les positions absolues héritées pour la vue responsive */
+#inventory-grid-container {
+  /* Repasser en position absolue comme inventory.css, mais responsive et plus petit */
+  position: absolute !important;
+  top: clamp(0px, 2vh, 20px) !important; /* tout en haut */
+  right: clamp(12px, 4vw, 40px) !important; /* encore un peu vers la droite */
+  left: auto !important;
+  width: clamp(240px, 24vw, 310px) !important;
+  height: auto !important;
+  /* Réserver un espace dynamique = hauteur stats + marge */
+  /* + ~10px tout en gardant la logique responsive */
+  bottom: calc(clamp(72px, 14vh, 120px) + clamp(16px, 3vh, 24px) + 14px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  border-radius: 12px !important;
+  border: 2px solid #393859 !important;
+  background: #8d8d8de8 !important;
+  box-shadow: 0 2px 18px #000a !important;
+  z-index: 4 !important;
+  padding: 0 !important;
+}
+
+/* Panneau de détails inline dans l'inventaire */
+#inline-detail-panel {
+  position: absolute; /* panneau flottant dans la modale, entre player et grille */
+  left: 50% !important;                        /* ancré au centre de la modale */
+  transform: translateX(-50%);                 /* centrage horizontal stable sur changement de résolution */
+  top: clamp(0px, 2vh, 20px);                  /* aligné sur la hauteur de la grille (onglets) */
+  /* S'adapte à la taille du contenu, MAIS ne dépasse jamais l'espace avant les statistiques */
+  max-height: calc(
+    100% - clamp(0px, 2vh, 20px)
+         - (clamp(72px, 14vh, 120px) + clamp(16px, 3vh, 24px) + 14px)
+  );
+  width: clamp(220px, 24vw, 340px);
+  overflow: auto;
+  padding: 6px 10px 10px 10px; /* remonter le contenu */
+  border-radius: 10px;
+  border: 2px solid #5a5a6a;                 /* bordure légèrement plus grise */
+  background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%); /* fond plus gris */
+  color: #fff;
+  z-index: 6; /* au-dessus du fond mais sous la croix */
+}
+
+/* Meilleure adaptation sur petits écrans: centrer et élargir un peu */
+@media (max-width: 1100px) {
+  #inline-detail-panel {
+    left: 50% !important;
+    transform: translateX(-50%);
+    width: clamp(260px, 80vw, 420px) !important;
+    top: clamp(0px, 2vh, 20px) !important;  /* reste aligné avec le haut de la grille */
+    max-height: calc(
+      100% - clamp(0px, 2vh, 20px)
+           - (clamp(72px, 14vh, 120px) + clamp(16px, 3vh, 24px) + 14px)
+    ) !important;
+  }
+}
+#inline-detail-panel .inline-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px; /* rapprocher le header du contenu */
+}
+#inline-detail-panel .inline-detail-hero {
+  display:flex; justify-content:center; align-items:center; margin-bottom:8px;
+  padding: 4px; border: 2px solid #5a5a6a; border-radius: 12px; background: #2b2b2be0; width: fit-content; margin-left: auto; margin-right: auto;
+}
+#inline-detail-panel #inline-detail-image {
+  width: clamp(28px, 5vw, 56px); height: clamp(28px, 5vw, 56px);
+  object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+}
+#inline-detail-panel .inline-detail-title { font-weight: bold; font-size: clamp(14px, 2vw, 18px); }
+#inline-detail-panel .inline-detail-close { background: none; border: none; color: #e74c3c; font-size: 18px; cursor: pointer; }
+#inline-detail-panel .inline-detail-close:hover { color: #ff6b6b; }
+#inline-detail-panel .inline-detail-info,
+#inline-detail-panel .inline-detail-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; }
+#inline-detail-panel .inline-detail-row { display: flex; align-items: center; gap: 6px; }
+#inline-detail-panel .detail-label { color: #ccc; font-size: 12px; }
+#inline-detail-panel .detail-value { color: #ffd952; font-size: 13px; font-weight: bold; }
+#inline-detail-panel .inline-detail-desc { margin-top: 4px; font-size: 12px; color: #ddd; white-space: pre-wrap; }
+#inline-detail-panel .inline-detail-actions { margin-top: 10px; display: flex; gap: 8px; }
+#inline-detail-panel .inline-detail-btn { background: #2c2553cc; color: #ffd952; border: 1px solid #ffd95266; border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+
+/* Panoplies */
+#inline-set-section { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #666; }
+.inline-set-header { display:flex; justify-content: space-between; align-items:center; margin-bottom: 6px; }
+.inline-set-title { font-weight: bold; font-size: 14px; }
+.inline-set-progress { font-size: 12px; color:#ccc; }
+.inline-set-tabs { display:flex; gap:6px; flex-wrap: wrap; margin-bottom: 8px; }
+.inline-set-tab { padding: 4px 8px; border-radius: 999px; border: 1px solid #555; color:#ddd; cursor:pointer; background: #252525; font-size: 12px; }
+.inline-set-tab.active { background:#39415a; color:#ffd952; border-color:#6b78a8; }
+.inline-set-bonuses { display:flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.inline-bonus-row { font-size: 12px; color: #ddd; display:flex; align-items:center; gap:8px; }
+.inline-bonus-row .bonus-label { color:#bbb; min-width: 70px; }
+.inline-bonus-badges { display:flex; align-items:center; gap:4px; flex-wrap: wrap; }
+.bonus-pill { display:flex; align-items:center; gap:3px; padding: 2px 6px; border-radius: 999px; border: 1px solid #555; background:#2a2a2a; color:#eee; font-size: 11px; }
+.bonus-pill .bonus-icon { font-size: 12px; line-height: 1; }
+.inline-bonus-row.inactive { color:#888; opacity:0.7; }
+.inline-set-items { display:grid; grid-template-columns: repeat(3, 1fr); gap: 4px 10px; }
+.inline-set-item { font-size: 12px; color:#ccc; }
+.inline-set-item.equipped { color:#8fda6c; }
+
+#stats-container {
+  /* Barre de statistiques centrée horizontalement */
+  position: absolute !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  bottom: clamp(12px, 2vh, 20px) !important;
+  top: auto !important;
+  width: calc(100% - 2 * clamp(16px, 3vw, 24px)) !important;
+  /* Hauteur fixe mais responsive pour un espacement fiable */
+  height: clamp(72px, 14vh, 120px) !important;
+  margin: 0 !important;
+}
+
+
+/* Modal: taille adaptative à l'écran, scroll interne si besoin */
+#inventory-modal {
+  /* Laisser le CSS existant gérer l'affichage/position */
+}
+
+/* Croix de fermeture (surcharge responsive) */
+#close-inventory {
+  right: 10px !important; /* petit cran supplémentaire */
+  top: 6px !important;
+  transform: none !important;
+  z-index: 1002 !important;
+}
+
+#inventory-modal #inventory-modal-content {
+  max-width: min(95vw, 1280px);
+  width: clamp(680px, 92vw, 1100px);
+  /* Réduction supplémentaire de la hauteur globale du fond */
+  min-height: clamp(360px, 62vh, 720px);
+  max-height: min(90vh, 760px);
+  height: auto;
+  margin: 0 !important;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Conteneur principal de la grille: autoriser le rétrécissement */
+#inventory-grid-container {
+  min-width: 0;
+}
+
+/* Barre d'onglets: permettre le retour à la ligne et éviter le débordement */
+#inventory-categories { display: flex; flex-wrap: wrap; gap: clamp(10px, 2.2vw, 20px); min-height: 40px; }
+#inventory-categories::after {
+  content: '';
+  flex: 1 1 auto; /* pousse la zone de droite */
+}
+
+/* Poubelle intégrée à la barre d'onglets */
+/* Onglet poubelle comme un onglet d'inventaire */
+#inventory-trash-tab { 
+  width: 40px; height: 36px; display:flex; align-items:center; justify-content:center; 
+  border-radius: 8px; border: 2px solid #a93226; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); box-shadow: 0 2px 8px rgba(0,0,0,0.3); user-select:none; pointer-events: auto;
+}
+#inventory-trash-tab.drag-over { background: linear-gradient(135deg, #27ae60 0%, #229954 100%); border-color: #1e8449; }
+
+/* Remonter légèrement les icônes des onglets seulement (pas la barre) */
+#inventory-categories .inventory-tab { position: relative; top: -4px; }
+#inventory-categories #inventory-trash-tab { position: relative; top: -4px; }
+
+/* Modal de confirmation suppression */
+#trash-confirm-modal { position: fixed; inset:0; background: rgba(0,0,0,0.5); z-index: 2000; display:none; }
+#trash-confirm-content { background:#2a2a2a; border:2px solid #4a4a6a; border-radius:12px; width: clamp(260px, 40vw, 380px); padding: 14px; position:absolute; top:50%; left:50%; transform: translate(-50%, -50%); color:#eee; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.trash-confirm-title { font-weight:bold; margin-bottom:8px; }
+.trash-confirm-body { display:flex; flex-direction:column; gap:8px; }
+.trash-item-name { color:#ffd952; font-weight:bold; }
+.trash-qty-row { display:flex; align-items:center; gap:8px; }
+#trash-qty-input { width:100px; padding:6px; background:#1f1f1f; color:#fff; border:1px solid #555; border-radius:6px; }
+.trash-warning { color:#ff8c6b; font-size:12px; }
+.trash-confirm-actions { margin-top:10px; display:flex; gap:8px; justify-content:flex-end; }
+#trash-cancel-btn, #trash-confirm-btn { padding:6px 12px; border-radius:8px; border:1px solid #555; cursor:pointer; background:#333; color:#eee; }
+#trash-confirm-btn { background:#c0392b; border-color:#a93226; }
+
+/* Grille d'items: auto-fit + minmax pour s'adapter à la largeur disponible */
+#inventory-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important; /* base 4 colonnes comme inventory.css */
+  gap: 10px !important;
+  padding: 12px !important;
+  box-sizing: border-box !important;
+  max-height: calc(100% - 60px) !important; /* 60px ~ bande onglets */
+  overflow: auto !important;
+}
+
+/* Slots d'inventaire: se redimensionnent aussi avec la hauteur de fenêtre */
+#inventory-grid .inventory-slot,
+.alchimiste-inventory-grid .alchimiste-inventory-slot {
+  width: clamp(36px, min(4.8vw, 7vh), 60px);
+  height: clamp(36px, min(4.8vw, 7vh), 60px);
+}
+
+/* Quantités: lisibles même en petit */
+#inventory-grid .item-quantity,
+.alchimiste-inventory-grid .alchimiste-item-quantity {
+  font-size: clamp(10px, 1.6vw, 13px);
+  line-height: 1;
+}
+
+/* Équipement: s'adapter en largeur réduite */
+#equipment-container {
+  gap: 8px;
+  position: absolute !important;
+  left: clamp(20px, 5vw, 80px) !important;
+  top: clamp(0px, 4vh, 56px) !important; /* remonte encore (plus près du haut) */
+  width: auto !important;                 /* laisser la hauteur piloter le scale */
+  height: clamp(260px, 40vh, 380px) !important; /* responsive sur la hauteur */
+  aspect-ratio: 410 / 420; /* garantit les proportions pour le positionnement en % */
+}
+
+/* Compacter VRAIMENT le panneau stats (fond + boîte) */
+#stats-container {
+  width: calc(100% - 2 * clamp(16px, 3vw, 24px)) !important;  /* conserver des marges fluides */
+  max-width: none !important;
+  padding: 8px !important;                  /* conserver le style */
+  justify-self: stretch;
+  align-self: end;
+  border-radius: 10px;
+}
+
+/* Mise à l'échelle relative du mannequin joueur */
+#player-inventory-img {
+  position: absolute !important;
+  left: 14.63% !important;   /* 60/410 */
+  top: 24% !important;       /* légèrement plus bas */
+  width: 48.78% !important;  /* 200/410 */
+  height: auto !important;
+}
+
+/* Slots d'équipement en pourcentage (layout fluide) */
+.equip-slot {
+  position: absolute !important;
+  width: 14.63% !important; /* 60/410 */
+  aspect-ratio: 1 / 1;      /* carrés */
+}
+
+.equip-slot[data-slot="coiffe"]   { left: 29.27% !important; top: 5.4%  !important; }
+.equip-slot[data-slot="amulette"] { left: 4.88%  !important; top: 42.86% !important; }
+.equip-slot[data-slot="cape"]     { left: 56.10% !important; top: 59.52% !important; }
+.equip-slot[data-slot="arme"]     { left: 56.10% !important; top: 76.19% !important; }
+.equip-slot[data-slot="ceinture"] { left: 4.88%  !important; top: 76.19% !important; }
+.equip-slot[data-slot="bouclier"] { left: 56.10% !important; top: 42.86% !important; }
+.equip-slot[data-slot="anneau"]   { left: 4.88%  !important; top: 59.52% !important; }
+/* Bottes ajustées pour rester visibles (au lieu de 410px qui débordait) */
+.equip-slot[data-slot="bottes"]   { left: 30.49% !important; top: 83% !important; }
+
+
+#equipment-container .equip-slot { width: 14.63% !important; height: auto !important; }
+#equipment-container .slot-icon { width: 74% !important; height: 74% !important; }
+
+#player-inventory-img {
+  width: clamp(90px, 16vw, 180px);
+  height: auto;
+}
+
+/* Statistiques: permettre le wrap sur petits écrans */
+#stats-container { 
+  width: calc(100% - 2 * clamp(16px, 3vw, 24px)) !important; /* cohérent avec barre centrée */
+  padding: 8px; 
+  border-radius: 10px;
+}
+#stats-grid {
+  /* Une seule ligne horizontale, répartie */
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  justify-content: space-between !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+}
+/* 5 blocs fluides sur une ligne */
+#stats-container .stat-slot {
+  flex: 0 1 calc((100% - 4 * 8px) / 5) !important; /* 5 colonnes, gap de 8px */
+  min-width: 120px;
+  height: 56px;
+  padding: 8px;
+}
+#stats-container .stat-header { gap: 5px; }
+#stats-container .stat-icon { font-size: 16px; }
+#stats-container .stat-name { font-size: 11px; }
+#stats-container .stat-value { font-size: 18px; }
+#stats-container .stat-xp-bar { height: 4px; }
+#stats-container .stat-xp-text { font-size: 9px; }
+
+/* Section Pecka: s'adapter */
+#pecka-section { position: absolute !important; top: clamp(8px, 2vh, 16px) !important; left: clamp(12px, 3vw, 24px) !important; right: auto !important; margin: 0 !important; }
+#pecka-section .pecka-display { gap: 8px; }
+
+/* Petites résolutions: empiler les blocs pour éviter les débordements */
+@media (max-width: 1100px) {
+  #inventory-modal #inventory-modal-content {
+    grid-template-columns: 1fr; /* une colonne */
+  }
+  /* Empiler proprement dans l'ordre naturel */
+  #equipment-container,
+  #stats-container,
+  #inventory-grid-container { grid-column: 1 / -1; }
+}
+
+/* Très petites résolutions (mobile/mini fenêtre) */
+@media (max-width: 740px) {
+  #inventory-grid {
+    grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+    gap: 6px;
+    max-height: 50vh;
+  }
+  #equipment-container .equip-slot {
+    width: clamp(36px, 7vw, 56px);
+    height: clamp(36px, 7vw, 56px);
+  }
+  #player-inventory-img {
+    width: clamp(80px, 24vw, 140px);
+  }
+}
+
+/* Ajustements écrans bas (ex: 1360x768): éviter la coupe des bottes et de la dernière ligne */
+@media (max-height: 820px) {
+  #inventory-modal #inventory-modal-content {
+    transform: translate(-50%, -52%) !important; /* remonter moins pour garder le bas visible */
+    max-height: 88vh !important;
+    overflow: auto !important;
+  }
+  #equipment-container {
+    top: clamp(0px, 4vh, 48px) !important; /* remonte davantage sur écrans bas */
+    width: auto !important;
+    height: clamp(240px, 38vh, 340px) !important; /* s'adapte à la hauteur de fenêtre */
+  }
+  .equip-slot[data-slot="bottes"] { top: 80% !important; }
+}
+
+

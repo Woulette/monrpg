@@ -1,0 +1,596 @@
+/* ===== inventory.css (modale inventaire + grille + slots inventaire) ===== */
+/* MODAL INVENTAIRE */
+#inventory-modal {
+    display: none;
+    position: fixed;
+    left: 0; top: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.4);
+    z-index: 100;
+}
+#inventory-modal-content {
+    background: #424242;
+    color: #000000;
+    border-radius: 32px;
+    border: 3px solid #000000;
+    width: 950px;
+    height: 520px;
+    margin: 72px auto 0 auto;
+    padding: 40px 44px 30px 44px;
+    box-shadow: 0 10px 80px #222b;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#inventory-modal-content h2 {
+    margin-top: -20px;
+    text-align: center;
+    color: #ffffff;
+    font-size: 2.4em;
+    letter-spacing: 2px;
+    margin-bottom: 18px;
+}
+#close-inventory {
+    position: absolute;
+    right: 32px; top: 20px;
+    font-size: 40px;
+    color: #ff8c6b;
+    cursor: pointer;
+    pointer-events: auto !important;
+    z-index: 99999 !important;
+}
+/* --------- INVENTAIRE (GRILLE + BARRE ONGLET) ----------- */
+#inventory-grid-container {
+    position: absolute;
+    top: 100px;
+    left: 670px;
+    width: 340px;
+    height: 450px;
+    background: none;
+    z-index: 4;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 16px;
+    border: 2px solid #393859;
+    background: #8d8d8de8;
+    box-shadow: 0 2px 18px #000a;
+    display: flex;
+    flex-direction: column;
+}
+#inventory-categories {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;    /* <-- collé à gauche */
+    background: #8d8d8de8;
+    border-radius: 16px 16px 0 0;
+    padding: 6px 8px 0 8px;         /* <-- padding réduit */
+    z-index: 11;
+    gap: 42px;                       /* <-- espace entre les icônes réduit */
+}
+.inventory-tab {
+    background: none;
+    border: none;
+    outline: none;
+    margin: 0 2px;                  /* <-- marges latérales réduites */
+    padding: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+    width: 34px; height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.inventory-tab img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 0 6px #0009);
+}
+.inventory-tab.active,
+.inventory-tab:hover {
+    background: #2c2553cc;
+    box-shadow: 0 2px 8px #ffd95233, 0 0 0 2px #ffd95288;
+}
+/* Grilles séparées par catégorie */
+.inventory-grid-category {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(20, 1fr);
+    gap: 12px;
+    padding: 18px 24px 18px 12px;
+    box-sizing: border-box;
+}
+/* Garder l'ancien ID pour la compatibilité */
+#inventory-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(20, 1fr);
+    gap: 12px;
+    padding: 18px 24px 18px 12px;
+    box-sizing: border-box;
+}
+.inventory-slot {
+    width: 48px;
+    height: 48px;
+    background: #c2c2c2;
+    border: 2px solid #44414d;
+    border-radius: 10px;
+    box-shadow: 0 1px 5px #0007;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s; /* <--- AJOUT ICI */
+    position: relative;
+}
+.inventory-slot:hover {
+    border-color: #ffd952;
+    box-shadow: 0 2px 10px #ffd95244;
+}
+/* Quantité d'items */
+.item-quantity {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #ffd952;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 4px;
+    min-width: 16px;
+    text-align: center;
+    border: 1px solid #ffd952;
+}
+/* Styles pour la section des statistiques */
+#stats-container {
+    background: linear-gradient(135deg, #2a2a3a 0%, #1a1a2a 100%);
+    border: 2px solid #4a4a6a;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    /* POSITIONNEMENT LIBRE - Modifie ces valeurs pour déplacer la grille */
+    position: absolute;
+    left: 405px;  /* Distance depuis la gauche */
+    top: 90px;   /* Distance depuis le haut */
+    /* TAILLE - Plus large et moins haut */
+    width: 200px;   /* Largeur augmentée */
+    height: 417px;  /* Hauteur réduite */
+    /* Autres options de positionnement :
+    right: 10px;  Distance depuis la droite
+    */
+}
+#stats-container h3 {
+    color: #fff;
+    margin: 0 0 15px 0;
+    text-align: center;
+    font-size: 18px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+#stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(5, 1fr);
+    gap: 6px;        /* Moins d'espace entre les slots */
+    justify-items: center;
+}
+.stat-slot {
+    background: linear-gradient(145deg, #3a3a5a, #2a2a4a);
+    border: 2px solid #5a5a7a;
+    border-radius: 6px;
+    padding: 8px;
+    width: 160px;    /* Plus large */
+    height: 50px;    /* Moins haut */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+.stat-slot:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    border-color: #7a7a9a;
+}
+.stat-header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+}
+.stat-icon {
+    font-size: 16px;
+}
+.stat-name {
+    color: #ccc;
+    font-size: 11px;
+    font-weight: bold;
+    flex-grow: 1;
+    text-align: center;
+}
+.stat-value {
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.stat-xp-bar {
+    width: 100%;
+    height: 4px;
+    background: #222;
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 2px 0;
+}
+.stat-xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4a4a6a, #6a6a8a);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+.stat-xp-text {
+    color: #aaa;
+    font-size: 9px;
+    text-align: center;
+}
+/* Animation pour les stats qui montent */
+.stat-slot.level-up {
+    animation: statLevelUp 0.6s ease-in-out;
+}
+@keyframes statLevelUp {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); background: linear-gradient(145deg, #4a4a6a, #3a3a5a); }
+    100% { transform: scale(1); }
+}
+/* ===== FENÊTRE DES STATISTIQUES ===== */
+#stats-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+#stats-modal-content {
+    background: linear-gradient(135deg, #2a2a3a 0%, #1a1a2a 100%);
+    margin: 5% auto;
+    padding: 20px;
+    border: 3px solid #4a4a6a;
+    border-radius: 20px;
+    width: 70%;
+    max-width: 600px;
+    max-height: 70vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+#close-stats {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    transition: color 0.3s ease;
+    pointer-events: auto !important;
+    z-index: 99999 !important;
+}
+#close-stats:hover {
+    color: #fff;
+}
+#stats-modal-content h2 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+/* Section niveau du joueur */
+#player-level-section {
+    background: linear-gradient(135deg, #3a3a5a 0%, #2a2a4a 100%);
+    border: 2px solid #5a5a7a;
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+#player-level-section h3 {
+    color: #fff;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 1.2em;
+}
+.level-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    gap: 8px;
+}
+.level-label {
+    color: #ccc;
+    font-size: 1.2em;
+}
+.level-value {
+    color: #ffd700;
+    font-size: 1.5em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+.xp-display {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.xp-label {
+    color: #ccc;
+    font-size: 1.1em;
+    min-width: 100px;
+}
+.xp-bar {
+    flex: 1;
+    height: 15px;
+    background: #1a1a2a;
+    border: 2px solid #4a4a6a;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    width: 0%;
+    transition: width 0.5s ease;
+}
+.xp-text {
+    color: #fff;
+    font-size: 1em;
+    min-width: 60px;
+    text-align: right;
+}
+/* Grille des statistiques */
+#stats-grid-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.stat-slot-modal {
+    background: linear-gradient(135deg, #3a3a5a 0%, #2a2a4a 100%);
+    border: 2px solid #5a5a7a;
+    border-radius: 12px;
+    padding: 12px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.stat-slot-modal:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    border-color: #7a7a9a;
+}
+.stat-header-modal {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 120px;
+}
+.stat-icon-modal {
+    font-size: 1.5em;
+    width: 30px;
+    text-align: center;
+}
+.stat-name-modal {
+    color: #fff;
+    font-size: 1em;
+    font-weight: bold;
+}
+.stat-value-modal {
+    color: #ffd700;
+    font-size: 1.8em;
+    font-weight: bold;
+    text-align: center;
+    min-width: 40px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+.stat-xp-bar-modal {
+    height: 12px;
+    background: #1a1a2a;
+    border: 1px solid #4a4a6a;
+    border-radius: 6px;
+    overflow: hidden;
+    flex: 1;
+}
+.stat-xp-fill-modal {
+    height: 100%;
+    background: linear-gradient(90deg, #2196F3, #03DAC6);
+    width: 0%;
+    transition: width 0.5s ease;
+}
+.stat-xp-text-modal {
+    color: #ccc;
+    font-size: 0.8em;
+    text-align: center;
+    min-width: 60px;
+}
+/* Affichage des points à distribuer */
+.stat-points-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 8px;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid #ffd700;
+    border-radius: 8px;
+}
+.stat-points-label {
+    color: #ccc;
+    font-size: 1em;
+}
+.stat-points-value {
+    color: #ffd700;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+/* Contrôles des statistiques */
+.stat-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+}
+.stat-btn {
+    width: 30px;
+    height: 30px;
+    border: 2px solid #5a5a7a;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #4a4a6a 0%, #3a3a5a 100%);
+    color: #fff;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.stat-btn:hover {
+    background: linear-gradient(135deg, #5a5a8a 0%, #4a4a7a 100%);
+    border-color: #7a7a9a;
+    transform: scale(1.1);
+}.stat-btn:active {
+    transform: scale(0.95);
+}
+.stat-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+.stat-btn:disabled:hover {
+    background: linear-gradient(135deg, #4a4a6a 0%, #3a3a5a 100%);
+    border-color: #5a5a7a;
+    transform: none;
+}
+/* ===== SECTION PECKA ===== */
+#pecka-section {
+    /* POSITIONNEMENT - Modifier ces valeurs pour changer la position */
+    position: absolute;
+    top: 10px;        /* En haut */
+    left: 820px;       /* À gauche */
+    /* Autres options :
+    top: 80px; right: 20px;     -> En haut à droite
+    bottom: 20px; left: 20px;   -> En bas à gauche  
+    bottom: 20px; right: 20px;  -> En bas à droite
+    */
+    background: linear-gradient(135deg, #2a2a3a 0%, #1a1a2a 100%);
+    border: 2px solid #4a4a6a;
+    border-radius: 15px;
+    padding: 15px;
+    min-width: 120px;
+    z-index: 10;
+}
+.pecka-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.pecka-icon {
+    width: 40px;
+    height: 40px;
+    background: #ffd700;
+    border: 2px solid #b8860b;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #000;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+.pecka-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.pecka-label {
+    color: #ccc;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+.pecka-amount {
+    color: #ffd700;
+    font-size: 1.4em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== SYSTÈME DE POUBELLE (ISOLÉ À L'INVENTAIRE) ===== */
+/* Ancienne poubelle: désactivée (utilise la poubelle intégrée aux onglets) */
+#inventory-trash-zone { position: static; bottom: auto; right: auto; z-index: auto; }
+
+/* Ancien style supprimé */
+#trash-container { all: unset; }
+
+#trash-container:hover { }
+
+#trash-container.drag-over { }
+
+#trash-icon { all: unset; }
+
+/* PROTECTION : Masquer la poubelle quand on n'est PAS dans l'inventaire */
+body:not(.inventory-open) #inventory-trash-zone { display: none !important; }
+
+/* PROTECTION : Masquer la poubelle dans les menus */
+#character-selection-menu ~ #inventory-trash-zone,
+#character-creation-menu ~ #inventory-trash-zone,
+#delete-confirm-menu ~ #inventory-trash-zone {
+    display: none !important;
+}
+@media (max-width: 1600px) {
+  #inventory-modal-content {
+    width: 700px;
+    height: 400px;
+    padding: 20px 20px 15px 20px;
+  }
+  #inventory-grid-container {
+    left: 400px;
+    top: 60px;
+    width: 220px;
+    height: 250px;
+  }
+}
+@media (max-width: 1100px) {
+  #inventory-modal-content {
+    width: 98vw;
+    height: 98vh;
+    padding: 5vw 2vw 2vw 2vw;
+    font-size: 12px;
+  }
+  #inventory-grid-container {
+    left: 10vw;
+    top: 10vw;
+    width: 60vw;
+    height: 40vw;
+  }
+}

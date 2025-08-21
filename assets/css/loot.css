@@ -1,0 +1,230 @@
+/* ===== loot.css (fenêtre de loot) ===== */
+
+.loot-modal {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: auto;
+    height: auto;
+    background: none;
+    display: block;
+    z-index: 1000;
+    pointer-events: auto;
+    user-select: none;
+}
+
+.loot-content {
+    pointer-events: auto;
+}
+
+.loot-content {
+    background: linear-gradient(135deg, #2a2479, #1a1a2a);
+    border: 2px solid #ffd952;
+    border-radius: 12px;
+    padding: 15px;
+    min-width: 150px;
+    max-width: 600px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
+    animation: lootAppear 0.3s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.resize-handle {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    width: 15px;
+    height: 15px;
+    background: #ffd952;
+    border-radius: 3px;
+    cursor: ne-resize;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.resize-handle:hover {
+    opacity: 1;
+}
+
+@keyframes lootAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateX(0);
+    }
+}
+
+.loot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ffd952;
+    cursor: move;
+    user-select: none;
+}
+
+.loot-header h2 {
+    color: #ffd952;
+    margin: 0;
+    font-size: 0.9em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.close-loot {
+    color: #ff8c6b;
+    font-size: 28px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+.close-loot:hover {
+    color: #ff6b4a;
+}
+
+.loot-items {
+    margin-bottom: 12px;
+    max-height: 120px;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: flex-start;
+}
+
+.loot-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 217, 82, 0.3);
+    transition: all 0.2s;
+    flex-shrink: 0;
+    min-width: 100px;
+}
+
+.loot-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 217, 82, 0.6);
+    transform: translateX(2px);
+}
+
+.loot-icon {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 217, 82, 0.5);
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.pecka-icon {
+    background: linear-gradient(135deg, #ffd952, #ffb347);
+    color: #000;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.loot-info {
+    flex: 1;
+}
+
+.loot-name {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 3px;
+}
+
+.loot-quantity {
+    color: #ffd952;
+    font-size: 13px;
+    font-weight: bold;
+    margin-left: auto;
+}
+
+.loot-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.loot-btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 80px;
+}
+
+.loot-validate {
+    background: linear-gradient(135deg, #44ff44, #22cc22);
+    color: #000;
+    border: 2px solid #22cc22;
+}
+
+.loot-validate:hover {
+    background: linear-gradient(135deg, #55ff55, #33dd33);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(68, 255, 68, 0.4);
+}
+
+.loot-refuse {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: linear-gradient(135deg, #ff6b6b, #cc4444);
+    color: #fff;
+    border: 2px solid #cc4444;
+    font-size: 12px;
+    padding: 4px 6px;
+    min-width: 25px;
+    width: 25px;
+    height: 25px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.loot-refuse:hover {
+    background: linear-gradient(135deg, #ff7b7b, #dd5555);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+}
+
+/* Scrollbar personnalisée pour la liste des items */
+.loot-items::-webkit-scrollbar {
+    width: 8px;
+}
+
+.loot-items::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.loot-items::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #ffd952, #ffb347);
+    border-radius: 4px;
+}
+
+.loot-items::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #ffb347, #ffd952);
+} 

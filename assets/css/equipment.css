@@ -1,0 +1,131 @@
+/* ===== equipment.css (équipement autour du perso, images équipement) ===== */
+#equipment-container {
+    position: absolute;
+    left: 80px;
+    top: 70px;
+    width: 410px;
+    height: 420px;
+    z-index: 2;
+}
+
+#player-inventory-img {
+    position: absolute;
+    left: 60px;
+    top: 100px;
+    width: 200px;
+    height: 340px;
+    image-rendering: pixelated;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* SLOTS équipement (autour du perso) */
+.equip-slot {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border: 2.5px dashed #666666;
+    border-radius: 12px;
+    background: #cccccc;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+}
+.equip-slot:hover {
+    z-index: 999;
+}
+.equip-slot[data-slot="coiffe"]   { left: 120px; top: 30px; }
+.equip-slot[data-slot="amulette"] { left: 20px;  top: 180px; }
+.equip-slot[data-slot="cape"]     { left: 230px; top: 250px; }
+.equip-slot[data-slot="arme"]     { left: 230px;  top: 320px; }
+.equip-slot[data-slot="ceinture"] { left: 20px; top: 320px; }
+.equip-slot[data-slot="bottes"]   { left: 125px; top: 410px; }
+.equip-slot[data-slot="bouclier"] { left: 230px; top: 180px; }
+.equip-slot[data-slot="anneau"]   { left: 20px; top: 250px; }
+
+.slot-icon {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.slot-icon img {
+    width: 90%;
+    height: 90%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+.equip-slot[title]:hover:after {
+    content: attr(title);
+    position: absolute;
+    left: 50%;
+    top: -36px;
+    transform: translateX(-50%);
+    background: #8d8b8b;
+    color: #000000;
+    padding: 5px 14px;
+    border-radius: 8px;
+    font-size: 1em;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 11140;
+    box-shadow: 0 2px 16px #000a;
+}
+
+@media (max-width: 1600px) {
+  #equipment-container {
+    left: 30px;
+    top: 40px;
+    width: 320px;
+    height: 340px;
+  }
+  #player-inventory-img {
+    left: 20px;
+    top: 60px;
+    width: 140px;
+    height: 220px;
+  }
+  .equip-slot {
+    width: 40px;
+    height: 40px;
+  }
+  .equip-slot[data-slot="coiffe"]   { left: 60px; top: 10px; }
+  .equip-slot[data-slot="amulette"] { left: 10px;  top: 90px; }
+  .equip-slot[data-slot="cape"]     { left: 120px; top: 140px; }
+  .equip-slot[data-slot="arme"]     { left: 120px;  top: 180px; }
+  .equip-slot[data-slot="ceinture"] { left: 10px; top: 180px; }
+  .equip-slot[data-slot="bottes"]   { left: 60px; top: 220px; }
+  .equip-slot[data-slot="bouclier"] { left: 120px; top: 90px; }
+  .equip-slot[data-slot="anneau"]   { left: 10px; top: 140px; }
+}
+
+@media (max-width: 1100px) {
+  #equipment-container {
+    left: 5px;
+    top: 10px;
+    width: 220px;
+    height: 220px;
+  }
+  #player-inventory-img {
+    left: 5px;
+    top: 20px;
+    width: 80px;
+    height: 120px;
+  }
+  .equip-slot {
+    width: 28px;
+    height: 28px;
+  }
+  .equip-slot[data-slot="coiffe"]   { left: 30px; top: 2px; }
+  .equip-slot[data-slot="amulette"] { left: 2px;  top: 40px; }
+  .equip-slot[data-slot="cape"]     { left: 60px; top: 70px; }
+  .equip-slot[data-slot="arme"]     { left: 60px;  top: 90px; }
+  .equip-slot[data-slot="ceinture"] { left: 2px; top: 90px; }
+  .equip-slot[data-slot="bottes"]   { left: 30px; top: 120px; }
+  .equip-slot[data-slot="bouclier"] { left: 60px; top: 40px; }
+  .equip-slot[data-slot="anneau"]   { left: 2px; top: 70px; }
+}

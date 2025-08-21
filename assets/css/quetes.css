@@ -1,0 +1,546 @@
+/* assets/css/quetes.css - Styles pour le système de quêtes */
+
+/* Modal de fond pour les quêtes */
+.quest-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10001;
+    font-family: Arial, sans-serif;
+}
+
+/* Contenu principal de la quête */
+.quest-content {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border: 3px solid #8B7355;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+/* Titre de la quête */
+.quest-title {
+    color: #8B7355;
+    font-size: 28px;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Nom de la quête */
+.quest-name {
+    color: #ffd952;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+/* Description de la quête */
+.quest-description {
+    color: white;
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+/* Récompense de la quête */
+.quest-reward {
+    color: #4CAF50;
+    font-size: 16px;
+    margin-bottom: 25px;
+}
+
+/* Container des boutons */
+.quest-button-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Bouton accepter */
+.quest-accept-button, .quest-accept-btn {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quest-accept-button:hover, .quest-accept-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Bouton refuser */
+.quest-decline-button, .quest-decline-btn {
+    background: linear-gradient(135deg, #f44336, #da190b);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quest-decline-button:hover, .quest-decline-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Notification de quête */
+.quest-notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 10002;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    animation: fadeInOut 3s ease-in-out;
+}
+
+/* Animation pour les notifications */
+@keyframes fadeInOut {
+    0% { 
+        opacity: 0; 
+        transform: translate(-50%, -50%) scale(0.8); 
+    }
+    20% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1); 
+    }
+    80% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1); 
+    }
+    100% { 
+        opacity: 0; 
+        transform: translate(-50%, -50%) scale(0.8); 
+    }
+}
+
+/* ===== NOUVELLE FENÊTRE PRINCIPALE DES QUÊTES ===== */
+
+/* Fenêtre principale des quêtes */
+#quests-main-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10003;
+    font-family: Arial, sans-serif;
+}
+
+#quests-main-content {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 3px solid #8B7355;
+    border-radius: 20px;
+    padding: 0;
+    max-width: 900px;
+    width: 90%;
+    max-height: 80vh;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* En-tête de la fenêtre */
+.quests-header {
+    background: linear-gradient(135deg, #8B7355, #6B4423);
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #654321;
+}
+
+.quests-title {
+    color: #ffd952;
+    font-size: 28px;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.quests-title::before {
+    content: "📋";
+    font-size: 32px;
+}
+
+.quests-close {
+    background: #ff4e4e;
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.quests-close:hover {
+    background: #ff3333;
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Contenu principal */
+.quests-body {
+    padding: 30px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Onglets des quêtes */
+.quests-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #8B7355;
+    padding-bottom: 15px;
+}
+
+.quest-tab {
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+    color: #bdc3c7;
+    border: 2px solid #8B7355;
+    border-radius: 10px;
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.quest-tab.active {
+    background: linear-gradient(135deg, #8B7355, #6B4423);
+    color: #ffd952;
+    border-color: #ffd952;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.4);
+}
+
+.quest-tab:hover:not(.active) {
+    background: linear-gradient(135deg, #4a5f7a, #3d4e6b);
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Compteur d'onglets */
+.quest-tab-count {
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-weight: bold;
+}
+
+/* Liste des quêtes */
+.quests-list {
+    display: grid;
+    gap: 20px;
+}
+
+/* Carte de quête individuelle */
+.quest-card {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border: 2px solid #8B7355;
+    border-radius: 15px;
+    padding: 25px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.quest-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    border-color: #ffd952;
+}
+
+.quest-card.completed {
+    border-color: #4CAF50;
+    background: linear-gradient(135deg, #2c3e50, #1e3a1e);
+}
+
+.quest-card.active {
+    border-color: #ffd952;
+    background: linear-gradient(135deg, #2c3e50, #3a2a1a);
+}
+
+/* En-tête de la carte */
+.quest-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.quest-card-title {
+    color: #ffd952;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.quest-card-status {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.quest-status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.quest-status-badge.available {
+    background: #3498db;
+    color: white;
+}
+
+.quest-status-badge.active {
+    background: #f39c12;
+    color: white;
+}
+
+.quest-status-badge.ready {
+    background: #FF9800;
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+.quest-status-badge.completed {
+    background: #27ae60;
+    color: white;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.quest-status-badge.failed {
+    background: #e74c3c;
+    color: white;
+}
+
+/* Description de la quête */
+.quest-card-description {
+    color: #ecf0f1;
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+/* Progrès de la quête */
+.quest-progress {
+    margin-bottom: 20px;
+}
+
+.quest-progress-bar {
+    background: #34495e;
+    border-radius: 10px;
+    height: 20px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    border: 2px solid #8B7355;
+}
+
+.quest-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #45a049);
+    transition: width 0.5s ease;
+    border-radius: 8px;
+}
+
+.quest-progress-text {
+    color: #bdc3c7;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Récompenses */
+.quest-rewards {
+    background: rgba(139, 115, 85, 0.1);
+    border: 1px solid #8B7355;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.quest-rewards-title {
+    color: #4CAF50;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quest-rewards-title::before {
+    content: "🎁";
+}
+
+.quest-rewards-list {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.quest-reward-item {
+    background: rgba(76, 175, 80, 0.2);
+    border: 1px solid #4CAF50;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #4CAF50;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Actions de la quête */
+.quest-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+}
+
+.quest-action-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quest-action-btn.accept {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.quest-action-btn.accept:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.quest-action-btn.abandon {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.quest-action-btn.abandon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+}
+
+.quest-action-btn.complete {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+}
+
+.quest-action-btn.complete:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+}
+
+/* Message quand aucune quête */
+.quests-empty {
+    text-align: center;
+    color: #bdc3c7;
+    font-size: 18px;
+    padding: 50px 20px;
+}
+
+.quests-empty::before {
+    content: "📋";
+    font-size: 48px;
+    display: block;
+    margin-bottom: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #quests-main-content {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .quests-header {
+        padding: 15px 20px;
+    }
+    
+    .quests-title {
+        font-size: 24px;
+    }
+    
+    .quests-body {
+        padding: 20px;
+    }
+    
+    .quests-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .quest-card {
+        padding: 20px;
+    }
+    
+    .quest-card-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .quest-actions {
+        flex-direction: column;
+    }
+}

@@ -1,0 +1,52 @@
+/* Styles pour la prévisualisation de la zone d'attaque du sort Rassemblement */
+
+.rassemblement-preview {
+    position: absolute;
+    width: 160px; /* 5 cases * 32px */
+    height: 160px; /* 5 cases * 32px */
+    border: 3px solid #ff6b35;
+    border-radius: 8px;
+    background: rgba(255, 107, 53, 0.2);
+    pointer-events: none;
+    z-index: 1000;
+    box-shadow: 0 0 20px rgba(255, 107, 53, 0.6);
+}
+
+/* Effet de rassemblement au point d'origine (monstre ciblé) */
+.rassemblement-preview::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 32px;
+    height: 32px;
+    background: radial-gradient(circle, rgba(255, 107, 53, 0.8) 0%, rgba(255, 107, 53, 0.2) 70%);
+    border-radius: 50%;
+}
+
+/* Indicateur de direction vers le point d'origine */
+.rassemblement-preview::after {
+    content: '⬇';
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    font-size: 16px;
+    color: #ff6b35;
+    text-shadow: 0 0 5px rgba(255, 107, 53, 0.8);
+}
+
+/* Responsive pour différentes tailles d'écran */
+@media (max-width: 768px) {
+    .rassemblement-preview {
+        width: 120px; /* 5 cases * 24px pour les petits écrans */
+        height: 120px;
+    }
+}
+
+@media (max-width: 480px) {
+    .rassemblement-preview {
+        width: 100px; /* 5 cases * 20px pour les très petits écrans */
+        height: 100px;
+        border-width: 2px;
+    }
+} 
