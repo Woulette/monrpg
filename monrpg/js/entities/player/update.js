@@ -84,16 +84,21 @@ function updatePlayer(ts) {
         player.life > 0
     ) {
         let dist = Math.abs(player.x - attackTarget.x) + Math.abs(player.y - attackTarget.y);
+        
+        // Obtenir la portée d'attaque actuelle (dynamique selon la classe)
+        const currentAttackRange = window.classSpellManager ? 
+            window.classSpellManager.getCurrentAttackRange() : 
+            window.PLAYER_ATTACK_RANGE || 1;
 
         // Orienter le joueur vers le monstre en combat (sans bloquer le mouvement)
-        if (dist === PLAYER_ATTACK_RANGE) {
+        if (dist <= currentAttackRange) {
             if (attackTarget.x < player.x) player.direction = 3; // Gauche
             else if (attackTarget.x > player.x) player.direction = 1; // Droite
             else if (attackTarget.y < player.y) player.direction = 2; // Haut
             else if (attackTarget.y > player.y) player.direction = 0; // Bas
         }
 
-        if (dist === PLAYER_ATTACK_RANGE) {
+        if (dist <= currentAttackRange) {
             const currentTime = Date.now();
             
             // Empêcher la superposition avec le SlimeBoss

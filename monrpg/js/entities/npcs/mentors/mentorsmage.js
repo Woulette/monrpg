@@ -177,6 +177,12 @@ class MentorMage {
     
     createDialogUI() {
         // Interface de base pour le changement de classe
+        const currentClass = window.player ? window.player.class : 'aventurier';
+        const currentLevel = window.player ? window.player.level : 1;
+        const currentGold = window.player ? window.player.pecka : 0;
+        const canAfford = currentGold >= this.options.cost;
+        const canChange = currentLevel >= this.options.levelRequired && canAfford && currentClass !== 'mage';
+        
         const dialog = document.createElement('div');
         dialog.id = 'mentor-mage-dialog';
         dialog.className = 'mentor-dialog';
@@ -186,22 +192,30 @@ class MentorMage {
                 <button class="close-btn" onclick="this.parentElement.parentElement.remove()">×</button>
             </div>
             <div class="dialog-content">
-                <p>Bienvenue, jeune aventurier ! Je peux t'initier aux arts magiques...</p>
+                <div class="current-status">
+                    <p><strong>Ton statut actuel :</strong></p>
+                    <p>🏃 Classe : ${currentClass.charAt(0).toUpperCase() + currentClass.slice(1)}</p>
+                    <p>📊 Niveau : ${currentLevel}</p>
+                    <p>💰 Or : ${currentGold} pecka</p>
+                </div>
+                
                 <div class="class-info">
-                    <h4>Classe Mage</h4>
-                    <ul>
-                        <li>✨ Intelligence +20%</li>
-                        <li>🔥 Dégâts magiques +20%</li>
-                        <li>🛡️ Défense physique -10%</li>
-                        <li>⚡ Vitesse -15%</li>
-                    </ul>
+                    <h4>🧙‍♂️ Classe Mage</h4>
+                    <p>Une classe spécialisée dans la magie et les sorts.</p>
+                    <p><em>Plus tard : sorts magiques, bonus d'intelligence...</em></p>
                 </div>
+                
                 <div class="requirements">
-                    <p><strong>Conditions :</strong></p>
-                    <p>Niveau ${this.options.levelRequired}+ | Coût : ${this.options.cost} or</p>
+                    <p><strong>📋 Conditions requises :</strong></p>
+                    <p>✅ Niveau ${this.options.levelRequired}+ : ${currentLevel >= this.options.levelRequired ? '✅' : '❌'}</p>
+                    <p>💰 Coût : ${this.options.cost} pecka ${canAfford ? '✅' : '❌'}</p>
+                    <p>🔄 Changement possible : ${canChange ? '✅' : '❌'}</p>
                 </div>
-                <button class="change-class-btn" onclick="window.mentorMage.changeToMage()">
-                    Devenir Mage
+                
+                <button class="change-class-btn ${canChange ? '' : 'disabled'}" 
+                        onclick="${canChange ? 'window.mentorMage.changeToMage()' : 'alert(\'❌ Conditions non remplies pour changer de classe !\')'}"
+                        ${canChange ? '' : 'disabled'}>
+                    ${currentClass === 'mage' ? 'Tu es déjà Mage !' : 'Devenir Mage'}
                 </button>
             </div>
         `;
@@ -254,8 +268,45 @@ class MentorMage {
     }
     
     changeToMage() {
-        // Logique de changement de classe (à implémenter)
         console.log('🧙‍♂️ Changement vers la classe Mage...');
+        
+        // Vérifier que le joueur existe
+        if (!window.player) {
+            console.error('❌ Joueur non trouvé');
+            return;
+        }
+        
+        // Vérifier le niveau requis
+        if (window.player.level < this.options.levelRequired) {
+            console.error('❌ Niveau insuffisant pour changer de classe');
+            return;
+        }
+        
+        // Vérifier l'or requis
+        if (window.player.pecka < this.options.cost) {
+            console.error('❌ Or insuffisant pour changer de classe');
+            alert(`❌ Tu n'as pas assez d'or ! Il te faut ${this.options.cost} pecka pour devenir Mage.`);
+            return;
+        }
+        
+        // Vérifier que le joueur n'est pas déjà Mage
+        if (window.player.class === 'mage') {
+            console.log('🧙‍♂️ Le joueur est déjà Mage');
+            alert('🧙‍♂️ Tu es déjà un Mage !');
+            return;
+        }
+        
+        // Effectuer le changement de classe
+        console.log('🧙‍♂️ Changement de classe en cours...');
+        console.log('  - Classe actuelle:', window.player.class);
+        console.log('  - Nouvelle classe: mage');
+        console.log('  - Coût payé:', this.options.cost, 'pecka');
+        
+        // Changer la classe
+        window.player.class = 'mage';
+        
+        // Déduire l'or
+        window.player.pecka -= this.options.cost;
         
         // Fermer le dialogue
         const dialog = document.getElementById('mentor-mage-dialog');
@@ -265,8 +316,24 @@ class MentorMage {
         
         this.dialogueOpen = false;
         
-        // TODO: Implémenter la logique de changement de classe
-        alert('Fonctionnalité de changement de classe à implémenter !');
+        // Afficher le message de succès
+        alert('🎉 Félicitations ! Tu es maintenant un Mage !\n\n✨ Tu as débloqué l\'accès aux sorts magiques.\n💰 Coût payé : ' + this.options.cost + ' pecka');
+        
+        // Sauvegarder automatiquement le changement
+        if (typeof autoSaveOnEvent === 'function') {
+            autoSaveOnEvent();
+        } else if (typeof savePlayerData === 'function' && window.currentCharacterId) {
+            savePlayerData(window.currentCharacterId);
+        }
+        
+        // Mettre à jour l'apparence du joueur
+        if (window.playerAppearanceManager) {
+            window.playerAppearanceManager.forceUpdate();
+        }
+        
+        console.log('✅ Changement de classe réussi !');
+        console.log('  - Nouvelle classe:', window.player.class);
+        console.log('  - Or restant:', window.player.pecka);
     }
     
     // Méthode pour nettoyer les événements

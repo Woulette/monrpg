@@ -684,14 +684,46 @@ function handleSpaceAttack() {
                 }
             }
         } else {
-            // Si pas à portée, se déplacer vers le monstre
+            // Si pas à portée, se déplacer vers le monstre en respectant la portée d'attaque
             if (typeof findPath === "function" && window.mapData) {
-                let destinations = [
-                    {x: attackTarget.x+1, y: attackTarget.y},
-                    {x: attackTarget.x-1, y: attackTarget.y},
-                    {x: attackTarget.x, y: attackTarget.y+1},
-                    {x: attackTarget.x, y: attackTarget.y-1},
-                ].filter(pos =>
+                // Obtenir la portée d'attaque actuelle (dynamique selon la classe)
+                const currentAttackRange = window.classSpellManager ? 
+                    window.classSpellManager.getCurrentAttackRange() : 
+                    window.PLAYER_ATTACK_RANGE || 1;
+                
+                console.log(`🎯 Portée d'attaque actuelle: ${currentAttackRange} cases`);
+                
+                // VÉRIFIER SI LE JOUEUR EST DÉJÀ À PORTÉE
+                if (dist <= currentAttackRange) {
+                    console.log(`✅ Joueur déjà à portée (distance: ${dist}, portée: ${currentAttackRange}), pas de déplacement`);
+                    return; // Ne pas se déplacer si déjà à portée
+                }
+                
+                // Calculer les destinations possibles selon la portée
+                let destinations = [];
+                
+                if (currentAttackRange === 1) {
+                    // Corps à corps : cases adjacentes
+                    destinations = [
+                        {x: attackTarget.x+1, y: attackTarget.y},
+                        {x: attackTarget.x-1, y: attackTarget.y},
+                        {x: attackTarget.x, y: attackTarget.y+1},
+                        {x: attackTarget.x, y: attackTarget.y-1},
+                    ];
+                } else {
+                    // Attaque à distance : calculer les positions à la portée exacte
+                    for (let dx = -currentAttackRange; dx <= currentAttackRange; dx++) {
+                        for (let dy = -currentAttackRange; dy <= currentAttackRange; dy++) {
+                            // Vérifier que la distance est exactement égale à la portée
+                            if (Math.abs(dx) + Math.abs(dy) === currentAttackRange) {
+                                const pos = {x: attackTarget.x + dx, y: attackTarget.y + dy};
+                                destinations.push(pos);
+                            }
+                        }
+                    }
+                }
+                
+                destinations = destinations.filter(pos =>
                     pos.x >= 0 && pos.x < mapData.width &&
                     pos.y >= 0 && pos.y < mapData.height &&
                     !window.isBlocked(pos.x, pos.y) &&

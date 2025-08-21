@@ -125,6 +125,14 @@
     margin: 5px 0;
     font-size: 14px;
     color: #e74c3c;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mentor-dialog .requirements .status-indicator {
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .mentor-dialog .requirements strong {
@@ -156,6 +164,41 @@
 
 .mentor-dialog .change-class-btn:active {
     transform: translateY(0);
+}
+
+/* Bouton désactivé */
+.mentor-dialog .change-class-btn.disabled {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+    box-shadow: none;
+}
+
+.mentor-dialog .change-class-btn.disabled:hover {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    transform: none;
+    box-shadow: none;
+}
+
+/* Section statut actuel */
+.mentor-dialog .current-status {
+    background: rgba(46, 204, 113, 0.1);
+    border: 2px solid #2ecc71;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.mentor-dialog .current-status p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #2ecc71;
+}
+
+.mentor-dialog .current-status strong {
+    color: #ffffff;
 }
 
 /* Dialogue de niveau insuffisant */

@@ -1,4 +1,4 @@
-// Calcul des dégâts reçus avec la défense
+https://monrpg-si8o.vercel.app/// Calcul des dégâts reçus avec la défense
 function getPlayerDamageReceived(baseDamage) {
     return Math.max(1, baseDamage - player.defense);
 }

@@ -124,6 +124,9 @@ class PlayerSaveManager {
                     pecka: player.pecka
                 },
                 
+                // Classe du personnage
+                class: player.class || 'aventurier',
+                
                 // Suivi automatique
                 autoFollow: player.autoFollow,
                 
@@ -277,6 +280,9 @@ class PlayerSaveManager {
                 player.statPoints = data.resources.statPoints || 0;
                 player.pecka = data.resources.pecka || 0;
             }
+            
+            // Restaurer la classe du personnage
+            player.class = data.class || 'aventurier';
             
             // Restaurer les autres propriétés
             player.autoFollow = data.autoFollow || false;

@@ -127,6 +127,9 @@ class SaveSystem {
                 // Suivi automatique
                 autoFollow: player.autoFollow,
                 
+                // Classe du personnage
+                class: player.class || 'aventurier',
+                
                 // Système de mort et respawn
                 isDead: player.isDead,
                 deathTime: player.deathTime,
@@ -291,6 +294,9 @@ class SaveSystem {
                 
                 // Suivi automatique
                 player.autoFollow = data.player.autoFollow || false;
+                
+                // Classe du personnage
+                player.class = data.player.class || 'aventurier';
                 
                 // Système de mort et respawn
                 player.isDead = data.player.isDead || false;

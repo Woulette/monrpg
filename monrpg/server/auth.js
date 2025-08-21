@@ -41,13 +41,7 @@ function saveUsersToDisk(state) {
 const users = new Map(); // username -> { id, username, passwordHash, createdAt }
 let nextUserId = 1;
 
-// Comptes par défaut (créés automatiquement si pas de sauvegarde)
-const DEFAULT_USERS = [
-  { username: 'test1', password: 'test123' },
-  { username: 'test2', password: 'test123' },
-  { username: 'joueur1', password: 'joueur123' },
-  { username: 'joueur2', password: 'joueur123' }
-];
+
 
 // Chargement initial
 (function initUsers() {
@@ -60,31 +54,13 @@ const DEFAULT_USERS = [
     if (u && typeof u === 'object') users.set(username, u);
   }
   
-  // Créer les comptes par défaut s'ils n'existent pas
-  console.log('🔐 Vérification des comptes par défaut...');
-  for (const defaultUser of DEFAULT_USERS) {
-    if (!users.has(defaultUser.username)) {
-      const passwordHash = bcrypt.hashSync(defaultUser.password, 10);
-      const user = { 
-        id: nextUserId++, 
-        username: defaultUser.username, 
-        passwordHash, 
-        createdAt: Date.now() 
-      };
-      users.set(defaultUser.username, user);
-      console.log(`✅ Compte créé: ${defaultUser.username} (mot de passe: ${defaultUser.password})`);
-    } else {
-      console.log(`ℹ️ Compte existant: ${defaultUser.username}`);
-    }
-  }
-  persistUsers();
+
 })();
 
 function persistUsers() {
   const out = { nextUserId, users: {} };
   for (const [uname, u] of users.entries()) out.users[uname] = u;
   saveUsersToDisk(out);
-  console.log(`💾 Sauvegarde des utilisateurs: ${users.size} comptes sauvegardés`);
 }
 
 // Clé secrète JWT (en prod: variable d'environnement)
@@ -142,21 +118,7 @@ router.get('/me', requireAuth, (req, res) => {
   return res.json({ userId: req.user.userId, username: req.user.username });
 });
 
-// Liste des comptes disponibles (pour les tests)
-router.get('/accounts', (req, res) => {
-  const accountList = [];
-  for (const [username, user] of users.entries()) {
-    accountList.push({
-      username: user.username,
-      createdAt: user.createdAt,
-      isDefault: DEFAULT_USERS.some(du => du.username === username)
-    });
-  }
-  return res.json({ 
-    total: accountList.length,
-    accounts: accountList 
-  });
-});
+
 
 module.exports = { authRouter: router, requireAuth };
 

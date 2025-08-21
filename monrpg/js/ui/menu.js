@@ -835,14 +835,113 @@ function initializeGame(character) {
         window.resetCrowKillCounts();
     }
     
-    // Passer en mode jeu
-    gameState = "playing";
+    // CHARGER LES DONNÉES SAUVEGARDÉES DU JOUEUR (y compris la classe !)
+    if (typeof window.loadPlayerData === 'function' && window.currentCharacterId) {
+        console.log('🔄 Chargement des données sauvegardées du joueur...');
+        const loadSuccess = window.loadPlayerData(window.currentCharacterId);
+        if (loadSuccess) {
+            console.log('✅ Données du joueur chargées avec succès');
+            console.log('🎭 Classe actuelle:', window.player ? window.player.class : 'inconnue');
+        } else {
+            console.log('⚠️ Aucune sauvegarde trouvée, utilisation des valeurs par défaut');
+        }
+    }
     
-    // Masquer tous les menus
-    characterSelectionMenu.style.display = 'none';
-    characterCreationMenu.style.display = 'none';
-    deleteConfirmMenu.style.display = 'none';
-    loadingScreen.style.display = 'none';
+    // SYNCHRONISER L'AFFICHAGE DES SORTS ET DE L'APPARENCE
+    console.log('🎭 Synchronisation de l\'affichage...');
+    
+    // Mettre à jour l'affichage des sorts selon la classe
+    if (window.classSpellManager) {
+        window.classSpellManager.forceUpdate();
+        console.log('✅ Affichage des sorts synchronisé');
+    }
+    
+    // Mettre à jour l'apparence du joueur selon la classe
+    if (window.playerAppearanceManager) {
+        window.playerAppearanceManager.forceUpdate();
+        console.log('✅ Apparence du joueur synchronisée');
+    }
+    
+    // Attendre un court délai pour s'assurer que tout est synchronisé
+    setTimeout(() => {
+        console.log('🎮 Jeu complètement chargé, masquage de l\'écran de chargement...');
+        
+        // Passer en mode jeu
+        gameState = "playing";
+        
+        // Masquer tous les menus
+        characterSelectionMenu.style.display = 'none';
+        characterCreationMenu.style.display = 'none';
+        deleteConfirmMenu.style.display = 'none';
+        loadingScreen.style.display = 'none';
+        
+        // Retirer la classe menu-active
+        document.body.classList.remove('menu-active');
+        
+        // Afficher le bouton menu
+        gameMenuBtn.style.display = 'block';
+        
+        // Afficher le bouton multijoueur (caché car remplacé par le panneau MMO)
+        const multiplayerBtn = document.getElementById('multiplayer-btn');
+        if (multiplayerBtn) {
+            multiplayerBtn.style.display = 'none'; // Caché car remplacé par le panneau MMO
+            
+            // Gestion du clic sur le bouton multijoueur
+            multiplayerBtn.onclick = () => {
+                if (window.multiplayerManager && !window.multiplayerManager.connected) {
+                    // Activer le multijoueur
+                    enableMultiplayer();
+                    multiplayerBtn.textContent = 'Multijoueur ON';
+                    multiplayerBtn.style.background = '#f44336';
+                } else if (window.multiplayerManager && window.multiplayerManager.connected) {
+                    // Désactiver le multijoueur
+                    disableMultiplayer();
+                    multiplayerBtn.textContent = 'Multijoueur OFF';
+                    multiplayerBtn.style.background = '#4CAF50';
+                }
+            };
+        }
+        
+        // Activer les systèmes de jeu
+        if (typeof window.enableGameSystems === 'function') {
+            window.enableGameSystems();
+        }
+        
+        // LANCER VRAIMENT LE JEU maintenant
+        
+        // NETTOYAGE CRITIQUE FINAL : S'assurer que les classes sont supprimées avant le lancement
+        document.body.classList.remove('character-menu-active', 'menu-active');
+        console.log('🧹 Nettoyage final avant lancement du jeu après création de personnage');
+        
+        // Initialiser tous les systèmes de jeu
+        if (typeof window.startGameDirectly === 'function') {
+            window.startGameDirectly();
+        } else {
+            console.error('❌ Fonction startGameDirectly non trouvée');
+            // Fallback : charger directement
+            if (typeof window.loadGame === 'function') {
+                window.loadGame();
+            }
+        }
+        
+        // Activer le multijoueur automatiquement et synchroniser la carte
+        if (typeof enableMultiplayer === 'function') {
+            enableMultiplayer();
+            if (typeof syncMultiplayerMap === 'function') {
+                setTimeout(() => { syncMultiplayerMap(); }, 300);
+            }
+        }
+
+        // Débloquer l'inventaire après un court délai pour s'assurer que tout est initialisé
+        setTimeout(() => {
+            if (typeof window.debloquerInventaireEtStats === 'function') {
+                window.debloquerInventaireEtStats();
+            }
+            // Une fois le jeu lancé, on réautorise le login overlay (utile pour futures 401)
+            window.__blockLoginOverlay = false;
+        }, 1000);
+        
+    }, 500); // Délai de 500ms pour la synchronisation
     
     // Retirer la classe menu-active
     document.body.classList.remove('menu-active');

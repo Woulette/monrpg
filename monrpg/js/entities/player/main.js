@@ -80,7 +80,9 @@ const player = {
     deathTime: 0,
     respawnTime: 3000, // 3 secondes pour le respawn
     spawnX: 25, // Point de spawn modifié
-    spawnY: 12
+    spawnY: 12,
+    // Classe du personnage (aventurier par défaut, peut changer à partir du niveau 20)
+    class: 'aventurier'
 };
 
 // Initialiser les stats totales au démarrage
@@ -172,6 +174,9 @@ function resetPlayer() {
     // Réinitialiser la monnaie
     player.pecka = 0;
     
+    // Réinitialiser la classe (toujours aventurier par défaut)
+    player.class = 'aventurier';
+    
     // Réinitialiser l'état de combat
     player.inCombat = false;
     player.lastCombatTime = 0;
@@ -200,6 +205,7 @@ playerImg.onerror = () => {
     console.error('Erreur de chargement de l\'image du joueur: assets/personnages/player.png');
 };
 playerImg.src = 'assets/personnages/player.png';
+playerImg.isSpritesheet = true; // Marquer comme spritesheet (aventurier par défaut)
 
 // Rendre l'image accessible globalement
 window.playerImg = playerImg;
@@ -217,14 +223,30 @@ function drawPlayer(ctx) {
     }
     
     try {
-        ctx.drawImage(
-            window.playerImg,
-            currentPlayer.frame * PLAYER_WIDTH,
-            currentPlayer.direction * PLAYER_HEIGHT,
-            PLAYER_WIDTH, PLAYER_HEIGHT,
-            currentPlayer.px + (window.mapOffsetX || 0), currentPlayer.py + (window.mapOffsetY || 0),
-            TILE_SIZE, TILE_SIZE
-        );
+        // Vérifier si l'image est une spritesheet ou une image simple
+        if (window.playerImg.isSpritesheet) {
+            // Spritesheet avec animation (aventurier)
+            const PLAYER_WIDTH = 32; // Largeur d'une frame
+            const PLAYER_HEIGHT = 32; // Hauteur d'une frame
+            
+            ctx.drawImage(
+                window.playerImg,
+                currentPlayer.frame * PLAYER_WIDTH,
+                currentPlayer.direction * PLAYER_HEIGHT,
+                PLAYER_WIDTH, PLAYER_HEIGHT,
+                currentPlayer.px + (window.mapOffsetX || 0), currentPlayer.py + (window.mapOffsetY || 0),
+                TILE_SIZE, TILE_SIZE
+            );
+        } else {
+            // Image simple sans animation (mage)
+            ctx.drawImage(
+                window.playerImg,
+                0, 0, // Source X, Y (toute l'image)
+                window.playerImg.width, window.playerImg.height, // Largeur et hauteur source
+                currentPlayer.px + (window.mapOffsetX || 0), currentPlayer.py + (window.mapOffsetY || 0),
+                TILE_SIZE, TILE_SIZE // Destination (taille d'une tile)
+            );
+        }
     } catch (error) {
         console.error('Erreur lors du dessin du joueur:', error);
     }
