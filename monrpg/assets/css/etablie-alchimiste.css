@@ -1,0 +1,477 @@
+/* Styles pour le chaudron d'alchimiste */
+
+.alchimiste-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.alchimiste-modal-content {
+    background: #e4e4e4;
+    color: #000;
+    border-radius: 32px;
+    border: 3px solid #4CAF50;
+    width: 1200px;
+    height: 600px;
+    margin: -30px auto 0 auto;
+    padding: 40px 44px 30px 44px;
+    box-shadow: 0 10px 80px #222b;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Arial, sans-serif;
+}
+
+.alchimiste-title {
+    margin-top: -20px;
+    text-align: center;
+    color: #2E7D32;
+    font-size: 2.4em;
+    letter-spacing: 2px;
+    margin-bottom: 18px;
+}
+
+.alchimiste-close-btn {
+    position: absolute;
+    right: 32px;
+    top: 20px;
+    font-size: 40px;
+    color: #4CAF50;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.alchimiste-inventory-container {
+    position: absolute;
+    top: 100px;
+    right: 14px;
+    width: 350px;
+    height: 550px;
+    background: rgba(138, 138, 138, 0.93);
+    z-index: 4;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 16px;
+    border: 2px solid #4CAF50;
+    box-shadow: 0 2px 18px #000a;
+    display: flex;
+    flex-direction: column;
+}
+
+.alchimiste-craft-container {
+    position: absolute;
+    top: 100px;
+    left: 300px;
+    width: 618px;
+    height: 260px;
+    background: #000000e8;
+    z-index: 4;
+    border-radius: 16px;
+    border: 2px solid #4CAF50;
+    box-shadow: 0 2px 18px #000a;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.alchimiste-craft-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.alchimiste-craft-tab, .alchimiste-fusion-tab {
+    background: #4CAF50;
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px 0 0 8px;
+    padding: 8px 22px;
+    font-size: 1.1em;
+    cursor: pointer;
+    box-shadow: 0 2px 8px #0002;
+}
+
+.alchimiste-fusion-tab {
+    background: #2E7D32;
+    color: #fff;
+    border-radius: 0 8px 8px 0;
+}
+
+.alchimiste-craft-title {
+    color: #fff;
+    margin: 0;
+    text-align: center;
+    font-size: 18px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    flex: 1;
+}
+
+.alchimiste-craft-grid {
+    display: grid;
+    grid-template-columns: repeat(7,1fr);
+    gap: 12px;
+    justify-items: center;
+    align-items: center;
+}
+
+.alchimiste-craft-slot {
+    width: 64px;
+    height: 64px;
+    background: rgba(138, 138, 138, 0.93);
+    border: 2px solid #4CAF50;
+    border-radius: 10px;
+    box-shadow: 0 1px 5px #0007;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+}
+
+.alchimiste-craft-slot:hover {
+    border-color: #66BB6A;
+    box-shadow: 0 2px 10px #4CAF5044;
+}
+
+.alchimiste-fusion-view {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 18px;
+    gap: 32px;
+}
+
+.alchimiste-fusion-slot {
+    width: 64px;
+    height: 64px;
+    background: rgba(138, 138, 138, 0.93);
+    border: 2px solid #4CAF50;
+    border-radius: 10px;
+    box-shadow: 0 1px 5px #0007;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+}
+
+.alchimiste-fusion-slot:hover {
+    border-color: #66BB6A;
+    box-shadow: 0 2px 10px #4CAF5044;
+}
+
+.alchimiste-arrow {
+    font-size: 24px;
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.alchimiste-craft-btn, .alchimiste-fusion-btn {
+    background: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 8px #0002;
+    transition: background-color 0.2s;
+    margin-top: 13px;
+}
+
+.alchimiste-craft-btn:hover, .alchimiste-fusion-btn:hover {
+    background: #66BB6A;
+}
+
+.alchimiste-categories-bar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    background: rgba(138, 138, 138, 0.93);
+    border-radius: 16px 16px 0 0;
+    padding: 6px 8px 0 8px;
+    z-index: 11;
+    gap: 42px;
+}
+
+.alchimiste-inventory-tab {
+    background: none;
+    border: none;
+    outline: none;
+    margin: 0 2px;
+    padding: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+    width: 34px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.alchimiste-inventory-tab.active,
+.alchimiste-inventory-tab:hover {
+    background: #2c2553cc;
+    box-shadow: 0 2px 8px #4CAF5033, 0 0 0 2px #4CAF5088;
+}
+
+.alchimiste-inventory-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(20, 1fr);
+    gap: 12px;
+    padding: 18px 24px 18px 12px;
+    box-sizing: border-box;
+}
+
+.alchimiste-inventory-slot {
+    width: 48px;
+    height: 48px;
+    background: #bdbdbd;
+    border: 2px solid #4CAF50;
+    border-radius: 10px;
+    box-shadow: 0 1px 5px #0007;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+    position: relative;
+}
+
+.alchimiste-inventory-slot:hover {
+    border-color: #66BB6A;
+    box-shadow: 0 2px 10px #4CAF5044;
+}
+
+.alchimiste-item-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 0 6px #0009);
+}
+
+.alchimiste-item-quantity {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: #4CAF50;
+    color: #fff;
+    font-size: 0.7em;
+    font-weight: bold;
+    padding: 1px 3px;
+    border-radius: 2px;
+    min-width: 12px;
+    text-align: center;
+}
+
+.alchimiste-recipes-box {
+    position: absolute;
+    top: 100px;
+    left: 5px;
+    width: 255px;
+    height: 510px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    border: 2px solid #4CAF50;
+    box-shadow: 0 2px 18px #000a;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.alchimiste-recipes-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #2E7D32;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.alchimiste-recipe-box {
+    background: #f5f5f5;
+    border: 2px solid #4CAF50;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.alchimiste-recipe-box:hover {
+    background: #e8f5e8;
+    border-color: #66BB6A;
+}
+
+.alchimiste-recipe-box.selected {
+    background: #e8f5e8;
+    border-color: #FFD700;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.alchimiste-recipe-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.alchimiste-recipe-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    border-radius: 4px;
+    background: #fff;
+    border: 1px solid #4CAF50;
+}
+
+.alchimiste-recipe-name {
+    font-weight: bold;
+    color: #2E7D32;
+    font-size: 1.1em;
+}
+
+.alchimiste-ingredients-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.alchimiste-ingredient {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #fff;
+    border: 1px solid #4CAF50;
+    border-radius: 4px;
+    padding: 4px 8px;
+}
+
+.alchimiste-ingredient-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.alchimiste-ingredient-qty {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #2E7D32;
+}
+
+.alchimiste-empty-indicator {
+    color: #4CAF50;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.alchimiste-craft-preview, .alchimiste-fusion-preview {
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid #4CAF50;
+}
+
+.item-preview {
+    display: flex;
+    justify-content: center;
+}
+
+.item-preview-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    padding: 12px;
+    border: 2px solid #4CAF50;
+}
+
+.item-preview-icon {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 4px;
+    background: #fff;
+    border: 1px solid #4CAF50;
+}
+
+.item-preview-infos {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.item-preview-title {
+    font-weight: bold;
+    color: #2E7D32;
+    font-size: 1.1em;
+}
+
+.item-preview-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.item-preview-stat {
+    font-size: 0.9em;
+    color: #333;
+}
+
+.item-preview-stat-icon {
+    margin-right: 4px;
+}
+
+.item-preview-stat-name {
+    color: #666;
+}
+
+.item-preview-stat-value {
+    color: #4CAF50;
+}
+
+/* Styles pour l'affichage de l'XP */
+.alchimiste-xp-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+    padding-right: 8px;
+}
+
+.alchimiste-xp-text {
+    font-size: 0.85em;
+    color: #4CAF50;
+    font-weight: 600;
+    opacity: 1;
+} 

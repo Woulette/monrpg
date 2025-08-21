@@ -1,0 +1,24 @@
+{
+  "1": [
+    {
+      "id": 1000,
+      "name": "ada",
+      "avatar": "assets/ui/playerinventaire.png",
+      "createdAt": 1755180698808
+    },
+    {
+      "id": 1005,
+      "name": "zdz",
+      "avatar": "assets/ui/playerinventaire.png",
+      "createdAt": 1755256270731
+    }
+  ],
+  "2": [
+    {
+      "id": 1001,
+      "name": "fzef",
+      "avatar": "assets/ui/playerinventaire.png",
+      "createdAt": 1755182269316
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+/* Fenêtre détaillée de l'équipement */
+
+#equipment-detail-modal {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#equipment-detail-content {
+    background: linear-gradient(135deg, #2a2a3a, #1a1a2a);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 12px;
+    border: 3px solid #4a90e2;
+    border-radius: 12px;
+    width: 280px;
+    max-width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+    pointer-events: auto;
+    cursor: move;
+    user-select: none;
+}
+
+#equipment-detail-header {
+    cursor: move;
+    padding: 5px 0;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #4a90e2;
+}
+
+#close-equipment-detail {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    color: #ff6b6b;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    pointer-events: auto !important;
+    z-index: 99999 !important;
+}
+
+#close-equipment-detail:hover {
+    color: #ff8c8c;
+}
+
+#equipment-detail-title {
+    color: #4a90e2;
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 18px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.equipment-detail-section {
+    margin-bottom: 10px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    border-left: 2px solid #4a90e2;
+}
+
+.equipment-detail-section h3 {
+    color: #4a90e2;
+    margin-bottom: 8px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.equipment-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    padding: 2px 0;
+}
+
+.detail-label {
+    color: #cccccc;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.detail-value {
+    color: #44ff44;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.detail-value.zero {
+    color: #666666;
+}
+
+.equipment-description {
+    color: #cccccc;
+    font-style: italic;
+    line-height: 1.5;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border-left: 3px solid #ffaa00;
+}
+
+#equipment-detail-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 2px solid #4a90e2;
+}
+
+.equipment-action-btn {
+    background: linear-gradient(135deg, #4a90e2, #357abd);
+    border: 2px solid #2a5a8a;
+    border-radius: 6px;
+    color: white;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.equipment-action-btn:hover {
+    background: linear-gradient(135deg, #5ba3f0, #4a90e2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+}
+
+.equipment-action-btn:active {
+    transform: translateY(0);
+}
+
+.equipment-action-btn:disabled {
+    background: #666666;
+    border-color: #444444;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Animation d'apparition */
+@keyframes equipmentDetailSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+#equipment-detail-content {
+    animation: equipmentDetailSlideIn 0.3s ease-out;
+} 

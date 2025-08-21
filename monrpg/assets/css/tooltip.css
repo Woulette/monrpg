@@ -1,0 +1,60 @@
+/* Tooltip pour les équipements */
+
+.equipment-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid #4a90e2;
+    border-radius: 8px;
+    padding: 12px;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    z-index: 10000;
+    pointer-events: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    max-width: 250px;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+.equipment-tooltip .item-name {
+    font-weight: bold;
+    font-size: 14px;
+    color: #4a90e2;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #4a90e2;
+    padding-bottom: 4px;
+}
+
+.equipment-tooltip .item-description {
+    color: #cccccc;
+    margin-bottom: 8px;
+    font-style: italic;
+}
+
+.equipment-tooltip .item-stats {
+    margin-top: 8px;
+}
+
+.equipment-tooltip .stat-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2px;
+}
+
+.equipment-tooltip .stat-name {
+    color: #aaaaaa;
+}
+
+.equipment-tooltip .stat-value {
+    color: #44ff44;
+    font-weight: bold;
+}
+
+.equipment-tooltip .stat-value.negative {
+    color: #ff4444;
+}
+
+.equipment-tooltip .item-type {
+    display: none; /* Masquer la ligne "HELMET" */
+} 

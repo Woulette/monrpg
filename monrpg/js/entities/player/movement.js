@@ -1,0 +1,87 @@
+// Avance vers la prochaine étape du chemin
+function nextStepToTarget() {
+    if (!player.path || player.path.length === 0) {
+        player.moving = false;
+        // Vérifier si on doit ouvrir la fenêtre de craft
+        if (window.pendingOpenCraftTable) {
+            // Vérifier si le joueur est adjacent à la table
+            const table = window.pendingOpenCraftTable;
+            const dx = Math.abs(player.x - table.x);
+            const dy = Math.abs(player.y - table.y);
+            if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
+                    if (table.type === 'cordonnier' && typeof openCordonnierWorkshopModal === 'function') {
+      openCordonnierWorkshopModal();
+    } else if (table.type === 'bijoutier' && typeof openBijoutierWorkshopModal === 'function') {
+      openBijoutierWorkshopModal();
+    } else if (table.type === 'alchimiste' && typeof openAlchimisteWorkshopModal === 'function') {
+      openAlchimisteWorkshopModal();
+    } else if (table.type === 'paysan' && typeof openEtabliePaysan === 'function') {
+      openEtabliePaysan();
+    } else if (table.type === 'mannequin_force' && typeof window.openMannequinTraining === 'function') {
+      // Placer l'orientation du joueur face au mannequin (priorité au dessous = face)
+      const dxm = table.x - player.x;
+      const dym = table.y - player.y;
+      if (dxm === 0 && dym === -1) player.direction = 0; // joueur sous le mannequin → regarde vers le haut
+      else if (dxm === 1 && dym === 0) player.direction = 3; // joueur à droite → regarde gauche
+      else if (dxm === -1 && dym === 0) player.direction = 1; // joueur à gauche → regarde droite
+      else if (dxm === 0 && dym === 1) player.direction = 2; // joueur au dessus → regarde bas
+      window.currentMannequinTarget = { x: table.x, y: table.y };
+      window.openMannequinTraining(table.x, table.y);
+    } else if (typeof openTailorWorkshopModal === 'function') {
+      openTailorWorkshopModal();
+    }
+                window.pendingOpenCraftTable = null;
+            }
+        }
+        return;
+    }
+    const next = player.path.shift();
+    if (!next) {
+        player.moving = false;
+        return;
+    }
+    
+    // Vérifier si la case suivante est une tile de téléportation OU occupée par un monstre
+    if (window.mapData && window.mapData.layers && window.mapData.layers.length > 0) {
+        const layer1 = window.mapData.layers[0];
+        const tileIndex = next.y * layer1.width + next.x;
+        const tileId = layer1.data[tileIndex];
+        
+        // Permettre de marcher sur les tiles de téléportation (ID 0 et 1)
+        if (tileId === 0 || tileId === 1) {
+            // Autoriser le mouvement vers cette tile
+        } else {
+            // Si la case suivante est occupée par un monstre ET que ce n'est PAS la destination finale, on bloque
+            const isLastStep = player.path.length === 0;
+            if (typeof isMonsterAt === 'function' && isMonsterAt(next.x, next.y) && !isLastStep) {
+                player.moving = false;
+                player.path = [];
+                return;
+            }
+        }
+    }
+    
+    if (next.x < player.x) player.direction = 3;
+    else if (next.x > player.x) player.direction = 1;
+    else if (next.y < player.y) player.direction = 2;
+    else if (next.y > player.y) player.direction = 0;
+
+    player.moveTarget.x = next.x;
+    player.moveTarget.y = next.y;
+    player.moving = true;
+}
+
+// Fonction pour obtenir la vitesse actuelle du joueur
+function getPlayerSpeed() {
+    let baseSpeed = player.speed || 1;
+    
+    // Réduction de vitesse dans la maison
+    if (window.currentMap === "maison") {
+        baseSpeed = baseSpeed * 0.4; // 60% de réduction = 40% de la vitesse normale
+    }
+    
+    return baseSpeed;
+}
+
+// Export des fonctions de mouvement
+window.nextStepToTarget = nextStepToTarget; 

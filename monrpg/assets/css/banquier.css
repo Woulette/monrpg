@@ -1,0 +1,891 @@
+/* assets/css/banquier.css - Styles pour les dialogues des banquiers */
+
+#banquier-dialog-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+#banquier-dialog-content {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border: 3px solid #3498db;
+    border-radius: 15px;
+    padding: 20px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.banquier-dialog-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 15px;
+}
+
+.banquier-dialog-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 3px solid #3498db;
+    overflow: hidden;
+    background: #ecf0f1;
+    flex-shrink: 0;
+}
+
+.banquier-dialog-name {
+    color: #3498db;
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    flex: 1;
+}
+
+.banquier-dialog-close {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.banquier-dialog-close:hover {
+    background: #c0392b;
+    transform: scale(1.1);
+}
+
+.banquier-dialog-text {
+    color: #ecf0f1;
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.banquier-dialog-button {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.banquier-dialog-button:hover {
+    background: linear-gradient(135deg, #2980b9, #1f5f8b);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+.banquier-dialog-button:active {
+    transform: translateY(0);
+}
+
+/* ===== MODAL DE LA BANQUE ===== */
+
+#bank-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1500;
+}
+
+#bank-content {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 3px solid #0f3460;
+    border-radius: 15px;
+    padding: 15px;
+    max-width: 1100px;
+    width: 95%;
+    max-height: 75vh;
+    min-height: 550px;
+    height: auto;
+    overflow-y: auto;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+    position: relative;
+}
+
+.bank-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #0f3460;
+}
+
+.bank-title {
+    color: #0f3460;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.bank-close {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.bank-close:hover {
+    background: #c0392b;
+    transform: scale(1.1);
+}
+
+.bank-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.bank-section {
+    background: rgba(15, 52, 96, 0.1);
+    border: 2px solid #0f3460;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.bank-section h3 {
+    color: #0f3460;
+    font-size: 18px;
+    margin-bottom: 10px;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.bank-inventory, .bank-storage {
+    min-height: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.bank-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    margin-bottom: 8px;
+    background: rgba(15, 52, 96, 0.2);
+    border: 1px solid #0f3460;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.bank-item:hover {
+    background: rgba(15, 52, 96, 0.4);
+    transform: translateX(5px);
+}
+
+.bank-item-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.bank-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.bank-item-name {
+    color: #ecf0f1;
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bank-item-quantity {
+    color: #bdc3c7;
+    font-size: 12px;
+}
+
+.bank-item-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.bank-item-btn {
+    background: #0f3460;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.bank-item-btn:hover {
+    background: #1a4a7a;
+    transform: scale(1.05);
+}
+
+.bank-item-btn.deposit {
+    background: #27ae60;
+}
+
+.bank-item-btn.deposit:hover {
+    background: #2ecc71;
+}
+
+.bank-item-btn.withdraw {
+    background: #e67e22;
+}
+
+.bank-item-btn.withdraw:hover {
+    background: #f39c12;
+}
+
+.bank-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #0f3460;
+}
+
+.bank-action-btn {
+    background: linear-gradient(135deg, #0f3460, #1a4a7a);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(15, 52, 96, 0.3);
+}
+
+.bank-action-btn:hover {
+    background: linear-gradient(135deg, #1a4a7a, #0f3460);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(15, 52, 96, 0.4);
+}
+
+.bank-action-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .bank-body {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    #bank-content {
+        width: 98%;
+        padding: 15px;
+    }
+}
+
+/* ===== GRILLES D'INVENTAIRE DE LA BANQUE (Style copié depuis inventory-responsive.css) ===== */
+
+.bank-inventory-container, .player-inventory-container {
+    background: rgba(15, 52, 96, 0.1);
+    border: 2px solid #0f3460;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+/* Grille de la banque (gauche) - 5 colonnes */
+.bank-inventory-grid {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important; /* 5 colonnes comme demandé */
+    gap: 4px !important;
+    padding: 6px !important;
+    box-sizing: border-box !important;
+    max-height: calc(100% - 60px) !important; /* 60px ~ bande onglets */
+    overflow: auto !important;
+}
+
+/* Grille de l'inventaire du joueur (droite) - 5 colonnes */
+.player-inventory-bank-grid {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important; /* 5 colonnes comme demandé */
+    gap: 4px !important;
+    padding: 6px !important;
+    box-sizing: border-box !important;
+    max-height: calc(100% - 60px) !important; /* 60px ~ bande onglets */
+    overflow: auto !important;
+}
+
+/* Slots d'inventaire - Même style que inventory-responsive.css */
+.bank-slot, .player-bank-slot {
+    width: clamp(36px, min(4.8vw, 7vh), 60px);
+    height: clamp(36px, min(4.8vw, 7vh), 60px);
+    background: #c2c2c2;
+    border: 2px solid #44414d;
+    border-radius: 10px;
+    box-shadow: 0 1px 5px #0007;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+    position: relative;
+}
+
+.bank-slot:hover, .player-bank-slot:hover {
+    border-color: #ffd952;
+    box-shadow: 0 2px 10px #ffd95244;
+}
+
+.bank-slot.dragover, .player-bank-slot.dragover {
+    border-color: #27ae60;
+    background: rgba(39, 174, 96, 0.3);
+}
+
+/* Slots avec items */
+.bank-slot.has-item, .player-bank-slot.has-item {
+    background: rgba(15, 52, 96, 0.6);
+    border-color: #27ae60;
+}
+
+/* Image des items - Même style que inventory-responsive.css */
+.bank-slot img, .player-bank-slot img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 0 6px #0009);
+}
+
+/* Quantité des items - Même style que inventory-responsive.css */
+.bank-slot .item-quantity, .player-bank-slot .item-quantity {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #ffd952;
+    font-size: clamp(10px, 1.6vw, 13px);
+    font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 4px;
+    min-width: 16px;
+    text-align: center;
+    border: 1px solid #ffd952;
+    line-height: 1;
+}
+
+/* Catégories d'inventaire - Banque et Joueur */
+.bank-inventory-categories {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 10px;
+    justify-content: center;
+}
+
+.bank-inventory-tab {
+    background: rgba(15, 52, 96, 0.3);
+    border: 2px solid #0f3460;
+    border-radius: 6px;
+    padding: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bank-inventory-tab:hover {
+    background: rgba(15, 52, 96, 0.5);
+    border-color: #3498db;
+}
+
+.bank-inventory-tab.active {
+    background: rgba(52, 152, 219, 0.3);
+    border-color: #3498db;
+}
+
+/* Style des icônes dans les onglets */
+.bank-inventory-tab img {
+    width: 32px;
+    height: 26px;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 0 6px #0009);
+}
+
+.bank-inventory-tab[data-category="equipement"] {
+    font-size: 20px;
+}
+
+.bank-inventory-tab[data-category="potions"] {
+    font-size: 20px;
+}
+
+.bank-inventory-tab[data-category="ressources"] {
+    font-size: 20px;
+}
+
+/* ===== RESPONSIVE DESIGN COMPLET (Style copié depuis inventory-responsive.css) ===== */
+
+/* Modal: taille adaptative à l'écran, scroll interne si besoin */
+#bank-modal {
+    /* Laisser le CSS existant gérer l'affichage/position */
+}
+
+/* Croix de fermeture (surcharge responsive) */
+.bank-close {
+    right: 10px !important; /* petit cran supplémentaire */
+    top: 6px !important;
+    transform: none !important;
+    z-index: 1002 !important;
+}
+
+#bank-modal #bank-content {
+    max-width: min(95vw, 1280px);
+    width: clamp(680px, 92vw, 1100px);
+    /* Réduction supplémentaire de la hauteur globale du fond */
+    min-height: clamp(550px, 55vh, 650px);
+    max-height: min(75vh, 650px);
+    height: auto;
+    margin: 0 !important;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* Conteneur principal de la grille: autoriser le rétrécissement */
+.bank-inventory-container, .player-inventory-container {
+    min-width: 0;
+}
+
+/* Barre d'onglets: permettre le retour à la ligne et éviter le débordement */
+.bank-inventory-categories { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: clamp(10px, 2.2vw, 20px); 
+    min-height: 40px; 
+}
+
+/* Responsive pour les onglets */
+@media (max-width: 600px) {
+    .bank-inventory-categories {
+        gap: clamp(6px, 1.5vw, 12px);
+        min-height: 35px;
+    }
+    
+    .bank-inventory-tab {
+        padding: 6px;
+    }
+    
+    .bank-inventory-tab img {
+        width: 28px;
+        height: 22px;
+    }
+    
+    .bank-inventory-tab[data-category="equipement"],
+    .bank-inventory-tab[data-category="potions"],
+    .bank-inventory-tab[data-category="ressources"] {
+        font-size: 18px;
+    }
+}
+
+.bank-inventory-categories::after {
+    content: '';
+    flex: 1 1 auto; /* pousse la zone de droite */
+}
+
+/* Grille d'items: auto-fit + minmax pour s'adapter à la largeur disponible */
+.bank-inventory-grid, .player-inventory-bank-grid {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important; /* 5 colonnes comme demandé */
+    gap: 4px !important;
+    padding: 6px !important;
+    box-sizing: border-box !important;
+    max-height: calc(100% - 60px) !important; /* 60px ~ bande onglets */
+    overflow: auto !important;
+}
+
+/* Slots d'inventaire: se redimensionnent aussi avec la hauteur de fenêtre */
+.bank-inventory-grid .bank-slot,
+.player-inventory-bank-grid .player-bank-slot {
+    width: clamp(36px, min(4.8vw, 7vh), 60px);
+    height: clamp(36px, min(4.8vw, 7vh), 60px);
+}
+
+/* Quantités: lisibles même en petit */
+.bank-inventory-grid .item-quantity,
+.player-inventory-bank-grid .item-quantity {
+    font-size: clamp(10px, 1.6vw, 13px);
+    line-height: 1;
+}
+
+/* Petites résolutions: empiler les blocs pour éviter les débordements */
+@media (max-width: 1100px) {
+    #bank-modal #bank-content {
+        grid-template-columns: 1fr; /* une colonne */
+    }
+    /* Empiler proprement dans l'ordre naturel */
+    .bank-section { grid-column: 1 / -1; }
+}
+
+/* Très petites résolutions (mobile/mini fenêtre) */
+@media (max-width: 740px) {
+    .bank-inventory-grid, .player-inventory-bank-grid {
+        grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+        gap: 6px;
+        max-height: 50vh;
+    }
+    .bank-slot, .player-bank-slot {
+        width: clamp(36px, 7vw, 56px);
+        height: clamp(36px, 7vw, 56px);
+    }
+}
+
+/* Ajustements écrans bas (ex: 1360x768): éviter la coupe */
+@media (max-height: 820px) {
+    #bank-modal #bank-content {
+        max-height: 70vh !important;
+        min-height: 400px !important;
+        overflow: auto !important;
+    }
+}
+
+/* Responsive design de base */
+@media (max-width: 600px) {
+    #banquier-dialog-content {
+        width: 95%;
+        padding: 15px;
+    }
+    
+    .banquier-dialog-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .banquier-dialog-name {
+        font-size: 16px;
+    }
+    
+    .banquier-dialog-text {
+        font-size: 14px;
+    }
+    
+    .banquier-dialog-button {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    .bank-inventory-grid, .player-inventory-bank-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 4px !important;
+    }
+    
+    .bank-slot, .player-bank-slot {
+        width: clamp(36px, min(4.8vw, 7vh), 60px);
+        height: clamp(36px, min(4.8vw, 7vh), 60px);
+    }
+    
+    .bank-slot img, .player-bank-slot img {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+/* === COMPACT MODE BANQUE – overrides à coller en bas du fichier === */
+
+/* Espace entre les deux panneaux (gauche/droite) */
+.bank-body {
+    display: flex !important;
+    justify-content: space-between !important; /* pousse chaque section à gauche/droite */
+    gap: 20px !important; /* petit espace entre eux */
+    width: 100% !important;
+  }
+  
+
+/* Conteneurs : moins de padding interne */
+.bank-inventory-container,
+.player-inventory-container {
+  padding: 3px !important; /* ultra-compact */
+}
+
+/* Sections internes : moins larges */
+.bank-section {
+  padding: 6px !important;  /* ultra-compact */
+}
+
+/* Grilles : colonnes calées sur la largeur des slots, plus de 1fr étiré */
+.bank-inventory-grid,
+.player-inventory-bank-grid {
+  grid-template-columns: repeat(5, auto) !important; /* 5 colonnes comme demandé */
+  justify-content: center !important;  /* centre le bloc de 5 colonnes */
+  justify-items: center !important;    /* centre chaque slot dans sa cellule */
+  gap: 2px !important;                 /* ultra-compact */
+  padding: 3px !important;             /* ultra-compact */
+}
+
+/* Optionnel : modale un peu plus large pour plus d'espace */
+#bank-content {
+  max-width: 1000px !important; /* plus large */
+  width: 85% !important;
+}
+
+/* === MODAL DE CONFIRMATION DE DÉPÔT === */
+
+.deposit-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.deposit-content {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border: 2px solid #3498db;
+    border-radius: 15px;
+    padding: 25px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.deposit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 15px;
+}
+
+.deposit-header h3 {
+    color: #ecf0f1;
+    margin: 0;
+    font-size: 1.4em;
+}
+
+.deposit-close {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    font-size: 1.8em;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.3s;
+}
+
+.deposit-close:hover {
+    background-color: rgba(231, 76, 60, 0.2);
+}
+
+.deposit-body {
+    color: #ecf0f1;
+}
+
+.item-preview {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(52, 152, 219, 0.1);
+    border-radius: 10px;
+    border: 1px solid #3498db;
+}
+
+.item-preview img {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    border: 2px solid #3498db;
+}
+
+.item-info h4 {
+    margin: 0 0 5px 0;
+    color: #3498db;
+}
+
+.item-info p {
+    margin: 0;
+    color: #bdc3c7;
+    font-size: 0.9em;
+}
+
+.quantity-input {
+    margin-bottom: 20px;
+}
+
+.quantity-input label {
+    display: block;
+    margin-bottom: 8px;
+    color: #ecf0f1;
+    font-weight: bold;
+}
+
+.quantity-input input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    background: #2c3e50;
+    color: #ecf0f1;
+    font-size: 1em;
+    margin-bottom: 10px;
+}
+
+.quantity-input input:focus {
+    outline: none;
+    border-color: #e74c3c;
+    box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
+}
+
+#deposit-max-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s;
+}
+
+#deposit-max-btn:hover {
+    background: #2980b9;
+}
+
+.deposit-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.deposit-confirm, .deposit-cancel {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: bold;
+}
+
+.deposit-confirm {
+    background: #27ae60;
+    color: white;
+}
+
+.deposit-confirm:hover {
+    background: #229954;
+    transform: translateY(-2px);
+}
+
+.deposit-cancel {
+    background: #e74c3c;
+    color: white;
+}
+
+.deposit-cancel:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
+/* === ÉTATS DE DRAG & DROP === */
+.bank-slot.dragging,
+.player-bank-slot.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+.bank-slot.dragover,
+.player-bank-slot.dragover {
+    background-color: rgba(52, 152, 219, 0.3);
+    border: 2px dashed #3498db;
+    transform: scale(1.05);
+}
+
+/* === RESPONSIVE POUR LA MODAL DE DÉPÔT === */
+@media (max-width: 768px) {
+    .deposit-content {
+        padding: 20px;
+        max-width: 350px;
+    }
+    
+    .deposit-header h3 {
+        font-size: 1.2em;
+    }
+    
+    .item-preview {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .deposit-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .deposit-confirm, .deposit-cancel {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .deposit-content {
+        padding: 15px;
+        max-width: 300px;
+    }
+    
+    .deposit-header h3 {
+        font-size: 1.1em;
+    }
+    
+    .item-preview img {
+        width: 40px;
+        height: 40px;
+    }
+}

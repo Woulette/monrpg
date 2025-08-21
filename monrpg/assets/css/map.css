@@ -1,0 +1,434 @@
+/* Système de carte du monde - CSS */
+
+/* Modal de la carte */
+.map-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.map-container {
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    border: 2px solid #0f3460;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    max-width: 95vw;
+    max-height: 95vh;
+    width: 1400px;
+    height: 900px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Header de la carte */
+.map-header {
+    background: linear-gradient(90deg, #0f3460, #533483);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #e94560;
+}
+
+.map-header h2 {
+    color: #ffffff;
+    margin: 0;
+    font-size: 1.5em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.map-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.map-controls button {
+    background: linear-gradient(145deg, #e94560, #c81d25);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.map-controls button:hover {
+    background: linear-gradient(145deg, #f05454, #e94560);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.map-controls button:active {
+    transform: translateY(0);
+}
+
+/* Contenu de la carte */
+.map-content {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #0f0f23;
+}
+
+#world-map-canvas {
+    display: block;
+    cursor: grab;
+    background: #0f0f23;
+    border-radius: 0 0 13px 13px;
+}
+
+#world-map-canvas:active {
+    cursor: grabbing;
+}
+
+/* Légende de la carte */
+.map-legend {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(15, 15, 35, 0.9);
+    border: 1px solid #e94560;
+    border-radius: 10px;
+    padding: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.legend-item:last-child {
+    margin-bottom: 0;
+}
+
+.legend-icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+/* Tooltip de la carte */
+.map-tooltip {
+    position: fixed;
+    background: rgba(15, 15, 35, 0.95);
+    border: 2px solid #e94560;
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #ffffff;
+    font-size: 14px;
+    white-space: pre-line;
+    z-index: 1001;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    max-width: 300px;
+    line-height: 1.4;
+}
+
+/* Menu contextuel */
+.map-context-menu {
+    position: fixed;
+    background: rgba(15, 15, 35, 0.95);
+    border: 2px solid #e94560;
+    border-radius: 8px;
+    padding: 8px 0;
+    z-index: 1002;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    min-width: 180px;
+}
+
+.menu-item {
+    padding: 10px 16px;
+    color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 14px;
+}
+
+.menu-item:hover {
+    background: rgba(233, 69, 96, 0.3);
+}
+
+.menu-item:first-child {
+    border-radius: 6px 6px 0 0;
+}
+
+.menu-item:last-child {
+    border-radius: 0 0 6px 6px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .map-container {
+        width: 95vw;
+        height: 85vh;
+    }
+    
+    .map-header h2 {
+        font-size: 1.3em;
+    }
+    
+    .map-controls button {
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    .map-container {
+        width: 98vw;
+        height: 90vh;
+        border-radius: 10px;
+    }
+    
+    .map-header {
+        padding: 12px 15px;
+    }
+    
+    .map-header h2 {
+        font-size: 1.1em;
+    }
+    
+    .map-controls {
+        gap: 6px;
+    }
+    
+    .map-controls button {
+        padding: 5px 8px;
+        font-size: 12px;
+    }
+    
+    .map-legend {
+        bottom: 10px;
+        right: 10px;
+        padding: 10px;
+        font-size: 12px;
+    }
+    
+    .legend-item {
+        font-size: 12px;
+        gap: 6px;
+    }
+    
+    .legend-icon {
+        font-size: 14px;
+        width: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .map-header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+    }
+    
+    .map-controls {
+        order: -1;
+    }
+    
+    .map-header h2 {
+        font-size: 1em;
+    }
+    
+    .map-legend {
+        position: static;
+        margin: 10px;
+        border-radius: 8px;
+    }
+}
+
+/* Animations */
+@keyframes mapFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.map-modal[style*="display: flex"] .map-container {
+    animation: mapFadeIn 0.3s ease-out;
+}
+
+/* États de focus pour l'accessibilité */
+.map-controls button:focus {
+    outline: 2px solid #e94560;
+    outline-offset: 2px;
+}
+
+#world-map-canvas:focus {
+    outline: 2px solid #e94560;
+    outline-offset: 2px;
+}
+
+/* Scrollbar personnalisée pour le canvas */
+.map-content::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.map-content::-webkit-scrollbar-track {
+    background: rgba(15, 15, 35, 0.5);
+    border-radius: 4px;
+}
+
+.map-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(145deg, #e94560, #c81d25);
+    border-radius: 4px;
+}
+
+.map-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(145deg, #f05454, #e94560);
+}
+
+/* États de chargement */
+.map-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #ffffff;
+    font-size: 18px;
+}
+
+.map-loading::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e94560;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Indicateurs de performance */
+.map-performance-indicator {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(15, 15, 35, 0.8);
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    z-index: 1003;
+}
+
+/* Mode sombre/clair (pour future implémentation) */
+.map-modal.light-theme {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.map-modal.light-theme .map-container {
+    background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+    border-color: #6c757d;
+}
+
+.map-modal.light-theme .map-header {
+    background: linear-gradient(90deg, #495057, #6c757d);
+}
+
+.map-modal.light-theme .map-content {
+    background: #ffffff;
+}
+
+.map-modal.light-theme #world-map-canvas {
+    background: #ffffff;
+}
+
+/* Tooltips de donjons */
+.dungeon-tooltip {
+    position: fixed;
+    background: linear-gradient(145deg, #1e3a8a, #3b82f6);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 1002;
+    pointer-events: none;
+    border: 2px solid #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.dungeon-tooltip-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dungeon-icon {
+    font-size: 16px;
+}
+
+.dungeon-name {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+/* Tooltips de quêtes */
+.quest-tooltip {
+    position: fixed;
+    background: linear-gradient(145deg, #15803d, #22c55e);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 1002;
+    pointer-events: none;
+    border: 2px solid #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.quest-tooltip-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quest-icon {
+    font-size: 16px;
+}
+
+.quest-name {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+} 
