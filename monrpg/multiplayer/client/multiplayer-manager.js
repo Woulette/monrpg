@@ -12,7 +12,7 @@ class MultiplayerManager {
         // Configuration
         this.serverUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
             ? 'ws://localhost:3001' 
-            : 'wss://monrpg.onrender.com'; // URL de votre serveur Render
+            : 'ws://localhost:3001'; // URL de votre serveur local
         this.updateInterval = null;
         
         console.log('🎮 Système multijoueur initialisé');
