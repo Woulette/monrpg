@@ -61,9 +61,9 @@ const DEFAULT_USERS = [
   }
   
   // Créer les comptes par défaut s'ils n'existent pas
-  if (users.size === 0) {
-    console.log('🔐 Création des comptes par défaut...');
-    for (const defaultUser of DEFAULT_USERS) {
+  console.log('🔐 Vérification des comptes par défaut...');
+  for (const defaultUser of DEFAULT_USERS) {
+    if (!users.has(defaultUser.username)) {
       const passwordHash = bcrypt.hashSync(defaultUser.password, 10);
       const user = { 
         id: nextUserId++, 
@@ -73,9 +73,11 @@ const DEFAULT_USERS = [
       };
       users.set(defaultUser.username, user);
       console.log(`✅ Compte créé: ${defaultUser.username} (mot de passe: ${defaultUser.password})`);
+    } else {
+      console.log(`ℹ️ Compte existant: ${defaultUser.username}`);
     }
-    persistUsers();
   }
+  persistUsers();
 })();
 
 function persistUsers() {
