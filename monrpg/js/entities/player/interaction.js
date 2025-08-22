@@ -247,16 +247,63 @@ document.addEventListener('DOMContentLoaded', () => {
             // Sélectionner le monstre et activer le suivi automatique pour l'attaque
             attackTarget = clickedMonster;
             window.attackTarget = attackTarget;
-            player.autoFollow = true; // Activer le suivi automatique pour le double-clic
+            
+            // Adapter le comportement selon la classe du joueur
+            if (window.classSpellManager && typeof window.classSpellManager.getCurrentAttackRange === 'function') {
+                const currentAttackRange = window.classSpellManager.getCurrentAttackRange();
+                
+                // Pour les classes à distance (comme Mage), ne pas activer autoFollow
+                if (currentAttackRange > 1) {
+                    player.autoFollow = false;
+                    console.log(`🎯 Double-clic: Attaque à distance (portée: ${currentAttackRange}) - autoFollow désactivé`);
+                } else {
+                    // Pour les classes au corps à corps (comme Aventurier)
+                    player.autoFollow = true;
+                    console.log(`⚔️ Double-clic: Attaque au corps à corps - autoFollow activé`);
+                }
+            } else {
+                // Fallback si le gestionnaire de classe n'est pas disponible
+                player.autoFollow = true;
+            }
             
             // Créer un chemin vers le monstre et attaquer dès qu'on est à portée
             if (typeof findPath === "function" && window.mapData) {
-                let destinations = [
-                    {x: clickedMonster.x+1, y: clickedMonster.y},
-                    {x: clickedMonster.x-1, y: clickedMonster.y},
-                    {x: clickedMonster.x, y: clickedMonster.y+1},
-                    {x: clickedMonster.x, y: clickedMonster.y-1},
-                ].filter(pos =>
+                // Obtenir la portée d'attaque actuelle
+                let targetDistance = 1; // Distance par défaut (corps à corps)
+                if (window.classSpellManager && typeof window.classSpellManager.getCurrentAttackRange === 'function') {
+                    targetDistance = window.classSpellManager.getCurrentAttackRange();
+                }
+                
+                // Calculer la position cible selon la portée
+                let destinations = [];
+                if (targetDistance === 1) {
+                    // Corps à corps : positions adjacentes
+                    destinations = [
+                        {x: clickedMonster.x+1, y: clickedMonster.y},
+                        {x: clickedMonster.x-1, y: clickedMonster.y},
+                        {x: clickedMonster.x, y: clickedMonster.y+1},
+                        {x: clickedMonster.x, y: clickedMonster.y-1},
+                    ];
+                } else {
+                    // Distance : position à la portée exacte
+                    const dx = clickedMonster.x - player.x;
+                    const dy = clickedMonster.y - player.y;
+                    const distance = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (distance > targetDistance) {
+                        // Calculer la position à la portée exacte
+                        const angle = Math.atan2(dy, dx);
+                        const targetX = Math.round(clickedMonster.x - Math.cos(angle) * targetDistance);
+                        const targetY = Math.round(clickedMonster.y - Math.sin(angle) * targetDistance);
+                        
+                        destinations = [{x: targetX, y: targetY}];
+                    } else {
+                        // Déjà à portée, pas besoin de se déplacer
+                        destinations = [];
+                    }
+                }
+                
+                destinations = destinations.filter(pos =>
                     pos.x >= 0 && pos.x < mapData.width &&
                     pos.y >= 0 && pos.y < mapData.height &&
                     !window.isBlocked(pos.x, pos.y) &&

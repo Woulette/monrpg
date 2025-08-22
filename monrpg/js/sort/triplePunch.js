@@ -73,9 +73,35 @@ function initTripleSystem() {
   initTripleSpell();
   addTripleSlot();
   updateTripleUnlockStatus();
+  addTripleKeyboardShortcut();
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initTripleSystem); } else { initTripleSystem(); }
+
+// Fonction pour ajouter le raccourci clavier
+function addTripleKeyboardShortcut() {
+  // Attendre que le DOM soit chargé
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addTripleKeyboardShortcut);
+    return;
+  }
+  
+  // Ajouter le raccourci clavier pour le sort 3 (touches '3' ou '#')
+  window.addEventListener('keydown', (e) => {
+    if (e.key === '3' || e.key === '#' || e.code === 'Digit3' || e.code === 'Key3') {
+      const spell = window.SPELLS && window.SPELLS['spell-slot-3'];
+      if (spell && spell.unlocked) {
+        handleTriplePunchCombo();
+      } else if (spell) {
+        if (typeof window.addChatMessage === 'function') {
+          window.addChatMessage(`Niveau ${spell.levelRequired} requis pour ${spell.name}`, 'system');
+        }
+      }
+    }
+  });
+  
+  console.log('⌨️ Raccourci clavier Triple Punch ajouté (touche 3)');
+}
 
 // Exports
 window.handleTriplePunchCombo = handleTriplePunchCombo;

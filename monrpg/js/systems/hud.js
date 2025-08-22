@@ -436,6 +436,13 @@ function positionHudIcons() {
             mapIcon.style.top = (rect.height * 0.91) + 'px';
         }
         
+        // Classe (à gauche de la carte)
+        const classeIcon = document.getElementById('classe-icon');
+        if (classeIcon) {
+            classeIcon.style.left = (rect.width * 0.72) + 'px';
+            classeIcon.style.top = (rect.height * 0.91) + 'px';
+        }
+        
         // Initialiser l'événement de clic pour l'icône de carte
         if (mapIcon && !mapIcon.hasEventListener) {
             mapIcon.addEventListener('click', function() {
@@ -446,6 +453,14 @@ function positionHudIcons() {
             mapIcon.hasEventListener = true;
         }
 
+        // Initialiser l'événement de clic pour l'icône de classe
+        if (classeIcon && !classeIcon.hasEventListener) {
+            classeIcon.addEventListener('click', function() {
+                showClassPanel();
+            });
+            classeIcon.hasEventListener = true;
+        }
+        
         // Initialiser l'événement de clic pour l'icône de mini-carte
         if (minimapIcon && !minimapIcon.hasEventListener) {
             minimapIcon.addEventListener('click', function() {
@@ -656,3 +671,5 @@ function drawAllTooltips(ctx) {
         drawOtherPlayersNameTooltip(ctx, window.mouseX, window.mouseY);
     }
 }
+
+// Le système de changement de classe a été déplacé vers js/systems/changementclasse.js

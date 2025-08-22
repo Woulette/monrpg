@@ -47,22 +47,7 @@
       }
       return;
     }
-    if (e.key === '2' || e.key === 'é' || e.key === 'É') {
-      const spell = window.SPELLS && window.SPELLS['spell-slot-2'];
-      if (spell && spell.unlocked) {
-        e.preventDefault(); e.stopPropagation();
-        if (typeof window.castExplosivePunch === 'function') window.castExplosivePunch();
-      }
-      return;
-    }
-    if (e.key === '3' || e.key === '#' || e.code === 'Digit3' || e.code === 'Key3') {
-      const spell = window.SPELLS && window.SPELLS['spell-slot-3'];
-      if (spell && spell.unlocked) {
-        e.preventDefault(); e.stopPropagation();
-        if (typeof window.handleTriplePunchCombo === 'function') window.handleTriplePunchCombo();
-      }
-      return;
-    }
+
     // Raccourci sort 4: Poingheal
     if (e.key === '4' || e.key === '$' || e.code === 'Digit4' || e.code === 'Key4') {
       const spell = window.SPELLS && window.SPELLS['spell-slot-4'];

@@ -6,6 +6,7 @@
     <!-- Ordre : style.css (général) → hud.css (icone inventaire) → inventory.css (modale + slots inventaire) → equipment.css (slots équipement) -->
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/hud.css">
+    <link rel="stylesheet" href="assets/css/changementclasse.css">
     <link rel="stylesheet" href="assets/css/inventory.css">
     <link rel="stylesheet" href="assets/css/equipment.css">
     <link rel="stylesheet" href="assets/css/tooltip.css">
@@ -237,6 +238,7 @@
             <div id="quetes-icon"><span>📋</span></div>
             <div id="sort-icon"><span style="font-size: 2em; line-height: 1;">✨</span></div>
             <div id="map-icon"><span style="font-size: 2em; line-height: 1;">🗺️</span></div>
+            <div id="classe-icon"><span style="font-size: 2em; line-height: 1;">🎭</span></div>
         </div>
     </div>
 
@@ -958,8 +960,8 @@
 
     <!-- JS à charger en dernier (sauf utils.js et monsters/ déjà chargés dans le head) -->
 <script src="js/systems/hud.js"></script>
+<script src="js/systems/changementclasse.js"></script>
 <script src="js/systems/display.js"></script>
-<script src="js/systems/input.js"></script>
 <script src="js/systems/dev-utils.js"></script>
 <script src="js/core/pathfinding.js"></script>
 <script src="js/entities/player/constants.js"></script>

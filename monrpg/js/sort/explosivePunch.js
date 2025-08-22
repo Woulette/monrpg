@@ -73,9 +73,35 @@ function initExplosiveSystem() {
   initExplosiveSpell();
   addExplosiveSlot();
   updateExplosiveUnlockStatus();
+  addExplosiveKeyboardShortcut();
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initExplosiveSystem); } else { initExplosiveSystem(); }
+
+// Fonction pour ajouter le raccourci clavier
+function addExplosiveKeyboardShortcut() {
+  // Attendre que le DOM soit chargé
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addExplosiveKeyboardShortcut);
+    return;
+  }
+  
+  // Ajouter le raccourci clavier pour le sort 2 (touches '2' ou 'é')
+  window.addEventListener('keydown', (e) => {
+    if (e.key === '2' || e.key === 'é' || e.key === 'É') {
+      const spell = window.SPELLS && window.SPELLS['spell-slot-2'];
+      if (spell && spell.unlocked) {
+        castExplosivePunch();
+      } else if (spell) {
+        if (typeof window.addChatMessage === 'function') {
+          window.addChatMessage(`Niveau ${spell.levelRequired} requis pour ${spell.name}`, 'system');
+        }
+      }
+    }
+  });
+  
+  console.log('⌨️ Raccourci clavier Explosive Punch ajouté (touche 2)');
+}
 
 // Exports
 window.castExplosivePunch = castExplosivePunch;
