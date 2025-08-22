@@ -94,6 +94,7 @@ function castPoingheal() {
     attackTarget.aggro = true;
     attackTarget.aggroTarget = window.player;
     attackTarget.lastCombat = Date.now();
+    attackTarget.state = 'aggro'; // Forcer l'état en aggro pour déclencher l'IA
     window.player.inCombat = true;
     
     // Afficher les dégâts sur la cible
@@ -102,9 +103,7 @@ function castPoingheal() {
     }
     
     // Aligner le monstre sur sa case pendant le combat
-    if (typeof window.alignMonsterToGrid === 'function') {
-        window.alignMonsterToGrid(attackTarget);
-    }
+    // Système de replacement supprimé pour la nouvelle IA des monstres
     
     // Calculer le soin (20% des dégâts infligés)
     const healAmount = Math.floor(finalDamage * POINGHEAL_SPELL.healPercentage);
@@ -123,34 +122,7 @@ function castPoingheal() {
         console.log(`💚 Poingheal: Soin de ${actualHeal} HP (${healAmount} calculé)`);
     }
     
-    // Riposte du monstre si vivant (sauf pour les slimes et boss slime qui ont leur propre système d'attaque)
-    if (attackTarget.hp > 0 && attackTarget.type !== "slime" && attackTarget.type !== "slimeboss") {
-        // Cooldown de riposte pour éviter les attaques doubles
-        const riposteCooldown = 1000; // 1 seconde de cooldown
-        if (!attackTarget.lastRiposte || (Date.now() - attackTarget.lastRiposte) >= riposteCooldown) {
-            // Calcul des dégâts du monstre : dégâts de base + force du monstre avec variation de 25%
-            const monsterBaseDamage = attackTarget.damage !== undefined ? attackTarget.damage : 3;
-            const monsterTotalDamage = monsterBaseDamage + (attackTarget.force || 0);
-            const variation = 0.25; // 25% de variation
-            const randomFactor = 1 + (Math.random() * 2 - 1) * variation; // Entre 0.75 et 1.25
-            const monsterDamage = Math.max(1, Math.floor(monsterTotalDamage * randomFactor) - window.player.defense);
-            window.player.life -= monsterDamage;
-            if (window.player.life < 0) window.player.life = 0;
-            
-            // Afficher les dégâts reçus par le joueur
-            if (typeof window.displayDamage === "function") {
-                window.displayDamage(window.player.px, window.player.py, monsterDamage, 'damage', true);
-            }
-            
-            // XP défense pour avoir reçu des dégâts
-            if (typeof window.gainStatXP === "function") {
-                window.gainStatXP('defense', 1);
-            }
-            
-            // Marquer le temps de la dernière riposte
-            attackTarget.lastRiposte = Date.now();
-        }
-    }
+    // Plus de riposte automatique - les monstres attaquent via leur IA
     
     // Monstre mort
     if (attackTarget.hp <= 0 && !(window.multiplayerManager && window.multiplayerManager.connected)) {

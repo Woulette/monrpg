@@ -130,10 +130,7 @@ function updateMonsters(ts) {
         
         if (!monster.img || monster.hp <= 0) continue;
         
-        // Mettre à jour l'alignement fluide si nécessaire
-        if (typeof updateMonsterAlignment === 'function') {
-            updateMonsterAlignment(monster);
-        }
+        // Système d'alignement supprimé - Les monstres utilisent leur IA naturelle
         
         // --- DÉLÉGATION VERS LES IA SPÉCIALISÉES ---
         
@@ -173,6 +170,22 @@ function updateMonsters(ts) {
         if (monster.type === 'maitrecorbeau') {
             if (typeof rangedAI === 'function') {
                 rangedAI(monster, ts);
+            }
+            continue;
+        }
+        
+        // Cochon - IA de chasse
+        if (monster.type === 'cochon') {
+            if (typeof updateCochon === 'function') {
+                updateCochon(monster, ts);
+            }
+            continue;
+        }
+        
+        // Aluineeks - IA de chasse
+        if (monster.type === 'aluineeks') {
+            if (typeof updateAluineeks === 'function') {
+                updateAluineeks(monster, ts);
             }
             continue;
         }

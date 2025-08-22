@@ -84,8 +84,8 @@ function castBouleDeFeu() {
   }
   
   // Vérifier que le joueur n'est pas trop proche (éviter le corps à corps)
-  if (distance < 2) {
-    console.log('❌ Cible trop proche pour Boule de feu (distance: ' + distance + ', minimum: 2)');
+  if (distance < 0) {
+    console.log('❌ Cible trop proche pour Boule de feu (distance: ' + distance + ', minimum: 0)');
     return;
   }
   
@@ -165,6 +165,7 @@ function castBouleDeFeu() {
   attackTarget.aggro = true;
   attackTarget.aggroTarget = window.player;
   attackTarget.lastCombat = currentTime;
+  attackTarget.state = 'aggro'; // Forcer l'état en aggro pour déclencher l'IA
   window.player.inCombat = true;
   
   // Affichage des dégâts
@@ -173,9 +174,7 @@ function castBouleDeFeu() {
   }
   
   // Alignement du monstre
-  if (typeof window.alignMonsterToGrid === 'function') {
-    window.alignMonsterToGrid(attackTarget);
-  }
+  // Système de replacement supprimé pour la nouvelle IA des monstres
   
 
   

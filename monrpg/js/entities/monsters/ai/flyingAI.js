@@ -21,9 +21,7 @@ function flyingAI(monster, ts) {
     if (!monster.img || monster.hp <= 0) return;
     
     // Mettre à jour l'alignement fluide si nécessaire
-    if (typeof updateMonsterAlignment === 'function') {
-        updateMonsterAlignment(monster);
-    }
+    // Système d'alignement supprimé - Les monstres utilisent leur IA naturelle
     
     // Mouvement en cours : on ne touche pas au path sauf en aggro
     if (monster.moving && monster.state !== 'aggro') return;
@@ -113,7 +111,8 @@ function flyingAI(monster, ts) {
         ].filter(pos =>
             pos.x >= 0 && pos.x < mapData.width &&
             pos.y >= 0 && pos.y < mapData.height &&
-            !monsters.some(m => m !== monster && m.x === pos.x && m.y === pos.y)
+            !monsters.some(m => m !== monster && m.x === pos.x && m.y === pos.y) &&
+            !window.isOccupied(pos.x, pos.y, monster) // VÉRIFICATION DE COLLISION AVEC LE JOUEUR
             // Note: Pas de vérification isBlocked pour les monstres volants
         );
         

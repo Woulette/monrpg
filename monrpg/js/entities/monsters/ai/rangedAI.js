@@ -21,9 +21,7 @@ function rangedAI(monster, ts) {
     if (!monster.img || monster.hp <= 0) return;
     
     // Mettre à jour l'alignement fluide si nécessaire
-    if (typeof updateMonsterAlignment === 'function') {
-        updateMonsterAlignment(monster);
-    }
+    // Système d'alignement supprimé - Les monstres utilisent leur IA naturelle
     
     // Mouvement en cours : on ne touche pas au path sauf en aggro
     if (monster.moving && monster.state !== 'aggro') return;
@@ -116,15 +114,28 @@ function rangedAI(monster, ts) {
                 pos.x >= 0 && pos.x < mapData.width &&
                 pos.y >= 0 && pos.y < mapData.height &&
                 !window.isBlocked(pos.x, pos.y) &&
-                !monsters.some(m => m !== monster && m.x === pos.x && m.y === pos.y)
+                !monsters.some(m => m !== monster && m.x === pos.x && m.y === pos.y) &&
+                !window.isOccupied(pos.x, pos.y, monster) // VÉRIFICATION DE COLLISION AVEC LE JOUEUR
             );
             
             if (escapePositions.length > 0) {
                 let escapePos = escapePositions[Math.floor(Math.random() * escapePositions.length)];
+                // Créer une fonction de collision qui inclut les monstres et le joueur
+                const isBlockedWithCollisions = (x, y) => {
+                    // Vérifier les collisions du calque 2
+                    if (window.isBlocked(x, y)) return true;
+                    // Vérifier s'il y a un monstre vivant à cette position
+                    const monsterAtPosition = monsters.find(m => m.x === x && m.y === y && m.hp > 0 && !m.isDead);
+                    if (monsterAtPosition) return true;
+                    // Vérifier si le joueur occupe cette position
+                    if (player && player.x === x && player.y === y) return true;
+                    return false;
+                };
+                
                 let path = findPath(
                     { x: monster.x, y: monster.y },
                     { x: escapePos.x, y: escapePos.y },
-                    window.isBlocked,
+                    isBlockedWithCollisions,
                     mapData.width, mapData.height
                 );
                 
@@ -151,15 +162,28 @@ function rangedAI(monster, ts) {
                 pos.x >= 0 && pos.x < mapData.width &&
                 pos.y >= 0 && pos.y < mapData.height &&
                 !window.isBlocked(pos.x, pos.y) &&
-                !monsters.some(m => m !== monster && m.x === pos.x && m.y === pos.y)
+                !monsters.some(m => m !== monster && m.x === pos.x && m.y === pos.y) &&
+                !window.isOccupied(pos.x, pos.y, monster) // VÉRIFICATION DE COLLISION AVEC LE JOUEUR
             );
             
             if (escapePositions.length > 0) {
                 let escapePos = escapePositions[Math.floor(Math.random() * escapePositions.length)];
+                // Créer une fonction de collision qui inclut les monstres et le joueur
+                const isBlockedWithCollisions = (x, y) => {
+                    // Vérifier les collisions du calque 2
+                    if (window.isBlocked(x, y)) return true;
+                    // Vérifier s'il y a un monstre vivant à cette position
+                    const monsterAtPosition = monsters.find(m => m.x === x && m.y === y && m.hp > 0 && !m.isDead);
+                    if (monsterAtPosition) return true;
+                    // Vérifier si le joueur occupe cette position
+                    if (player && player.x === x && player.y === y) return true;
+                    return false;
+                };
+                
                 let path = findPath(
                     { x: monster.x, y: monster.y },
                     { x: escapePos.x, y: escapePos.y },
-                    window.isBlocked,
+                    isBlockedWithCollisions,
                     mapData.width, mapData.height
                 );
                 
@@ -181,15 +205,28 @@ function rangedAI(monster, ts) {
                 pos.x >= 0 && pos.x < mapData.width &&
                 pos.y >= 0 && pos.y < mapData.height &&
                 !window.isBlocked(pos.x, pos.y) &&
-                !monsters.some(m => m !== monster && m.x === pos.x && m.y === pos.y)
+                !monsters.some(m => m !== monster && m.x === pos.x && m.y === pos.y) &&
+                !window.isOccupied(pos.x, pos.y, monster) // VÉRIFICATION DE COLLISION AVEC LE JOUEUR
             );
             
             if (approachPositions.length > 0) {
                 let approachPos = approachPositions[Math.floor(Math.random() * approachPositions.length)];
+                // Créer une fonction de collision qui inclut les monstres et le joueur
+                const isBlockedWithCollisions = (x, y) => {
+                    // Vérifier les collisions du calque 2
+                    if (window.isBlocked(x, y)) return true;
+                    // Vérifier s'il y a un monstre vivant à cette position
+                    const monsterAtPosition = monsters.find(m => m.x === x && m.y === y && m.hp > 0 && !m.isDead);
+                    if (monsterAtPosition) return true;
+                    // Vérifier si le joueur occupe cette position
+                    if (player && player.x === x && player.y === y) return true;
+                    return false;
+                };
+                
                 let path = findPath(
                     { x: monster.x, y: monster.y },
                     { x: approachPos.x, y: approachPos.y },
-                    window.isBlocked,
+                    isBlockedWithCollisions,
                     mapData.width, mapData.height
                 );
                 

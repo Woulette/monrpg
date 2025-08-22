@@ -1382,9 +1382,7 @@ function castExplosivePunch() {
       }
       
       // Aligner le monstre sur sa case pendant le combat
-      if (typeof alignMonsterToGrid === 'function') {
-        alignMonsterToGrid(attackTarget);
-      }
+      // Système de replacement supprimé pour la nouvelle IA des monstres
 
       // Riposte du monstre si vivant (sauf pour les slimes et boss slime qui ont leur propre système d'attaque)
       if (attackTarget.hp > 0 && attackTarget.type !== "slime" && attackTarget.type !== "slimeboss") {
@@ -1550,9 +1548,7 @@ function executeTriplePunchStep(step) {
   }
   
   // Aligner le monstre sur sa case pendant le combat
-  if (typeof alignMonsterToGrid === 'function') {
-    alignMonsterToGrid(attackTarget);
-  }
+  // Système de replacement supprimé pour la nouvelle IA des monstres
 
   // Riposte du monstre si vivant (sauf pour les slimes et boss slime qui ont leur propre système d'attaque)
   if (attackTarget.hp > 0 && attackTarget.type !== "slime" && attackTarget.type !== "slimeboss") {

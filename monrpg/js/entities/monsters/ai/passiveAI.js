@@ -24,9 +24,7 @@ function passiveAI(monster, ts) {
     if (!monster.img || monster.hp <= 0) return;
     
     // Mettre à jour l'alignement fluide si nécessaire
-    if (typeof updateMonsterAlignment === 'function') {
-        updateMonsterAlignment(monster);
-    }
+    // Système d'alignement supprimé - Les monstres utilisent leur IA naturelle
     
     // Mouvement en cours : on ne touche pas au path
     if (monster.moving) return;
@@ -70,10 +68,22 @@ function passiveAI(monster, ts) {
             }
             
             // Vérifier que le chemin est possible
+            // Créer une fonction de collision qui inclut les monstres et le joueur
+            const isBlockedWithCollisions = (x, y) => {
+                // Vérifier les collisions du calque 2
+                if (window.isBlocked(x, y)) return true;
+                // Vérifier s'il y a un monstre vivant à cette position
+                const monsterAtPosition = monsters.find(m => m.x === x && m.y === y && m.hp > 0 && !m.isDead);
+                if (monsterAtPosition) return true;
+                // Vérifier si le joueur occupe cette position
+                if (player && player.x === x && player.y === y) return true;
+                return false;
+            };
+            
             let path = findPath(
                 { x: monster.x, y: monster.y },
                 { x: tx, y: ty },
-                window.isBlocked,
+                isBlockedWithCollisions,
                 mapData.width, mapData.height
             );
             if (path && path.length > 0) {

@@ -107,6 +107,7 @@ function castPunch() {
   // Gestion de l'aggro et du combat
   attackTarget.aggro = true;
   attackTarget.aggroTarget = window.player;
+  attackTarget.state = 'aggro'; // FORCER L'ÉTAT EN AGGRO
   attackTarget.lastCombat = currentTime;
   window.player.inCombat = true;
   
@@ -116,33 +117,9 @@ function castPunch() {
   }
   
   // Alignement du monstre
-  if (typeof window.alignMonsterToGrid === 'function') {
-    window.alignMonsterToGrid(attackTarget);
-  }
+  // Système de replacement supprimé pour la nouvelle IA des monstres
   
-  // Riposte du monstre
-  if (attackTarget.hp > 0 && attackTarget.type !== "slime" && attackTarget.type !== "slimeboss") {
-    const riposteCooldown = 1000;
-    if (!attackTarget.lastRiposte || (currentTime - attackTarget.lastRiposte) >= riposteCooldown) {
-      const monsterBaseDamage = attackTarget.damage ?? 3;
-      const monsterTotalDamage = monsterBaseDamage + (attackTarget.force || 0);
-      const variation = 0.25;
-      const randomFactor = 1 + (Math.random() * 2 - 1) * variation;
-      const monsterDamage = Math.max(1, Math.floor(monsterTotalDamage * randomFactor) - window.player.defense);
-      window.player.life -= monsterDamage;
-      if (window.player.life < 0) window.player.life = 0;
-      
-      if (typeof window.displayDamage === "function") {
-        window.displayDamage(window.player.px, window.player.py, monsterDamage, 'damage', true);
-      }
-      
-      if (typeof window.gainStatXP === "function") {
-        window.gainStatXP('defense', 1);
-      }
-      
-      attackTarget.lastRiposte = currentTime;
-    }
-  }
+  // Plus de riposte automatique - les monstres attaquent via leur IA
   
   // Gestion de la mort du monstre
   if (attackTarget.hp <= 0 && !(window.multiplayerManager?.connected)) {
@@ -161,6 +138,7 @@ function castPunch() {
     attackTarget.aggro = false;
     attackTarget.aggroTarget = null;
     window.attackTarget = null;
+    attackTarget.state = 'aggro';
     window.player.inCombat = false;
   }
   

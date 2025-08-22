@@ -312,9 +312,7 @@ function updateSlimeBoss(monster, ts) {
     if (!monster.img || monster.hp <= 0) return;
     
     // Mettre à jour l'alignement fluide si nécessaire
-    if (typeof updateMonsterAlignment === 'function') {
-        updateMonsterAlignment(monster);
-    }
+    // Système d'alignement supprimé - Les monstres utilisent leur IA naturelle
     
     // --- DÉTECTION AGGRO ---
     let distToPlayer = Math.abs(player.x - monster.x) + Math.abs(player.y - monster.y);
@@ -448,7 +446,8 @@ function updateSlimeBoss(monster, ts) {
             pos.x >= 0 && pos.x < mapData.width &&
             pos.y >= 0 && pos.y < mapData.height &&
             !window.isBlocked(pos.x, pos.y) &&
-            !monsters.some(m => m !== monster && m.x === pos.x && m.y === pos.y)
+            !monsters.some(m => m !== monster && m.x === pos.x && m.y === pos.y) &&
+            !window.isOccupied(pos.x, pos.y, monster) // VÉRIFICATION DE COLLISION AVEC LE JOUEUR
         );
         
         if (destinations.length) {
@@ -459,10 +458,22 @@ function updateSlimeBoss(monster, ts) {
             }, null);
             
             if (newDest) {
+                // Créer une fonction de collision qui inclut les monstres et le joueur
+                const isBlockedWithCollisions = (x, y) => {
+                    // Vérifier les collisions du calque 2
+                    if (window.isBlocked(x, y)) return true;
+                    // Vérifier s'il y a un monstre vivant à cette position
+                    const monsterAtPosition = monsters.find(m => m.x === x && m.y === y && m.hp > 0 && !m.isDead);
+                    if (monsterAtPosition) return true;
+                    // Vérifier si le joueur occupe cette position
+                    if (player && player.x === x && player.y === y) return true;
+                    return false;
+                };
+                
                 let path = findPath(
                     { x: monster.x, y: monster.y },
                     { x: newDest.x, y: newDest.y },
-                    window.isBlocked,
+                    isBlockedWithCollisions,
                     mapData.width, mapData.height
                 ) || [];
                 

@@ -41,9 +41,9 @@ function executeTriplePunchStep(step) {
   } else {
     attackTarget.hp -= finalDamage;
   }
-  attackTarget.aggro = true; attackTarget.aggroTarget = window.player; attackTarget.lastCombat = Date.now(); window.player.inCombat = true;
+  attackTarget.aggro = true; attackTarget.aggroTarget = window.player; attackTarget.lastCombat = Date.now(); attackTarget.state = 'aggro'; window.player.inCombat = true;
   if (typeof window.displayDamage === 'function') window.displayDamage(attackTarget.px, attackTarget.py, finalDamage, isCrit ? 'critique' : 'damage', false);
-  if (typeof window.alignMonsterToGrid === 'function') window.alignMonsterToGrid(attackTarget);
+  // Système de replacement supprimé pour la nouvelle IA des monstres
   if (attackTarget.hp <= 0 && !(window.multiplayerManager && window.multiplayerManager.connected)) {
     if (typeof window.killMonster === 'function') window.killMonster(attackTarget);
     if (typeof window.release === 'function') window.release(attackTarget.x, attackTarget.y);

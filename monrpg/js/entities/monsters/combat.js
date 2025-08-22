@@ -134,37 +134,8 @@ function killMonster(monster) {
     }
 }
 
-// Fonction pour forcer l'alignement d'un monstre sur sa case
-function alignMonsterToGrid(monster) {
-    if (monster) {
-        // Marquer le monstre pour un alignement fluide
-        monster.needsAlignment = true;
-        monster.alignmentSpeed = 0.15; // Vitesse de snap (ajustable)
-        monster.moving = false;
-        monster.movePath = [];
-    }
-}
-
-// Fonction pour l'alignement fluide (à appeler dans la boucle de rendu)
-function updateMonsterAlignment(monster) {
-    if (monster && monster.needsAlignment) {
-        const targetX = monster.x * TILE_SIZE;
-        const targetY = monster.y * TILE_SIZE;
-        
-        // Animation fluide vers la position cible
-        monster.px += (targetX - monster.px) * monster.alignmentSpeed;
-        monster.py += (targetY - monster.py) * monster.alignmentSpeed;
-        
-        // Arrêter quand assez proche (éviter les micro-mouvements)
-        if (Math.abs(monster.px - targetX) < 0.5 && Math.abs(monster.py - targetY) < 0.5) {
-            monster.px = targetX;
-            monster.py = targetY;
-            monster.needsAlignment = false;
-        }
-    }
-}
+// Système de replacement supprimé - Les monstres utilisent maintenant leur IA modulaire
 
 // Export global
 window.killMonster = killMonster;
-window.alignMonsterToGrid = alignMonsterToGrid;
-window.updateMonsterAlignment = updateMonsterAlignment; 
+// Les fonctions alignMonsterToGrid et updateMonsterAlignment ont été supprimées 
