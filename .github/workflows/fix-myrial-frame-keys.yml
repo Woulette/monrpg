@@ -1,0 +1,38 @@
+name: Fix Myrial frame keys
+
+on:
+  push:
+    branches:
+      - agent/myrial-movement-assets
+
+permissions:
+  contents: write
+
+jobs:
+  fix-frame-keys:
+    if: github.event.head_commit.message != 'Fix Phaser frame keys'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Use string texture frame keys
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('monrpg/src/game/rendering/pixel-textures.ts')
+          text = path.read_text()
+          text = text.replace('texture.has(0)', 'texture.has("0")')
+          text = text.replace(
+              '        index,\n        0,\n        index * PLAYER_FRAME_WIDTH,',
+              '        index.toString(),\n        0,\n        index * PLAYER_FRAME_WIDTH,',
+          )
+          path.write_text(text)
+          PY
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add monrpg/src/game/rendering/pixel-textures.ts
+          git commit -m "Fix Phaser frame keys"
+          git push
