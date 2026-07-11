@@ -1,0 +1,31 @@
+name: Create Myrial manifest
+
+on:
+  push:
+    branches:
+      - agent/myrial-movement-assets
+
+permissions:
+  contents: write
+
+jobs:
+  manifest:
+    if: github.event.head_commit.message != 'Add Myrial source manifest'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build source manifest
+        run: |
+          find monrpg -type f \
+            ! -path '*/node_modules/*' \
+            ! -name 'SOURCE_MANIFEST.txt' \
+            | sort > monrpg/SOURCE_MANIFEST.txt
+      - name: Commit manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add monrpg/SOURCE_MANIFEST.txt
+          git commit -m "Add Myrial source manifest"
+          git push
