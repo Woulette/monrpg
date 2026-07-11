@@ -24,9 +24,9 @@ import {
   ensureTerrainTexture,
   isLargeObject,
   objectTextureKey,
-  preloadPixelAssets,
 } from "../rendering/pixel-textures";
 import { PlayerAvatar } from "../rendering/player-avatar";
+import { preloadStarterAdventurer } from "../rendering/starter-adventurer-texture";
 import { createWorldTransport } from "../transports/create-world-transport";
 import type { WorldTransport } from "../transports/world-transport";
 
@@ -45,7 +45,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   preload(): void {
-    preloadPixelAssets(this);
+    preloadStarterAdventurer(this);
   }
 
   create(): void {
