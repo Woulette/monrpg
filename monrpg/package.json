@@ -1,17 +1,30 @@
 {
-  "name": "pixel-realms-mmo-preview",
+  "name": "pixel-realms-mmo",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "services/*"
+  ],
   "scripts": {
-    "build": "node bootstrap.cjs && npm install --ignore-scripts --no-audit --no-fund && next build",
-    "start": "next start"
+    "dev": "next dev",
+    "dev:realtime": "npm run dev --workspace @pixel-realms/realtime",
+    "build": "next build",
+    "build:realtime": "npm run build --workspace @pixel-realms/realtime",
+    "build:all": "npm run build && npm run build:realtime",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit && npm run typecheck --workspace @pixel-realms/realtime",
+    "test": "vitest run",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build:all"
   },
   "dependencies": {
+    "@pixel-realms/game-core": "*",
+    "@pixel-realms/protocol": "*",
     "next": "16.2.10",
     "phaser": "3.90.0",
     "react": "19.2.7",
-    "react-dom": "19.2.7",
-    "zod": "^4.4.3"
+    "react-dom": "19.2.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.14",
