@@ -1,6 +1,9 @@
 import * as Phaser from "phaser";
 import type { PlayerSnapshot } from "@pixel-realms/protocol";
-import { ensurePlayerTexture, playerFrame } from "./pixel-textures";
+import {
+  ensureStarterAdventurerTexture,
+  starterAdventurerFrame,
+} from "./starter-adventurer-texture";
 
 interface AvatarSample {
   x: number;
@@ -30,14 +33,22 @@ export class PlayerAvatar {
     snapshot: PlayerSnapshot,
     isLocal: boolean,
   ) {
-    const textureKey = ensurePlayerTexture(scene, snapshot.appearance);
+    const textureKey = ensureStarterAdventurerTexture(
+      scene,
+      snapshot.appearance,
+    );
     const shadow = scene.add.ellipse(0, 7, 23, 10, 0x000000, 0.3);
     this.localRing = scene.add
       .ellipse(0, 7, 31, 16)
       .setStrokeStyle(2, 0xf4d06f, isLocal ? 0.9 : 0)
       .setVisible(isLocal);
     this.sprite = scene.add
-      .sprite(0, 7, textureKey, playerFrame(snapshot.direction, false, 0))
+      .sprite(
+        0,
+        7,
+        textureKey,
+        starterAdventurerFrame(snapshot.direction, false, 0),
+      )
       .setOrigin(0.5, 1)
       .setScale(1.08);
     this.nameLabel = scene.add
@@ -136,7 +147,9 @@ export class PlayerAvatar {
     }
 
     this.container.setDepth(Math.floor(this.container.y));
-    this.sprite.setFrame(playerFrame(this.direction, this.moving, time));
+    this.sprite.setFrame(
+      starterAdventurerFrame(this.direction, this.moving, time),
+    );
     this.localRing.setScale(1 + Math.sin(time / 260) * 0.04);
   }
 
