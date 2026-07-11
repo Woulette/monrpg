@@ -1,31 +1,39 @@
 import * as Phaser from "phaser";
-import { TILE_SIZE, TerrainTile, type WorldObjectKind } from "@pixel-realms/game-core";
+import {
+  TILE_SIZE,
+  TerrainTile,
+  type WorldObjectKind,
+} from "@pixel-realms/game-core";
 import type { Direction, PlayerAppearance } from "@pixel-realms/protocol";
 
 export const TERRAIN_TEXTURE_KEY = "terrain-tiles";
-const PLAYER_FRAME_WIDTH = 24;
-const PLAYER_FRAME_HEIGHT = 34;
+export const STARTER_ADVENTURER_TEXTURE_KEY = "starter-adventurer";
+
+const PLAYER_FRAME_WIDTH = 32;
+const PLAYER_FRAME_HEIGHT = 48;
+const PLAYER_FRAME_COUNT = 8;
+const STARTER_ADVENTURER_ASSET =
+  "/assets/characters/starter-adventurer.svg";
 
 const TERRAIN_COLORS = {
-  grass: "#397a43",
-  grassLight: "#4a9253",
-  grassDark: "#2d6937",
-  flowerA: "#f5d76e",
-  flowerB: "#e78a9d",
-  dirt: "#9a6a42",
-  dirtLight: "#b98553",
-  dirtDark: "#765033",
-  stone: "#7d8791",
-  stoneLight: "#9ca5ac",
-  stoneDark: "#626c76",
-  water: "#2879a8",
-  waterLight: "#45a7ca",
-  waterDark: "#1f608e",
-  sand: "#c9ae67",
-  sandLight: "#dbc47e",
-  bridge: "#8a5a35",
-  bridgeLight: "#b27843",
-  bridgeDark: "#5e3b25",
+  grass: "#4d8b4e",
+  grassLight: "#66a765",
+  grassDark: "#376d3d",
+  dirt: "#a97649",
+  dirtLight: "#c28e5c",
+  dirtDark: "#805537",
+  stone: "#879299",
+  stoneLight: "#adb6bb",
+  stoneDark: "#596269",
+  water: "#2f83ad",
+  waterLight: "#67bed6",
+  waterDark: "#1f688f",
+  sand: "#cfb76d",
+  sandLight: "#ead795",
+  sandDark: "#aa934f",
+  bridge: "#8a5a37",
+  bridgeLight: "#b47a48",
+  bridgeDark: "#5d3b27",
 } as const;
 
 function createCanvas(width: number, height: number): HTMLCanvasElement {
@@ -35,10 +43,6 @@ function createCanvas(width: number, height: number): HTMLCanvasElement {
   const context = canvas.getContext("2d");
   if (context) context.imageSmoothingEnabled = false;
   return canvas;
-}
-
-function cssColor(value: number): string {
-  return `#${value.toString(16).padStart(6, "0")}`;
 }
 
 function rect(
@@ -53,74 +57,132 @@ function rect(
   context.fillRect(x, y, width, height);
 }
 
+function polygon(
+  context: CanvasRenderingContext2D,
+  color: string,
+  points: ReadonlyArray<readonly [number, number]>,
+): void {
+  const [first, ...rest] = points;
+  if (!first) return;
+  context.fillStyle = color;
+  context.beginPath();
+  context.moveTo(first[0], first[1]);
+  for (const point of rest) context.lineTo(point[0], point[1]);
+  context.closePath();
+  context.fill();
+}
+
+export function preloadPixelAssets(scene: Phaser.Scene): void {
+  if (!scene.textures.exists(STARTER_ADVENTURER_TEXTURE_KEY)) {
+    scene.load.svg(
+      STARTER_ADVENTURER_TEXTURE_KEY,
+      STARTER_ADVENTURER_ASSET,
+      {
+        width: PLAYER_FRAME_WIDTH * PLAYER_FRAME_COUNT,
+        height: PLAYER_FRAME_HEIGHT,
+      },
+    );
+  }
+}
+
 function drawTerrainTile(
   context: CanvasRenderingContext2D,
   tile: TerrainTile,
   offsetX: number,
 ): void {
   const x = offsetX;
-  const y = 0;
 
   if (tile === TerrainTile.Grass || tile === TerrainTile.FlowerGrass) {
-    rect(context, TERRAIN_COLORS.grass, x, y, TILE_SIZE, TILE_SIZE);
-    rect(context, TERRAIN_COLORS.grassLight, x + 3, y + 6, 3, 2);
-    rect(context, TERRAIN_COLORS.grassDark, x + 23, y + 20, 4, 2);
-    rect(context, TERRAIN_COLORS.grassDark, x + 11, y + 27, 2, 3);
-    rect(context, TERRAIN_COLORS.grassLight, x + 27, y + 4, 2, 3);
+    rect(context, TERRAIN_COLORS.grass, x, 0, TILE_SIZE, TILE_SIZE);
+    rect(context, "#579858", x, 0, TILE_SIZE, 4);
+    rect(context, TERRAIN_COLORS.grassLight, x + 3, 8, 7, 3);
+    rect(context, TERRAIN_COLORS.grassDark, x + 21, 19, 8, 3);
+    rect(context, TERRAIN_COLORS.grassDark, x + 11, 26, 4, 3);
+    rect(context, "#6aa766", x + 27, 5, 3, 5);
+    rect(context, "#447f47", x + 6, 17, 3, 4);
+    rect(context, TERRAIN_COLORS.grassDark, x + 13, 4, 2, 4);
+    rect(context, TERRAIN_COLORS.grassLight, x + 14, 3, 2, 2);
+
     if (tile === TerrainTile.FlowerGrass) {
-      rect(context, TERRAIN_COLORS.flowerA, x + 8, y + 12, 2, 2);
-      rect(context, TERRAIN_COLORS.flowerB, x + 20, y + 8, 2, 2);
-      rect(context, "#f4f0df", x + 16, y + 24, 2, 2);
+      rect(context, "#f3dc76", x + 8, 12, 2, 2);
+      rect(context, "#fff2aa", x + 7, 13, 4, 1);
+      rect(context, "#d77c9b", x + 20, 8, 2, 2);
+      rect(context, "#f1acc1", x + 19, 9, 4, 1);
+      rect(context, "#e7edf0", x + 16, 24, 2, 2);
+      rect(context, "#ffffff", x + 15, 25, 4, 1);
     }
     return;
   }
 
   if (tile === TerrainTile.Dirt) {
-    rect(context, TERRAIN_COLORS.dirt, x, y, TILE_SIZE, TILE_SIZE);
-    rect(context, TERRAIN_COLORS.dirtLight, x + 4, y + 5, 5, 2);
-    rect(context, TERRAIN_COLORS.dirtDark, x + 20, y + 22, 4, 3);
-    rect(context, TERRAIN_COLORS.dirtLight, x + 13, y + 16, 2, 2);
+    rect(context, TERRAIN_COLORS.dirt, x, 0, TILE_SIZE, TILE_SIZE);
+    rect(context, "#b98454", x, 0, TILE_SIZE, 3);
+    rect(context, TERRAIN_COLORS.dirtLight, x + 3, 7, 9, 3);
+    rect(context, TERRAIN_COLORS.dirtDark, x + 21, 21, 7, 4);
+    rect(context, "#8c5f3d", x + 13, 14, 3, 3);
+    rect(context, "#d0a06a", x + 6, 25, 2, 2);
+    rect(context, "#6f4932", x + 25, 5, 3, 2);
     return;
   }
 
   if (tile === TerrainTile.Stone) {
-    rect(context, TERRAIN_COLORS.stone, x, y, TILE_SIZE, TILE_SIZE);
-    context.strokeStyle = TERRAIN_COLORS.stoneDark;
-    context.lineWidth = 1;
-    context.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
-    context.beginPath();
-    context.moveTo(x + 16, y);
-    context.lineTo(x + 16, y + TILE_SIZE);
-    context.moveTo(x, y + 16);
-    context.lineTo(x + TILE_SIZE, y + 16);
-    context.stroke();
-    rect(context, TERRAIN_COLORS.stoneLight, x + 3, y + 3, 5, 2);
+    rect(context, "#7e8990", x, 0, TILE_SIZE, TILE_SIZE);
+    rect(context, "#9da7ad", x, 0, TILE_SIZE, 2);
+    const stones: Array<[number, number, number, number]> = [
+      [1, 3, 14, 11],
+      [17, 3, 14, 11],
+      [1, 16, 9, 14],
+      [12, 16, 19, 14],
+    ];
+    for (const [stoneX, stoneY, width, height] of stones) {
+      rect(context, TERRAIN_COLORS.stone, x + stoneX, stoneY, width, height);
+      rect(context, TERRAIN_COLORS.stoneLight, x + stoneX, stoneY, width, 2);
+      rect(
+        context,
+        "#626c73",
+        x + stoneX,
+        stoneY + height - 2,
+        width,
+        2,
+      );
+    }
+    rect(context, TERRAIN_COLORS.stoneDark, x + 15, 3, 2, 11);
+    rect(context, TERRAIN_COLORS.stoneDark, x + 10, 16, 2, 14);
+    rect(context, TERRAIN_COLORS.stoneDark, x, 14, TILE_SIZE, 2);
     return;
   }
 
   if (tile === TerrainTile.Water) {
-    rect(context, TERRAIN_COLORS.water, x, y, TILE_SIZE, TILE_SIZE);
-    rect(context, TERRAIN_COLORS.waterLight, x + 2, y + 7, 12, 2);
-    rect(context, TERRAIN_COLORS.waterDark, x + 16, y + 19, 13, 2);
-    rect(context, TERRAIN_COLORS.waterLight, x + 9, y + 28, 8, 1);
+    rect(context, TERRAIN_COLORS.water, x, 0, TILE_SIZE, TILE_SIZE);
+    rect(context, "#3793ba", x, 0, TILE_SIZE, 4);
+    rect(context, TERRAIN_COLORS.waterLight, x + 2, 7, 13, 2);
+    rect(context, TERRAIN_COLORS.waterDark, x + 18, 15, 12, 2);
+    rect(context, "#5db4d0", x + 7, 25, 14, 2);
+    rect(context, "#9ddbe6", x + 23, 5, 6, 1);
+    rect(context, "#1c668c", x + 3, 20, 7, 1);
     return;
   }
 
   if (tile === TerrainTile.Bridge) {
-    rect(context, TERRAIN_COLORS.bridge, x, y, TILE_SIZE, TILE_SIZE);
+    rect(context, TERRAIN_COLORS.bridge, x, 0, TILE_SIZE, TILE_SIZE);
     for (let plank = 0; plank < 4; plank += 1) {
-      const plankY = y + plank * 8;
+      const plankY = plank * 8;
       rect(context, TERRAIN_COLORS.bridgeLight, x, plankY, TILE_SIZE, 2);
       rect(context, TERRAIN_COLORS.bridgeDark, x, plankY + 7, TILE_SIZE, 1);
     }
-    rect(context, "#3d2a1c", x + 5, y + 5, 2, 2);
-    rect(context, "#3d2a1c", x + 25, y + 21, 2, 2);
+    rect(context, "#2f2923", x + 4, 5, 2, 2);
+    rect(context, "#2f2923", x + 26, 20, 2, 2);
+    rect(context, "#d39a61", x + 17, 12, 2, 2);
     return;
   }
 
-  rect(context, TERRAIN_COLORS.sand, x, y, TILE_SIZE, TILE_SIZE);
-  rect(context, TERRAIN_COLORS.sandLight, x + 4, y + 6, 6, 2);
-  rect(context, "#aa914f", x + 20, y + 22, 5, 2);
+  rect(context, TERRAIN_COLORS.sand, x, 0, TILE_SIZE, TILE_SIZE);
+  rect(context, "#ddc77e", x, 0, TILE_SIZE, 3);
+  rect(context, TERRAIN_COLORS.sandLight, x + 4, 7, 8, 2);
+  rect(context, TERRAIN_COLORS.sandDark, x + 20, 22, 6, 3);
+  rect(context, "#b9a25c", x + 14, 14, 2, 2);
+  rect(context, "#f0dda0", x + 7, 26, 3, 1);
+  rect(context, "#927d43", x + 25, 6, 2, 1);
 }
 
 export function ensureTerrainTexture(scene: Phaser.Scene): void {
@@ -139,14 +201,14 @@ export function ensureTerrainTexture(scene: Phaser.Scene): void {
 }
 
 const OBJECT_SIZES: Record<WorldObjectKind, { width: number; height: number }> = {
-  tree: { width: 48, height: 64 },
-  pine: { width: 48, height: 72 },
-  rock: { width: 34, height: 24 },
+  tree: { width: 64, height: 80 },
+  pine: { width: 64, height: 88 },
+  rock: { width: 48, height: 32 },
   "house-blue": { width: 192, height: 160 },
   "house-red": { width: 192, height: 160 },
-  sign: { width: 26, height: 38 },
-  campfire: { width: 32, height: 30 },
-  well: { width: 64, height: 58 },
+  sign: { width: 32, height: 48 },
+  campfire: { width: 40, height: 40 },
+  well: { width: 72, height: 68 },
 };
 
 export function objectTextureKey(kind: WorldObjectKind): string {
@@ -155,33 +217,38 @@ export function objectTextureKey(kind: WorldObjectKind): string {
 
 function drawHouse(
   context: CanvasRenderingContext2D,
-  roofColor: string,
+  roofDark: string,
+  roofLight: string,
   width: number,
   height: number,
 ): void {
-  rect(context, "#4c3527", 12, 54, width - 24, height - 54);
-  rect(context, "#caa36d", 18, 62, width - 36, height - 72);
-  rect(context, "#2d211a", width / 2 - 14, height - 47, 28, 47);
-  rect(context, "#7e512f", width / 2 - 10, height - 43, 20, 43);
-  rect(context, "#80c5d9", 37, 91, 28, 26);
-  rect(context, "#e9dba4", 41, 95, 20, 18);
-  rect(context, "#80c5d9", width - 65, 91, 28, 26);
-  rect(context, "#e9dba4", width - 61, 95, 20, 18);
-  rect(context, "#3a2a21", 34, 88, 34, 4);
-  rect(context, "#3a2a21", width - 68, 88, 34, 4);
+  rect(context, "#5c4635", 22, 70, width - 44, height - 70);
+  rect(context, "#d2ae79", 29, 79, width - 58, height - 79);
+  polygon(context, roofDark, [
+    [10, 76],
+    [width / 2, 12],
+    [width - 10, 76],
+  ]);
+  polygon(context, roofLight, [
+    [18, 72],
+    [width / 2, 20],
+    [width - 18, 72],
+  ]);
+  rect(context, roofDark, 12, 72, width - 24, 12);
 
-  context.fillStyle = roofColor;
-  context.beginPath();
-  context.moveTo(4, 62);
-  context.lineTo(width / 2, 6);
-  context.lineTo(width - 4, 62);
-  context.closePath();
-  context.fill();
-  context.fillStyle = "#3b2731";
-  context.fillRect(3, 60, width - 6, 8);
-  rect(context, "rgba(255,255,255,0.16)", width / 2 - 52, 25, 72, 6);
-  rect(context, "#665044", width - 50, 25, 20, 42);
-  rect(context, "#8b715f", width - 46, 18, 12, 12);
+  rect(context, "#3f6f8f", 46, 93, 36, 35);
+  rect(context, "#a8dce3", 50, 97, 28, 27);
+  rect(context, "#3f6f8f", width - 82, 93, 36, 35);
+  rect(context, "#a8dce3", width - 78, 97, 28, 27);
+  rect(context, "#547f8c", 63, 97, 3, 27);
+  rect(context, "#547f8c", width - 65, 97, 3, 27);
+
+  rect(context, "#3b2a22", width / 2 - 15, height - 54, 30, 54);
+  rect(context, "#7e5333", width / 2 - 10, height - 48, 20, 48);
+  rect(context, "#d7b060", width / 2 + 5, height - 29, 3, 3);
+
+  rect(context, "#544238", width - 57, 30, 19, 46);
+  rect(context, "#7e6959", width - 53, 22, 11, 12);
 }
 
 function createObjectTexture(scene: Phaser.Scene, kind: WorldObjectKind): void {
@@ -193,81 +260,110 @@ function createObjectTexture(scene: Phaser.Scene, kind: WorldObjectKind): void {
   if (!context) return;
 
   if (kind === "tree") {
-    rect(context, "#5b3b24", 21, 35, 8, 29);
-    rect(context, "#1c4e2b", 5, 17, 38, 31);
-    rect(context, "#286a39", 10, 8, 28, 31);
-    rect(context, "#3f8a49", 17, 4, 17, 18);
-    rect(context, "#153d22", 2, 29, 16, 14);
+    rect(context, "#3b281d", 27, 42, 14, 38);
+    rect(context, "#6c4328", 30, 39, 9, 41);
+    rect(context, "#92613a", 33, 43, 3, 33);
+    rect(context, "#1e4f2c", 16, 20, 38, 34);
+    rect(context, "#245f32", 6, 34, 36, 28);
+    rect(context, "#2e7139", 28, 28, 34, 31);
+    rect(context, "#367f42", 20, 9, 36, 34);
+    rect(context, "#4a934f", 36, 5, 23, 25);
+    rect(context, "#3d8746", 10, 24, 22, 21);
+    rect(context, "#62a95d", 27, 15, 9, 6);
+    rect(context, "#183d23", 9, 39, 9, 5);
   } else if (kind === "pine") {
-    rect(context, "#583a25", 21, 45, 7, 27);
-    context.fillStyle = "#173f2c";
-    context.beginPath();
-    context.moveTo(24, 3);
-    context.lineTo(3, 43);
-    context.lineTo(45, 43);
-    context.closePath();
-    context.fill();
-    context.fillStyle = "#235d3c";
-    context.beginPath();
-    context.moveTo(24, 15);
-    context.lineTo(1, 56);
-    context.lineTo(47, 56);
-    context.closePath();
-    context.fill();
-    rect(context, "#3a7750", 22, 10, 5, 26);
+    rect(context, "#563822", 28, 46, 9, 42);
+    rect(context, "#8a5a34", 31, 43, 4, 44);
+    polygon(context, "#183f2c", [
+      [32, 3],
+      [9, 42],
+      [55, 42],
+    ]);
+    polygon(context, "#235a38", [
+      [32, 17],
+      [5, 61],
+      [59, 61],
+    ]);
+    polygon(context, "#2d6d42", [
+      [32, 33],
+      [2, 78],
+      [62, 78],
+    ]);
+    polygon(context, "#467f50", [
+      [32, 10],
+      [22, 31],
+      [41, 31],
+    ]);
+    rect(context, "#4b8e57", 30, 18, 4, 40);
   } else if (kind === "rock") {
-    context.fillStyle = "#59616b";
-    context.beginPath();
-    context.moveTo(3, 22);
-    context.lineTo(7, 8);
-    context.lineTo(17, 2);
-    context.lineTo(29, 7);
-    context.lineTo(33, 22);
-    context.closePath();
-    context.fill();
-    rect(context, "#8a949d", 10, 7, 10, 4);
-    rect(context, "#444b53", 20, 15, 10, 7);
+    polygon(context, "#4a545d", [
+      [3, 30],
+      [8, 14],
+      [23, 2],
+      [39, 9],
+      [46, 30],
+    ]);
+    polygon(context, "#88949c", [
+      [8, 14],
+      [23, 2],
+      [31, 14],
+      [18, 22],
+    ]);
+    polygon(context, "#626d75", [
+      [18, 22],
+      [31, 14],
+      [46, 30],
+      [20, 30],
+    ]);
+    rect(context, "#a7b0b6", 11, 14, 9, 4);
+    rect(context, "#3d464e", 34, 23, 8, 4);
   } else if (kind === "house-blue") {
-    drawHouse(context, "#3e668f", size.width, size.height);
+    drawHouse(context, "#2e4e68", "#416f90", size.width, size.height);
   } else if (kind === "house-red") {
-    drawHouse(context, "#8b4652", size.width, size.height);
+    drawHouse(context, "#6d3340", "#944a57", size.width, size.height);
   } else if (kind === "sign") {
-    rect(context, "#5e3c22", 11, 15, 5, 23);
-    rect(context, "#9d6b3d", 1, 3, 24, 18);
-    rect(context, "#d0a264", 4, 6, 18, 3);
-    rect(context, "#694725", 4, 14, 11, 3);
+    rect(context, "#4b301e", 14, 23, 5, 25);
+    rect(context, "#6a4327", 3, 6, 27, 22);
+    rect(context, "#b77c46", 5, 8, 23, 18);
+    rect(context, "#e0ad69", 8, 12, 16, 3);
+    rect(context, "#76502d", 8, 19, 12, 3);
   } else if (kind === "campfire") {
-    rect(context, "#5d3a25", 4, 22, 24, 5);
-    rect(context, "#7d4b2d", 9, 18, 16, 5);
-    context.fillStyle = "#e14d2a";
-    context.beginPath();
-    context.moveTo(16, 3);
-    context.lineTo(8, 20);
-    context.lineTo(24, 20);
-    context.closePath();
-    context.fill();
-    context.fillStyle = "#ffd45f";
-    context.beginPath();
-    context.moveTo(16, 8);
-    context.lineTo(12, 19);
-    context.lineTo(21, 19);
-    context.closePath();
-    context.fill();
+    rect(context, "#4b2e1d", 5, 33, 30, 4);
+    rect(context, "#744426", 9, 28, 22, 5);
+    polygon(context, "#d3452c", [
+      [20, 2],
+      [7, 28],
+      [34, 28],
+    ]);
+    polygon(context, "#ff8c35", [
+      [20, 10],
+      [12, 28],
+      [28, 28],
+    ]);
+    polygon(context, "#ffd45d", [
+      [20, 18],
+      [17, 28],
+      [24, 28],
+    ]);
   } else if (kind === "well") {
-    rect(context, "#5a4637", 8, 22, 48, 31);
-    rect(context, "#8e989e", 4, 27, 56, 22);
-    rect(context, "#b3bbc0", 8, 25, 48, 8);
-    rect(context, "#25323a", 15, 34, 34, 13);
-    rect(context, "#5f4028", 9, 4, 5, 25);
-    rect(context, "#5f4028", 50, 4, 5, 25);
-    rect(context, "#7d5230", 7, 3, 50, 5);
-    context.fillStyle = "#6b4040";
-    context.beginPath();
-    context.moveTo(4, 8);
-    context.lineTo(32, 0);
-    context.lineTo(60, 8);
-    context.closePath();
-    context.fill();
+    rect(context, "#59636a", 12, 35, 48, 28);
+    rect(context, "#879198", 8, 40, 56, 20);
+    rect(context, "#b4bdc2", 12, 37, 48, 7);
+    rect(context, "#26343b", 20, 46, 32, 11);
+    rect(context, "#54371f", 13, 12, 6, 31);
+    rect(context, "#54371f", 53, 12, 6, 31);
+    rect(context, "#7b5030", 10, 9, 52, 6);
+    polygon(context, "#6f3540", [
+      [6, 16],
+      [36, 1],
+      [66, 16],
+    ]);
+    polygon(context, "#974a57", [
+      [12, 14],
+      [36, 4],
+      [60, 14],
+    ]);
+    rect(context, "#b18a57", 34, 15, 4, 31);
   }
 
   const texture = scene.textures.addCanvas(key, canvas);
@@ -275,59 +371,25 @@ function createObjectTexture(scene: Phaser.Scene, kind: WorldObjectKind): void {
 }
 
 export function ensureObjectTextures(scene: Phaser.Scene): void {
-  for (const kind of Object.keys(OBJECT_SIZES) as WorldObjectKind[]) {
-    createObjectTexture(scene, kind);
-  }
+  const kinds: WorldObjectKind[] = [
+    "tree",
+    "pine",
+    "rock",
+    "house-blue",
+    "house-red",
+    "sign",
+    "campfire",
+    "well",
+  ];
+  for (const kind of kinds) createObjectTexture(scene, kind);
 }
 
 export function isLargeObject(kind: WorldObjectKind): boolean {
   return kind === "house-blue" || kind === "house-red" || kind === "well";
 }
 
-export function playerTextureKey(appearance: PlayerAppearance): string {
-  return `player-${appearance.bodyTint.toString(16)}-${appearance.accentTint.toString(16)}`;
-}
-
-function drawPlayerFrame(
-  context: CanvasRenderingContext2D,
-  frameX: number,
-  direction: Direction,
-  walkFrame: number,
-  appearance: PlayerAppearance,
-): void {
-  const x = frameX;
-  const skin = "#e1b083";
-  const hair = "#3a2a26";
-  const outline = "#1b1b20";
-  const body = cssColor(appearance.bodyTint);
-  const accent = cssColor(appearance.accentTint);
-  const legOffset = walkFrame === 0 ? 0 : 2;
-
-  if (direction === "south" || direction === "north") {
-    rect(context, outline, x + 6, 8, 12, 10);
-    rect(context, direction === "south" ? skin : hair, x + 8, 9, 8, 8);
-    rect(context, hair, x + 7, 7, 10, 4);
-    rect(context, outline, x + 5, 17, 14, 12);
-    rect(context, body, x + 7, 18, 10, 10);
-    rect(context, accent, x + 7, 18, 10, 3);
-    rect(context, outline, x + 5, 29, 6, 4);
-    rect(context, outline, x + 13, 29, 6, 4);
-    rect(context, "#60452f", x + 6, 29 + legOffset, 4, 4 - legOffset);
-    rect(context, "#60452f", x + 14, 31 - legOffset, 4, 2 + legOffset);
-    if (direction === "north") rect(context, accent, x + 7, 24, 10, 4);
-    return;
-  }
-
-  const facingEast = direction === "east";
-  const faceX = facingEast ? x + 10 : x + 6;
-  rect(context, outline, x + 7, 8, 11, 10);
-  rect(context, skin, faceX, 10, 7, 7);
-  rect(context, hair, x + 7, 7, 10, 5);
-  rect(context, outline, x + 6, 17, 12, 12);
-  rect(context, body, x + 8, 18, 8, 10);
-  rect(context, accent, facingEast ? x + 14 : x + 6, 19, 4, 8);
-  rect(context, "#60452f", x + 7, 29 + legOffset, 4, 4 - legOffset);
-  rect(context, "#60452f", x + 14, 31 - legOffset, 4, 2 + legOffset);
+export function playerTextureKey(_appearance: PlayerAppearance): string {
+  return STARTER_ADVENTURER_TEXTURE_KEY;
 }
 
 export function ensurePlayerTexture(
@@ -335,32 +397,11 @@ export function ensurePlayerTexture(
   appearance: PlayerAppearance,
 ): string {
   const key = playerTextureKey(appearance);
-  if (scene.textures.exists(key)) return key;
+  const texture = scene.textures.get(key);
+  texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
 
-  const directions: Direction[] = ["north", "south", "east", "west"];
-  const frameCount = directions.length * 2;
-  const canvas = createCanvas(PLAYER_FRAME_WIDTH * frameCount, PLAYER_FRAME_HEIGHT);
-  const context = canvas.getContext("2d");
-  if (!context) return key;
-
-  let frame = 0;
-  for (const direction of directions) {
-    for (let walkFrame = 0; walkFrame < 2; walkFrame += 1) {
-      drawPlayerFrame(
-        context,
-        frame * PLAYER_FRAME_WIDTH,
-        direction,
-        walkFrame,
-        appearance,
-      );
-      frame += 1;
-    }
-  }
-
-  const texture = scene.textures.addCanvas(key, canvas);
-  if (texture) {
-    texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
-    for (let index = 0; index < frameCount; index += 1) {
+  if (!texture.has(0)) {
+    for (let index = 0; index < PLAYER_FRAME_COUNT; index += 1) {
       texture.add(
         index,
         0,
@@ -371,16 +412,21 @@ export function ensurePlayerTexture(
       );
     }
   }
+
   return key;
 }
 
-export function playerFrame(direction: Direction, moving: boolean, time: number): number {
+export function playerFrame(
+  direction: Direction,
+  moving: boolean,
+  time: number,
+): number {
   const directionOffset: Record<Direction, number> = {
     north: 0,
     south: 2,
     east: 4,
     west: 6,
   };
-  const walkFrame = moving ? Math.floor(time / 180) % 2 : 0;
+  const walkFrame = moving ? Math.floor(time / 155) % 2 : 0;
   return directionOffset[direction] + walkFrame;
 }
