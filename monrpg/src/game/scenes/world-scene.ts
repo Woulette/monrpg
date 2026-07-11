@@ -24,6 +24,7 @@ import {
   ensureTerrainTexture,
   isLargeObject,
   objectTextureKey,
+  preloadPixelAssets,
 } from "../rendering/pixel-textures";
 import { PlayerAvatar } from "../rendering/player-avatar";
 import { createWorldTransport } from "../transports/create-world-transport";
@@ -41,6 +42,10 @@ export class WorldScene extends Phaser.Scene {
 
   constructor() {
     super({ key: "world" });
+  }
+
+  preload(): void {
+    preloadPixelAssets(this);
   }
 
   create(): void {
@@ -64,7 +69,7 @@ export class WorldScene extends Phaser.Scene {
     this.input.on("pointerdown", this.handlePointerDown, this);
     this.scale.on(Phaser.Scale.Events.RESIZE, this.handleResize, this);
 
-    const storedName = window.localStorage.getItem("pixel-realms-player-name");
+    const storedName = window.localStorage.getItem("myrial-online-player-name");
     const playerName = storedName?.trim() || "Aventurier";
     this.transport = createWorldTransport(playerName);
     this.unsubscribeMessage = this.transport.onMessage((message) =>
@@ -90,7 +95,7 @@ export class WorldScene extends Phaser.Scene {
       tileHeight: TILE_SIZE,
     });
     const tileset = tilemap.addTilesetImage(
-      "pixel-realms-terrain",
+      "myrial-terrain",
       TERRAIN_TEXTURE_KEY,
       TILE_SIZE,
       TILE_SIZE,
@@ -112,13 +117,13 @@ export class WorldScene extends Phaser.Scene {
 
       if (object.kind === "campfire") {
         const glow = this.add
-          .ellipse(x, y - 10, 44, 26, 0xff9d3f, 0.12)
+          .ellipse(x, y - 10, 50, 30, 0xff9d3f, 0.14)
           .setDepth(y - 2);
         this.tweens.add({
           targets: glow,
-          alpha: { from: 0.08, to: 0.2 },
-          scale: { from: 0.92, to: 1.08 },
-          duration: 750,
+          alpha: { from: 0.08, to: 0.22 },
+          scale: { from: 0.9, to: 1.1 },
+          duration: 650,
           yoyo: true,
           repeat: -1,
         });
