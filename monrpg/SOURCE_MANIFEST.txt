@@ -9,6 +9,7 @@ monrpg/packages/game-core/src/world.ts
 monrpg/packages/protocol/package.json
 monrpg/packages/protocol/src/index.ts
 monrpg/postcss.config.mjs
+monrpg/public/assets/characters/starter-adventurer.svg
 monrpg/public/manifest.webmanifest
 monrpg/src/app/globals.css
 monrpg/src/app/layout.tsx
