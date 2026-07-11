@@ -400,10 +400,10 @@ export function ensurePlayerTexture(
   const texture = scene.textures.get(key);
   texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
 
-  if (!texture.has(0)) {
+  if (!texture.has("0")) {
     for (let index = 0; index < PLAYER_FRAME_COUNT; index += 1) {
       texture.add(
-        index,
+        index.toString(),
         0,
         index * PLAYER_FRAME_WIDTH,
         0,
